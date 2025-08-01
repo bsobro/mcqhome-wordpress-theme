@@ -1,0 +1,714 @@
+/**
+ * Browse and Discovery System Styles
+ * 
+ * @package MCQHome
+ * @since 1.0.0
+ */
+
+/* Page Layout */
+.browse-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Hierarchical Category Navigation */
+.category-navigation {
+  background: white;
+  border: 1px solid #e2e8f0;
+}
+
+.subjects-hierarchy {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.subject-group {
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.subject-group:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.subject-header {
+  cursor: pointer;
+}
+
+.subject-title {
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.subject-title:hover {
+  color: #1d4ed8;
+}
+
+.toggle-topics {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.toggle-topics:hover {
+  background-color: #f3f4f6;
+}
+
+.topics-list {
+  animation: slideDown 0.3s ease-out;
+}
+
+.topics-list.hidden {
+  display: none;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+  }
+}
+
+.topic-link {
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.topic-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.quick-categories .category-card,
+.quick-categories .difficulty-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.quick-categories .category-card:hover,
+.quick-categories .difficulty-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.view-all-subjects {
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+/* Advanced Search Filters */
+.search-filters {
+  border: 1px solid #e2e8f0;
+}
+
+.filter-header {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.toggle-advanced-filters {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.toggle-advanced-filters:hover {
+  color: #1d4ed8;
+}
+
+.basic-filters,
+.advanced-filters {
+  transition: all 0.3s ease;
+}
+
+.advanced-filters {
+  animation: slideDown 0.3s ease-out;
+}
+
+.advanced-filters.hidden {
+  display: none;
+}
+
+.search-filters input,
+.search-filters select {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.search-filters input:focus,
+.search-filters select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-filters input[type="text"] {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m19 19-3.5-3.5'/%3e%3ccircle cx='8' cy='8' r='6' stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1rem 1rem;
+}
+
+/* Filter Presets */
+.filter-presets {
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.preset-btn {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.preset-btn:hover {
+  background-color: #e5e7eb;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.preset-btn.active {
+  background-color: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+/* Active Filter Tags */
+.active-filter-tag {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Institution Cards */
+.institution-card {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.institution-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.institution-image {
+  position: relative;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.institution-image::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+  z-index: 1;
+}
+
+.institution-image .content {
+  position: relative;
+  z-index: 2;
+}
+
+.institution-stats {
+  background: rgba(248, 250, 252, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.stat-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Content Cards */
+.content-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.content-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+}
+
+.card-content {
+  flex: 1;
+}
+
+.content-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.content-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.content-tags .tag {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+/* Profile Pages */
+.institution-profile,
+.teacher-profile {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.institution-header,
+.teacher-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.institution-header::before,
+.teacher-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.1;
+}
+
+.institution-header .content,
+.teacher-header .content {
+  position: relative;
+  z-index: 1;
+}
+
+.institution-avatar,
+.teacher-avatar {
+  flex-shrink: 0;
+}
+
+.institution-info,
+.teacher-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.institution-meta,
+.teacher-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.institution-actions,
+.teacher-actions {
+  flex-shrink: 0;
+}
+
+/* Follow Buttons */
+.follow-institution-btn,
+.follow-teacher-btn {
+  transition: all 0.3s ease;
+  font-weight: 600;
+  border: 2px solid transparent;
+}
+
+.follow-institution-btn:hover,
+.follow-teacher-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.follow-institution-btn.following,
+.follow-teacher-btn.following {
+  background-color: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.follow-institution-btn.following:hover,
+.follow-teacher-btn.following:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+/* Stats Section */
+.institution-stats,
+.teacher-stats {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+/* Content Sections */
+.about-section,
+.teachers-section,
+.institutions-section,
+.mcq-sets-section {
+  margin-bottom: 2rem;
+}
+
+.teachers-grid,
+.institutions-grid,
+.mcq-sets-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .teachers-grid,
+  .institutions-grid,
+  .mcq-sets-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.teacher-card,
+.institution-card-small,
+.mcq-set-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.teacher-card:hover,
+.institution-card-small:hover,
+.mcq-set-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+/* Sidebar */
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sidebar-section {
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.sidebar-section h3 {
+  margin-bottom: 1rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.contact-item i {
+  width: 16px;
+  color: #6b7280;
+}
+
+.contact-item a {
+  color: #3b82f6;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-item a:hover {
+  color: #1d4ed8;
+}
+
+/* Rating Display */
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stars {
+  display: flex;
+  gap: 0.125rem;
+}
+
+.stars i {
+  font-size: 0.875rem;
+}
+
+/* View Toggle */
+.view-toggle {
+  display: flex;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+}
+
+.view-grid-btn,
+.view-list-btn {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-grid-btn.active,
+.view-list-btn.active {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Results Header */
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.results-count {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Pagination */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.pagination-wrapper .page-numbers {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  margin: 0 0.125rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.pagination-wrapper .page-numbers:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.pagination-wrapper .page-numbers.current {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.pagination-wrapper .page-numbers:first-child {
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+
+.pagination-wrapper .page-numbers:last-child {
+  border-top-right-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.no-results i {
+  font-size: 4rem;
+  color: #d1d5db;
+  margin-bottom: 1rem;
+}
+
+.no-results h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.no-results p {
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+/* Notifications */
+.mcqhome-notification {
+  animation: slideInRight 0.3s ease-out;
+  z-index: 9999;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .institution-header,
+  .teacher-header {
+    padding: 1.5rem;
+  }
+
+  .institution-header .flex,
+  .teacher-header .flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .institution-meta,
+  .teacher-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .institution-actions,
+  .teacher-actions {
+    width: 100%;
+  }
+
+  .follow-institution-btn,
+  .follow-teacher-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .search-filters .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .results-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .view-toggle {
+    align-self: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .subjects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .difficulty-levels {
+    justify-content: center;
+  }
+
+  .content-card {
+    margin-bottom: 1rem;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .card-actions a {
+    text-align: center;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .search-filters,
+  .view-toggle,
+  .pagination-wrapper,
+  .follow-institution-btn,
+  .follow-teacher-btn {
+    display: none;
+  }
+
+  .content-card,
+  .institution-card,
+  .teacher-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+}

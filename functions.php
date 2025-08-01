@@ -94,10 +94,53 @@ function mcqhome_scripts() {
     if (file_exists(MCQHOME_THEME_DIR . '/assets/css/main.css')) {
         wp_enqueue_style('mcqhome-main', MCQHOME_THEME_URL . '/assets/css/main.css', [], MCQHOME_VERSION);
     }
+    
+    // Enqueue dashboard CSS on dashboard page
+    if (is_page('dashboard') && file_exists(MCQHOME_THEME_DIR . '/assets/css/dashboard.css')) {
+        wp_enqueue_style('mcqhome-dashboard', MCQHOME_THEME_URL . '/assets/css/dashboard.css', ['mcqhome-main'], MCQHOME_VERSION);
+    }
+    
+    // Enqueue assessment CSS on assessment page
+    if (is_page('take-assessment') && file_exists(MCQHOME_THEME_DIR . '/assets/css/assessment.css')) {
+        wp_enqueue_style('mcqhome-assessment', MCQHOME_THEME_URL . '/assets/css/assessment.css', ['mcqhome-main'], MCQHOME_VERSION);
+    }
+    
+    // Enqueue browse CSS on browse pages
+    if ((is_page('browse') || is_page('institutions') || is_author() || is_singular('institution')) && file_exists(MCQHOME_THEME_DIR . '/assets/css/browse.css')) {
+        wp_enqueue_style('mcqhome-browse', MCQHOME_THEME_URL . '/assets/css/browse.css', ['mcqhome-main'], MCQHOME_VERSION);
+    }
 
     // Enqueue main JavaScript file
     if (file_exists(MCQHOME_THEME_DIR . '/assets/js/main.js')) {
-        wp_enqueue_script('mcqhome-main', MCQHOME_THEME_URL . '/assets/js/main.js', [], MCQHOME_VERSION, true);
+        wp_enqueue_script('mcqhome-main', MCQHOME_THEME_URL . '/assets/js/main.js', ['jquery'], MCQHOME_VERSION, true);
+    }
+    
+    // Enqueue dashboard JavaScript on dashboard page
+    if (is_page('dashboard') && file_exists(MCQHOME_THEME_DIR . '/assets/js/dashboard.js')) {
+        wp_enqueue_script('mcqhome-dashboard', MCQHOME_THEME_URL . '/assets/js/dashboard.js', ['jquery'], MCQHOME_VERSION, true);
+    }
+    
+    // Enqueue assessment JavaScript on assessment page
+    if (is_page('take-assessment') && file_exists(MCQHOME_THEME_DIR . '/assets/js/assessment.js')) {
+        wp_enqueue_script('mcqhome-assessment', MCQHOME_THEME_URL . '/assets/js/assessment.js', ['jquery'], MCQHOME_VERSION, true);
+    }
+    
+    // Enqueue browse JavaScript on browse pages
+    if ((is_page('browse') || is_page('institutions') || is_author() || is_singular('institution')) && file_exists(MCQHOME_THEME_DIR . '/assets/js/browse.js')) {
+        wp_enqueue_script('mcqhome-browse', MCQHOME_THEME_URL . '/assets/js/browse.js', ['jquery'], MCQHOME_VERSION, true);
+        
+        // Localize browse script
+        wp_localize_script('mcqhome-browse', 'mcqhome_browse', [
+            'follow' => __('Follow', 'mcqhome'),
+            'following' => __('Following', 'mcqhome'),
+            'unfollow' => __('Unfollow', 'mcqhome'),
+            'loading' => __('Loading...', 'mcqhome'),
+            'loadMore' => __('Load More', 'mcqhome'),
+            'noMore' => __('No More Results', 'mcqhome'),
+            'error' => __('An error occurred. Please try again.', 'mcqhome'),
+            'followSuccess' => __('Successfully followed!', 'mcqhome'),
+            'unfollowSuccess' => __('Successfully unfollowed!', 'mcqhome')
+        ]);
     }
 
     // Enqueue comment reply script
@@ -202,6 +245,21 @@ function mcqhome_create_default_pages() {
             'title' => 'Teachers',
             'content' => '<!-- wp:shortcode -->[mcqhome_teachers]<!-- /wp:shortcode -->',
             'template' => 'page-teachers.php'
+        ],
+        'register' => [
+            'title' => 'Register',
+            'content' => '<!-- wp:shortcode -->[mcqhome_registration]<!-- /wp:shortcode -->',
+            'template' => 'page-register.php'
+        ],
+        'take-assessment' => [
+            'title' => 'Take Assessment',
+            'content' => '<!-- Assessment page content is handled by the template -->',
+            'template' => 'page-take-assessment.php'
+        ],
+        'assessment-results' => [
+            'title' => 'Assessment Results',
+            'content' => '<!-- Assessment results page content is handled by the template -->',
+            'template' => 'page-assessment-results.php'
         ]
     ];
 
@@ -231,6 +289,93 @@ add_action('after_switch_theme', 'mcqhome_activation');
 add_action('switch_theme', 'mcqhome_deactivation');
 
 /**
+ * Enqueue admin scripts and styles
+ */
+function mcqhome_admin_scripts($hook) {
+    global $post_type;
+    
+    // Load scripts for MCQ post type edit pages
+    if ($post_type === 'mcq' && ($hook === 'post.php' || $hook === 'post-new.php')) {
+        // Enqueue MCQ builder CSS
+        wp_enqueue_style('mcqhome-mcq-builder', MCQHOME_THEME_URL . '/assets/css/mcq-builder.css', [], MCQHOME_VERSION);
+        
+        // Enqueue MCQ editor CSS
+        wp_enqueue_style('mcqhome-mcq-editor', MCQHOME_THEME_URL . '/assets/css/mcq-editor.css', [], MCQHOME_VERSION);
+        
+        // Enqueue MCQ builder JavaScript
+        wp_enqueue_script('mcqhome-mcq-builder', MCQHOME_THEME_URL . '/assets/js/mcq-builder.js', ['jquery', 'wp-tinymce'], MCQHOME_VERSION, true);
+        
+        // Enqueue media uploader
+        wp_enqueue_media();
+        
+        // Localize script for MCQ builder
+        wp_localize_script('mcqhome-mcq-builder', 'mcqBuilderL10n', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('mcqhome_nonce'),
+            'livePreview' => __('Live Preview', 'mcqhome'),
+            'showExplanation' => __('Show Explanation', 'mcqhome'),
+            'hideExplanation' => __('Hide Explanation', 'mcqhome'),
+            'explanation' => __('Explanation', 'mcqhome'),
+            'questionPlaceholder' => __('Question text will appear here...', 'mcqhome'),
+            'optionPlaceholder' => __('Option %s', 'mcqhome'),
+            'explanationPlaceholder' => __('Explanation will appear here...', 'mcqhome'),
+            'correctAnswer' => __('Correct Answer', 'mcqhome'),
+            'autoSaveSuccess' => __('MCQ auto-saved successfully.', 'mcqhome'),
+            'autoSaveError' => __('Failed to auto-save MCQ.', 'mcqhome'),
+            'selectMedia' => __('Select Media', 'mcqhome'),
+            'useMedia' => __('Use this media', 'mcqhome'),
+            'errorNoQuestion' => __('Please enter a question text.', 'mcqhome'),
+            'errorEmptyOptions' => __('Please fill in all %d answer options.', 'mcqhome'),
+            'errorNoCorrectAnswer' => __('Please select the correct answer.', 'mcqhome'),
+            'errorNoExplanation' => __('Please provide an explanation for the correct answer.', 'mcqhome'),
+            'invalidFileType' => __('Invalid file type. Please upload images, videos, or audio files only.', 'mcqhome'),
+            'fileTooLarge' => __('File too large. Maximum size is 10MB.', 'mcqhome'),
+            'uploadError' => __('Failed to upload file. Please try again.', 'mcqhome'),
+            'uploading' => __('Uploading...', 'mcqhome'),
+            'addSubject' => __('Add New Subject', 'mcqhome'),
+            'addTopic' => __('Add New Topic', 'mcqhome'),
+            'addTerm' => __('Add Term', 'mcqhome'),
+            'termName' => __('Term Name', 'mcqhome'),
+            'description' => __('Description', 'mcqhome'),
+            'optional' => __('optional', 'mcqhome'),
+            'enterTermName' => __('Enter term name...', 'mcqhome'),
+            'enterDescription' => __('Enter description...', 'mcqhome'),
+            'cancel' => __('Cancel', 'mcqhome'),
+            'termNameRequired' => __('Term name is required.', 'mcqhome'),
+            'termAdded' => __('Term "%s" added successfully.', 'mcqhome'),
+            'termAddError' => __('Failed to add term. Please try again.', 'mcqhome'),
+        ]);
+    }
+    
+    // Load scripts for MCQ Set post type edit pages
+    if ($post_type === 'mcq_set' && ($hook === 'post.php' || $hook === 'post-new.php')) {
+        // Enqueue MCQ Set builder CSS
+        wp_enqueue_style('mcqhome-mcq-set-builder', MCQHOME_THEME_URL . '/assets/css/mcq-set-builder.css', [], MCQHOME_VERSION);
+        
+        // Enqueue MCQ Set builder JavaScript
+        wp_enqueue_script('mcqhome-mcq-set-builder', MCQHOME_THEME_URL . '/assets/js/mcq-set-builder.js', ['jquery'], MCQHOME_VERSION, true);
+        
+        // Localize script for MCQ Set builder
+        wp_localize_script('mcqhome-mcq-set-builder', 'mcqSetBuilderL10n', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('mcqhome_nonce'),
+            'selectedCount' => __('Selected: %d questions', 'mcqhome'),
+            'selectQuestionsFirst' => __('Select questions above to configure individual marks.', 'mcqhome'),
+            'question' => __('Question', 'mcqhome'),
+            'marks' => __('Marks', 'mcqhome'),
+            'autoSaveSuccess' => __('MCQ Set auto-saved successfully.', 'mcqhome'),
+            'autoSaveError' => __('Failed to auto-save MCQ Set.', 'mcqhome'),
+            'unsavedChanges' => __('You have unsaved changes. Are you sure you want to leave?', 'mcqhome'),
+            'errorNoQuestions' => __('Please select at least one question for this MCQ set.', 'mcqhome'),
+            'errorNoMarks' => __('Total marks must be greater than 0.', 'mcqhome'),
+            'errorPassingMarksHigh' => __('Passing marks cannot be greater than total marks.', 'mcqhome'),
+            'errorInvalidPrice' => __('Please enter a valid price for paid MCQ sets.', 'mcqhome'),
+        ]);
+    }
+}
+add_action('admin_enqueue_scripts', 'mcqhome_admin_scripts');
+
+/**
  * Include additional theme files
  */
 require_once MCQHOME_THEME_DIR . '/inc/template-functions.php';
@@ -245,6 +390,22 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/user-roles.php';
 }
 
+if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/registration.php';
+}
+
 if (file_exists(MCQHOME_THEME_DIR . '/inc/ajax-handlers.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/ajax-handlers.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/database-setup.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/database-setup.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/assessment-functions.php';
 }

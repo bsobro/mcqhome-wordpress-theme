@@ -1,0 +1,694 @@
+/**
+ * MCQ Builder Styles
+ * Enhanced WYSIWYG MCQ creation interface styles
+ *
+ * @package MCQHome
+ * @since 1.0.0
+ */
+
+/* MCQ Options Container */
+.mcq-options-container {
+  margin: 20px 0;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.mcq-option-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.mcq-option-row:hover {
+  border-color: #0073aa;
+  box-shadow: 0 2px 8px rgba(0, 115, 170, 0.1);
+}
+
+.mcq-option-row.selected {
+  border-color: #00a32a;
+  background: #f0f8f0;
+}
+
+.mcq-option-radio {
+  margin-right: 15px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.mcq-option-label {
+  font-weight: bold;
+  margin-right: 15px;
+  min-width: 30px;
+  color: #0073aa;
+  font-size: 16px;
+}
+
+.mcq-option-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.mcq-option-input:focus {
+  border-color: #0073aa;
+  box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+  outline: none;
+}
+
+.mcq-option-input.mcq-input-error {
+  border-color: #d63638;
+  background: #fef7f7;
+}
+
+.mcq-correct-indicator {
+  color: #00a32a;
+  font-weight: bold;
+  margin-left: 15px;
+  padding: 5px 10px;
+  background: #e8f5e8;
+  border-radius: 4px;
+  font-size: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Character Counter */
+.mcq-char-counter {
+  font-size: 11px;
+  color: #666;
+  margin-top: 5px;
+  text-align: right;
+}
+
+.mcq-char-counter.mcq-char-warning {
+  color: #f56e28;
+  font-weight: bold;
+}
+
+.mcq-char-counter.mcq-char-error {
+  color: #d63638;
+  font-weight: bold;
+}
+
+/* Live Preview Container */
+.mcq-preview-container {
+  margin: 30px 0;
+  background: white;
+  border: 2px solid #0073aa;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 115, 170, 0.1);
+}
+
+.mcq-preview-title {
+  background: #0073aa;
+  color: white;
+  margin: 0;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.mcq-preview-title .dashicons {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.mcq-preview-content {
+  padding: 25px;
+}
+
+.mcq-preview-question {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #1e1e1e;
+  min-height: 24px;
+}
+
+.mcq-preview-question em {
+  color: #666;
+  font-style: italic;
+}
+
+.mcq-preview-options {
+  margin: 20px 0;
+}
+
+.mcq-preview-option {
+  margin: 12px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mcq-preview-option:hover {
+  background: #e9ecef;
+  border-color: #0073aa;
+}
+
+.mcq-preview-option.mcq-preview-option-correct {
+  background: #e8f5e8;
+  border-color: #00a32a;
+  position: relative;
+}
+
+.mcq-preview-option.mcq-preview-option-correct::after {
+  content: "✓";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00a32a;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.mcq-preview-option-label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mcq-preview-option-label input[type="radio"] {
+  margin-right: 12px;
+  margin-top: 2px;
+  transform: scale(1.1);
+}
+
+.mcq-preview-option-text {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.mcq-preview-option-text strong {
+  color: #0073aa;
+  margin-right: 8px;
+}
+
+/* Explanation Preview */
+.mcq-preview-explanation {
+  margin-top: 25px;
+  padding: 20px;
+  background: #f0f6fc;
+  border: 1px solid #c3d9ed;
+  border-radius: 6px;
+}
+
+.mcq-preview-explanation h5 {
+  margin: 0 0 15px 0;
+  color: #0073aa;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mcq-preview-explanation-content {
+  line-height: 1.6;
+  color: #1e1e1e;
+}
+
+.mcq-preview-explanation-content em {
+  color: #666;
+  font-style: italic;
+}
+
+/* Preview Toggle */
+.mcq-preview-toggle {
+  padding: 15px 25px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  text-align: center;
+}
+
+.mcq-preview-toggle .button {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+/* Auto-save Notification */
+.mcq-autosave-notice {
+  position: relative;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Validation Errors */
+.mcq-validation-error {
+  border-left: 4px solid #d63638;
+}
+
+.mcq-validation-error ul {
+  margin: 0.5em 0;
+  padding-left: 20px;
+}
+
+.mcq-validation-error li {
+  margin: 0.5em 0;
+}
+
+/* Media Upload Button */
+.mcq-media-upload-btn {
+  margin: 10px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mcq-media-upload-btn .dashicons {
+  font-size: 16px;
+}
+
+/* Question Text Editor Enhancements */
+.wp-editor-container {
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.wp-editor-container:focus-within {
+  border-color: #0073aa;
+  box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+/* Meta Box Styling */
+#mcq_question_details .inside,
+#mcq_answer_options .inside,
+#mcq_explanation .inside {
+  padding: 20px;
+}
+
+/* Form Table Improvements */
+.form-table th {
+  padding: 20px 10px 20px 0;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.form-table td {
+  padding: 15px 10px 20px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mcq-option-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mcq-option-radio {
+    margin-right: 0;
+    margin-bottom: 10px;
+    align-self: flex-start;
+  }
+
+  .mcq-option-label {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .mcq-preview-content {
+    padding: 15px;
+  }
+
+  .mcq-preview-title {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+}
+
+/* Loading States */
+.mcq-loading {
+  opacity: 0.6;
+  pointer-events: none;
+  position: relative;
+}
+
+.mcq-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #0073aa;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Success States */
+.mcq-success {
+  border-color: #00a32a !important;
+  background: #f0f8f0 !important;
+}
+
+/* Focus Management */
+.mcq-option-input:focus,
+.mcq-preview-option:focus {
+  outline: 2px solid #0073aa;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .mcq-option-row {
+    border-width: 3px;
+  }
+
+  .mcq-preview-option {
+    border-width: 3px;
+  }
+
+  .mcq-correct-indicator {
+    border: 2px solid #00a32a;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .mcq-option-row,
+  .mcq-option-input,
+  .mcq-preview-option,
+  .mcq-autosave-notice {
+    transition: none;
+  }
+
+  .fadeIn,
+  .slideDown,
+  .spin {
+    animation: none;
+  }
+}
+/* Categorization Meta Box */
+.mcq-categorization-section,
+.mcq-settings-section {
+  padding: 15px 0;
+}
+
+.mcq-meta-field {
+  margin-bottom: 20px;
+}
+
+.mcq-meta-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.mcq-meta-field select,
+.mcq-meta-field input,
+.mcq-meta-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.mcq-meta-field select:focus,
+.mcq-meta-field input:focus,
+.mcq-meta-field textarea:focus {
+  border-color: #0073aa;
+  box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+  outline: none;
+}
+
+.mcq-meta-field .description {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Quick Add Section */
+.mcq-quick-add {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.mcq-quick-add h4 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0073aa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mcq-quick-add-btn {
+  margin-right: 10px;
+  margin-bottom: 5px;
+  font-size: 12px;
+  padding: 6px 12px;
+}
+
+/* Dialog Styles */
+.mcq-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mcq-dialog {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.mcq-dialog h3 {
+  margin: 0;
+  padding: 20px 25px 15px;
+  border-bottom: 1px solid #e1e5e9;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.mcq-dialog-content {
+  padding: 20px 25px;
+}
+
+.mcq-dialog-content label {
+  display: block;
+  margin: 15px 0 5px 0;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.mcq-dialog-content label:first-child {
+  margin-top: 0;
+}
+
+.mcq-dialog-content input,
+.mcq-dialog-content textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.mcq-dialog-content input:focus,
+.mcq-dialog-content textarea:focus {
+  border-color: #0073aa;
+  box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+  outline: none;
+}
+
+.mcq-dialog-actions {
+  padding: 15px 25px 20px;
+  border-top: 1px solid #e1e5e9;
+  text-align: right;
+}
+
+.mcq-dialog-actions .button {
+  margin-left: 10px;
+}
+
+/* Drag and Drop Styles */
+.mcq-drag-over {
+  border: 2px dashed #0073aa !important;
+  background: rgba(0, 115, 170, 0.05) !important;
+}
+
+/* Upload Progress Overlay */
+.mcq-upload-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mcq-upload-progress {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mcq-upload-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e1e5e9;
+  border-top: 4px solid #0073aa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+.mcq-upload-progress p {
+  margin: 0;
+  font-size: 16px;
+  color: #1e1e1e;
+}
+
+/* Instructions and Tips */
+.mcq-instructions {
+  background: #f0f6fc;
+  border: 1px solid #c3d9ed;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.mcq-instructions p {
+  margin: 0 0 10px 0;
+}
+
+.mcq-instructions p:last-child {
+  margin-bottom: 0;
+}
+
+.mcq-question-tips,
+.mcq-explanation-tips {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.mcq-question-tips h5,
+.mcq-explanation-tips h5 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0073aa;
+}
+
+.mcq-question-tips ul,
+.mcq-explanation-tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.mcq-question-tips li,
+.mcq-explanation-tips li {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Media Section */
+.mcq-media-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e1e5e9;
+}
+
+.mcq-media-section .description {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Section Headers */
+.mcq-question-header,
+.mcq-explanation-header {
+  margin-bottom: 15px;
+}
+
+.mcq-question-header h4,
+.mcq-explanation-header h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0073aa;
+}
+
+.mcq-question-header .description,
+.mcq-explanation-header .description {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}

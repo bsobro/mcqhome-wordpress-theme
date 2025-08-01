@@ -1,0 +1,433 @@
+/* Dashboard Styles for MCQHome Theme */
+
+/* Notification Styles */
+.mcqhome-notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  max-width: 400px;
+}
+
+.mcqhome-notification {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+  padding: 16px 20px;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  opacity: 0;
+  border-left: 4px solid #ccc;
+}
+
+.mcqhome-notification.show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.mcqhome-notification-success {
+  border-left-color: #10b981;
+  background: #f0fdf4;
+  color: #065f46;
+}
+
+.mcqhome-notification-error {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.mcqhome-notification-info {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+  color: #1e40af;
+}
+
+/* Dashboard Stats Animation */
+.dashboard-stat-value {
+  transition: all 0.3s ease;
+}
+
+.dashboard-stat-value.stat-updated {
+  transform: scale(1.1);
+  color: #3b82f6;
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  transition: width 1s ease-in-out;
+}
+
+/* Dashboard Button Styles */
+.btn-primary {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-secondary {
+  background-color: #6b7280;
+  border-color: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #4b5563;
+  border-color: #4b5563;
+}
+
+.btn-success {
+  background-color: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+/* Dashboard Layout Improvements */
+.dashboard-container {
+  min-height: calc(100vh - 80px);
+}
+
+.dashboard-section {
+  margin-bottom: 2rem;
+}
+
+.dashboard-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Card Hover Effects */
+.dashboard-card {
+  transition: all 0.2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Dashboard */
+@media (max-width: 768px) {
+  .mcqhome-notifications {
+    left: 20px;
+    right: 20px;
+    max-width: none;
+  }
+
+  .dashboard-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .dashboard-main-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .mcqhome-notification {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Tab Styles */
+.dashboard-tabs {
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+}
+
+.dashboard-tab {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  margin-right: 1rem;
+  color: #6b7280;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.dashboard-tab:hover {
+  color: #374151;
+  text-decoration: none;
+}
+
+.dashboard-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.dashboard-tab-content {
+  display: none;
+}
+
+.dashboard-tab-content.active {
+  display: block;
+}
+
+/* Empty State Styles */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state svg {
+  margin: 0 auto 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.empty-state p {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+/* Performance Chart Styles */
+.performance-chart {
+  height: 200px;
+  position: relative;
+}
+
+.chart-bar {
+  background: linear-gradient(to top, #3b82f6, #60a5fa);
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+}
+
+.chart-bar:hover {
+  background: linear-gradient(to top, #2563eb, #3b82f6);
+}
+
+/* Activity Timeline */
+.activity-timeline {
+  position: relative;
+}
+
+.activity-timeline::before {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e5e7eb;
+}
+
+.activity-item {
+  position: relative;
+  padding-left: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.activity-item::before {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  top: 0.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #3b82f6;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #e5e7eb;
+}
+
+/* Following List Styles */
+.following-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.following-item:last-child {
+  border-bottom: none;
+}
+
+.following-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+}
+
+.following-info {
+  flex: 1;
+}
+
+.following-name {
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.following-type {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.unfollow-btn {
+  font-size: 0.75rem;
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.unfollow-btn:hover {
+  background-color: #fef2f2;
+}
+
+/* Notification Badge Styles */
+.notification-count {
+  min-width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 50%;
+}
+
+.notification-item {
+  transition: all 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.notification-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.mark-notification-read-btn {
+  transition: all 0.2s ease-in-out;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.mark-notification-read-btn:hover {
+  background-color: #eff6ff;
+  transform: scale(1.05);
+}
+
+/* Activity Feed Styles */
+.activity-feed-container .activity-item {
+  border-left-width: 4px;
+  padding-left: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.activity-feed-container .activity-item:hover {
+  transform: translateX(2px);
+  background-color: #f9fafb;
+}
+
+/* Load More Button Styles */
+.load-more-btn,
+.load-more-notifications-btn,
+.load-more-activity-btn {
+  transition: all 0.2s ease-in-out;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 0.375rem;
+}
+
+.load-more-btn:hover,
+.load-more-notifications-btn:hover,
+.load-more-activity-btn:hover {
+  transform: translateY(-1px);
+  background-color: #eff6ff;
+}
+
+/* Social Interaction Animations */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.activity-item.new {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.notification-item.new {
+  animation: slideInLeft 0.3s ease-out;
+}
