@@ -27,7 +27,7 @@ This guide will help you install and set up the MCQHome WordPress theme.
 
    ```bash
    cd /path/to/wordpress/wp-content/themes/
-   git clone https://github.com/yourusername/mcqhome-wordpress-theme.git mcqhome-theme
+   git clone https://github.com/bsobro/mcqhome-wordpress-theme.git mcqhome-theme
    ```
 
 2. **Install dependencies**
@@ -146,7 +146,7 @@ After installation, verify everything is working:
 If you encounter issues:
 
 1. Check the [troubleshooting section](#troubleshooting)
-2. Search existing [GitHub issues](https://github.com/yourusername/mcqhome-wordpress-theme/issues)
+2. Search existing [GitHub issues](https://github.com/bsobro/mcqhome-wordpress-theme/issues)
 3. Create a new issue with:
    - WordPress version
    - PHP version
@@ -192,5 +192,5 @@ The theme will support automatic updates through WordPress admin.
 For installation support:
 
 - 📧 Email: support@mcqhome.com
-- 📖 Documentation: [GitHub Wiki](https://github.com/yourusername/mcqhome-wordpress-theme/wiki)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/mcqhome-wordpress-theme/issues)
+- 📖 Documentation: [GitHub Wiki](https://github.com/bsobro/mcqhome-wordpress-theme/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/bsobro/mcqhome-wordpress-theme/issues)

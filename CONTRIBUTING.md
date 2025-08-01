@@ -16,7 +16,7 @@ Thank you for your interest in contributing to the MCQHome WordPress Theme! This
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/mcqhome-wordpress-theme.git
+   git clone https://github.com/bsobro/mcqhome-wordpress-theme.git
    cd mcqhome-wordpress-theme
    ```
 

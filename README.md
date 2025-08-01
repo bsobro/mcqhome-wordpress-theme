@@ -19,7 +19,7 @@ A comprehensive WordPress theme for MCQ-based educational platform with multi-us
 
 ### Quick Install (Recommended)
 
-1. **Download the latest release** from [GitHub Releases](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/releases)
+1. **Download the latest release** from [GitHub Releases](https://github.com/bsobro/mcqhome-wordpress-theme/releases)
 2. **Extract and upload** to `/wp-content/themes/mcqhome-theme/`
 3. **Activate** the theme in WordPress Admin → Appearance → Themes
 
@@ -28,7 +28,7 @@ A comprehensive WordPress theme for MCQ-based educational platform with multi-us
 ```bash
 # Clone the repository
 cd /path/to/wordpress/wp-content/themes/
-git clone https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme.git mcqhome-theme
+git clone https://github.com/bsobro/mcqhome-wordpress-theme.git mcqhome-theme
 cd mcqhome-theme
 
 # Install dependencies and build
@@ -139,14 +139,14 @@ GPL v2 or later
 ## Links
 
 - 🏠 **Demo Site**: [Coming Soon]
-- 📖 **Documentation**: [GitHub Wiki](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/wiki)
-- 🐛 **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/discussions)
+- 📖 **Documentation**: [GitHub Wiki](https://github.com/bsobro/mcqhome-wordpress-theme/wiki)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/bsobro/mcqhome-wordpress-theme/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/bsobro/mcqhome-wordpress-theme/discussions)
 
 ## Support
 
 - 📧 **Email**: support@mcqhome.com
-- 🆘 **Issues**: [Report bugs or request features](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/issues)
+- 🆘 **Issues**: [Report bugs or request features](https://github.com/bsobro/mcqhome-wordpress-theme/issues)
 - 📚 **Documentation**: [Installation Guide](INSTALLATION.md) | [Contributing Guide](CONTRIBUTING.md)
 
 ## Contributing

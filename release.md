@@ -14,7 +14,7 @@
 
 ```bash
 # Add your GitHub repository as remote origin
-git remote add origin https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme.git
+git remote add origin https://github.com/bsobro/mcqhome-wordpress-theme.git
 
 # Push to GitHub
 git branch -M main
@@ -87,7 +87,7 @@ npm run build
 ### Method 1: Direct Download
 ```bash
 # Download latest release
-wget https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/archive/refs/tags/v1.0.0.zip
+wget https://github.com/bsobro/mcqhome-wordpress-theme/archive/refs/tags/v1.0.0.zip
 
 # Extract to WordPress themes directory
 unzip v1.0.0.zip -d /path/to/wordpress/wp-content/themes/
@@ -98,7 +98,7 @@ mv mcqhome-wordpress-theme-1.0.0 mcqhome-theme
 
 ```bash
 cd /path/to/wordpress/wp-content/themes/
-git clone https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme.git mcqhome-theme
+git clone https://github.com/bsobro/mcqhome-wordpress-theme.git mcqhome-theme
 cd mcqhome-theme
 npm install && npm run build
 ```
@@ -107,7 +107,7 @@ npm install && npm run build
 
 ```bash
 cd /path/to/your/wordpress/project/
-git submodule add https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme.git wp-content/themes/mcqhome-theme
+git submodule add https://github.com/bsobro/mcqhome-wordpress-theme.git wp-content/themes/mcqhome-theme
 ```
 
 ## 🔄 Update Workflow
