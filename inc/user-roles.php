@@ -210,12 +210,10 @@ function mcqhome_create_institution_role() {
         'rate_content' => true,
     ];
     
-    // Remove existing role if it exists to update capabilities
-    if (get_role('institution')) {
-        remove_role('institution');
+    // Add role only if it doesn't exist
+    if (!get_role('institution')) {
+        add_role('institution', __('Institution', 'mcqhome'), $capabilities);
     }
-    
-    add_role('institution', __('Institution', 'mcqhome'), $capabilities);
 }
 
 /**
@@ -477,12 +475,30 @@ function mcqhome_deactivate_user_roles() {
     flush_rewrite_rules();
 }
 
-// Initialize user roles
-add_action('init', 'mcqhome_init_user_roles');
+// Initialize user roles safely on init - only if they don't exist
+add_action('init', 'mcqhome_safe_init_user_roles');
 
-// Hook into theme activation/deactivation
+// Hook into theme activation/deactivation for rewrite rules only
 add_action('after_switch_theme', 'mcqhome_activate_user_roles');
 add_action('switch_theme', 'mcqhome_deactivate_user_roles');
+
+/**
+ * Safe initialization of user roles - only creates if they don't exist
+ */
+function mcqhome_safe_init_user_roles() {
+    // Check if roles already exist to avoid conflicts
+    $roles_exist = get_role('student') && get_role('teacher') && get_role('institution');
+    
+    if (!$roles_exist) {
+        // Only create roles if they don't exist - never remove/modify existing ones
+        mcqhome_create_student_role();
+        mcqhome_create_teacher_role();
+        mcqhome_create_institution_role();
+        
+        // Set flag to prevent repeated attempts
+        update_option('mcqhome_roles_initialized', true);
+    }
+}
 
 /**
  * Prevent users from accessing admin area based on role

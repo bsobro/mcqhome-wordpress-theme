@@ -409,3 +409,7 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
 if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/assessment-functions.php';
 }
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/role-settings.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/role-settings.php';
+}
