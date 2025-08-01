@@ -17,14 +17,26 @@ A comprehensive WordPress theme for MCQ-based educational platform with multi-us
 
 ## Installation
 
-1. Upload the theme files to your WordPress themes directory
-2. Activate the theme in WordPress admin
-3. Install dependencies and build assets:
+### Quick Install (Recommended)
+
+1. **Download the latest release** from [GitHub Releases](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/releases)
+2. **Extract and upload** to `/wp-content/themes/mcqhome-theme/`
+3. **Activate** the theme in WordPress Admin → Appearance → Themes
+
+### Developer Install
 
 ```bash
+# Clone the repository
+cd /path/to/wordpress/wp-content/themes/
+git clone https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme.git mcqhome-theme
+cd mcqhome-theme
+
+# Install dependencies and build
 npm install
 npm run build
 ```
+
+📖 **Detailed instructions**: See [INSTALLATION.md](INSTALLATION.md)
 
 ## Development
 
@@ -124,6 +136,23 @@ The theme includes WordPress Customizer support for:
 
 GPL v2 or later
 
+## Links
+
+- 🏠 **Demo Site**: [Coming Soon]
+- 📖 **Documentation**: [GitHub Wiki](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/wiki)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/discussions)
+
 ## Support
 
-For support and documentation, visit the theme documentation or contact the development team.
+- 📧 **Email**: support@mcqhome.com
+- 🆘 **Issues**: [Report bugs or request features](https://github.com/YOUR_USERNAME/mcqhome-wordpress-theme/issues)
+- 📚 **Documentation**: [Installation Guide](INSTALLATION.md) | [Contributing Guide](CONTRIBUTING.md)
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and updates.
