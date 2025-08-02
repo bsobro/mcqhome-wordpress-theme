@@ -9,7 +9,7 @@
 
 get_header(); ?>
 
-<div class="container mx-auto px-4 pt-0 pb-8">
+<div class="container mx-auto px-4 py-8">
     <!-- Page Header -->
     <div class="page-header mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-4"><?php _e('Browse MCQs', 'mcqhome'); ?></h1>
