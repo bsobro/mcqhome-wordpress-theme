@@ -490,5 +490,7 @@ function mcqhome_safe_init() {
             error_log('MCQHome: Database check failed - ' . $e->getMessage());
         }
     }
+    
+
 }
 add_action('init', 'mcqhome_safe_init', 5);

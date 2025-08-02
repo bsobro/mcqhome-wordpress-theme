@@ -127,6 +127,11 @@ function mcqhome_create_teacher_role() {
  * Create Institution role with specific capabilities
  */
 function mcqhome_create_institution_role() {
+    // Only create if role doesn't exist
+    if (get_role('institution')) {
+        return;
+    }
+    
     $capabilities = [
         // Basic WordPress capabilities
         'read' => true,
@@ -207,10 +212,7 @@ function mcqhome_create_institution_role() {
         'rate_content' => true,
     ];
     
-    // Add role only if it doesn't exist
-    if (!get_role('institution')) {
-        add_role('institution', __('Institution', 'mcqhome'), $capabilities);
-    }
+    add_role('institution', __('Institution', 'mcqhome'), $capabilities);
 }
 
 /**
@@ -455,7 +457,14 @@ function mcqhome_can_user_access_content($post_id, $user_id = null) {
  * Initialize user roles on theme activation
  */
 function mcqhome_activate_user_roles() {
-    mcqhome_init_user_roles();
+    // Create roles individually to prevent conflicts
+    mcqhome_create_student_role();
+    mcqhome_create_teacher_role();
+    mcqhome_create_institution_role();
+    mcqhome_setup_admin_role();
+    
+    // Set initialization flag
+    update_option('mcqhome_roles_initialized', true);
     
     // Flush rewrite rules to ensure custom post type URLs work
     flush_rewrite_rules();

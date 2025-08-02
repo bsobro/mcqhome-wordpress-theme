@@ -1938,12 +1938,22 @@ function mcqhome_get_institution_stats($user_id) {
         $institution_id
     ));
     
-    return [
-        'total_teachers' => intval($total_teachers ?: 0),
-        'total_students' => intval($total_students ?: 0),
-        'total_content' => intval($total_content ?: 0),
-        'avg_performance' => round(floatval($avg_performance ?: 0), 1)
-    ];
+        return [
+            'total_teachers' => intval($total_teachers ?: 0),
+            'total_students' => intval($total_students ?: 0),
+            'total_content' => intval($total_content ?: 0),
+            'avg_performance' => round(floatval($avg_performance ?: 0), 1),
+            'teachers' => intval($total_teachers ?: 0),
+            'students' => intval($total_students ?: 0),
+            'mcq_sets' => intval($total_content ?: 0),
+            'performance' => round(floatval($avg_performance ?: 0), 1)
+        ];
+        
+    } catch (Exception $e) {
+        // Log error and return default stats
+        error_log('MCQHome: Institution stats error - ' . $e->getMessage());
+        return $default_stats;
+    }
 }
 
 /**
