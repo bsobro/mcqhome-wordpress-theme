@@ -48,6 +48,69 @@ function mcqhome_pingback_header() {
 add_action('wp_head', 'mcqhome_pingback_header');
 
 /**
+ * Get HTML attributes for the html tag
+ */
+function mcqhome_get_html_attributes() {
+    $attributes = [];
+    
+    // Add microdata attributes
+    $attributes['itemscope'] = '';
+    $attributes['itemtype'] = 'https://schema.org/WebPage';
+    
+    // Add prefix for Open Graph
+    $attributes['prefix'] = 'og: https://ogp.me/ns#';
+    
+    // Convert to string
+    $attr_string = '';
+    foreach ($attributes as $name => $value) {
+        if ($value === '') {
+            $attr_string .= ' ' . esc_attr($name);
+        } else {
+            $attr_string .= ' ' . esc_attr($name) . '="' . esc_attr($value) . '"';
+        }
+    }
+    
+    return $attr_string;
+}
+
+/**
+ * Get body attributes with semantic markup
+ */
+function mcqhome_get_body_attributes() {
+    $attributes = [];
+    
+    // Add microdata attributes
+    $attributes['itemscope'] = '';
+    $attributes['itemtype'] = 'https://schema.org/WebPage';
+    
+    // Page-specific schema types
+    if (is_singular('mcq_set')) {
+        $attributes['itemtype'] = 'https://schema.org/Quiz';
+    } elseif (is_singular('institution')) {
+        $attributes['itemtype'] = 'https://schema.org/EducationalOrganization';
+    } elseif (is_author()) {
+        $attributes['itemtype'] = 'https://schema.org/ProfilePage';
+    } elseif (is_search()) {
+        $attributes['itemtype'] = 'https://schema.org/SearchResultsPage';
+    }
+    
+    // Apply filters for extensibility
+    $attributes = apply_filters('mcqhome_body_attributes', $attributes);
+    
+    // Convert to string
+    $attr_string = '';
+    foreach ($attributes as $name => $value) {
+        if ($value === '') {
+            $attr_string .= ' ' . esc_attr($name);
+        } else {
+            $attr_string .= ' ' . esc_attr($name) . '="' . esc_attr($value) . '"';
+        }
+    }
+    
+    return $attr_string;
+}
+
+/**
  * Default menu fallback
  */
 function mcqhome_default_menu() {

@@ -422,7 +422,25 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/role-settings.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/role-settings.php';
-}/**
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/seo-functions.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/seo-functions.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/performance-optimization.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/performance-optimization.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/asset-minification.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/asset-minification.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/semantic-html.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/semantic-html.php';
+}
+
+/**
 
  * Admin notice for setup issues
  */
