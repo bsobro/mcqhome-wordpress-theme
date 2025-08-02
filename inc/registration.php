@@ -493,9 +493,29 @@ function mcqhome_registration_form($atts)
 
 
 
+        <?php
+        // Replace the JavaScript section (starting from <script> to </script>) in your registration.php with this:
+        ?>
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM loaded, initializing registration...');
+                console.log('DOM loaded, starting registration initialization...');
+
+                // Localized strings from PHP
+                const strings = {
+                    studentTitle: '<?php echo esc_js(__('Student Registration', 'mcqhome')); ?>',
+                    studentSubtitle: '<?php echo esc_js(__('Start your learning journey with MCQHome', 'mcqhome')); ?>',
+                    teacherTitle: '<?php echo esc_js(__('Teacher Registration', 'mcqhome')); ?>',
+                    teacherSubtitle: '<?php echo esc_js(__('Join as a teacher and create amazing MCQs', 'mcqhome')); ?>',
+                    institutionTitle: '<?php echo esc_js(__('Institution Registration', 'mcqhome')); ?>',
+                    institutionSubtitle: '<?php echo esc_js(__('Register your institution and manage your team', 'mcqhome')); ?>',
+                    backToRoles: '<?php echo esc_js(__('Back to Role Selection', 'mcqhome')); ?>',
+                    createAccount: '<?php echo esc_js(__('Create Account', 'mcqhome')); ?>',
+                    creatingAccount: '<?php echo esc_js(__('Creating Account...', 'mcqhome')); ?>',
+                    passwordsDontMatch: '<?php echo esc_js(__('Passwords do not match.', 'mcqhome')); ?>',
+                    registrationFailed: '<?php echo esc_js(__('Registration failed. Please try again.', 'mcqhome')); ?>',
+                    errorOccurred: '<?php echo esc_js(__('An error occurred. Please try again.', 'mcqhome')); ?>'
+                };
 
                 // Registration form controller
                 const RegistrationController = {
@@ -506,29 +526,28 @@ function mcqhome_registration_form($atts)
                         console.log('Initializing RegistrationController...');
                         this.bindEvents();
                         this.showStep('role-selection');
+                        console.log('RegistrationController initialized');
                     },
 
                     bindEvents: function() {
                         console.log('Binding events...');
 
-                        // Role selection - Use event delegation to handle clicks
-                        const container = document.getElementById('role-selection-container');
-                        if (container) {
-                            container.addEventListener('click', (e) => {
-                                const card = e.target.closest('.role-card');
-                                if (card && card.dataset.role) {
-                                    console.log('Role card clicked:', card.dataset.role);
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    this.selectRole(card.dataset.role);
-                                }
-                            });
-                            console.log('Role selection event bound to container');
-                        } else {
-                            console.error('Role selection container not found');
-                        }
+                        // Role selection
+                        const roleCards = document.querySelectorAll('.role-card');
+                        console.log('Found role cards:', roleCards.length);
 
-                        // Back buttons - handle multiple back buttons
+                        roleCards.forEach((card, index) => {
+                            console.log('Binding event to card:', index, card.dataset.role);
+                            card.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const role = card.dataset.role;
+                                console.log('Role card clicked:', role);
+                                this.selectRole(role);
+                            });
+                        });
+
+                        // Back button (using event delegation for multiple instances)
                         document.addEventListener('click', (e) => {
                             if (e.target.id === 'back-to-roles' || e.target.closest('#back-to-roles')) {
                                 e.preventDefault();
@@ -544,18 +563,9 @@ function mcqhome_registration_form($atts)
                                 console.log('Form submission attempted');
                                 this.handleSubmit(e);
                             });
-                            console.log('Form submission event bound');
-                        } else {
-                            console.error('Registration form not found');
                         }
 
-                        // Password confirmation validation
-                        const confirmPassword = document.getElementById('confirm_password');
-                        if (confirmPassword) {
-                            confirmPassword.addEventListener('blur', () => {
-                                this.validatePasswordMatch();
-                            });
-                        }
+                        console.log('All events bound successfully');
                     },
 
                     showStep: function(step) {
@@ -564,7 +574,9 @@ function mcqhome_registration_form($atts)
                         const registrationForm = document.getElementById('step-registration-form');
 
                         if (!roleSelection || !registrationForm) {
-                            console.error('Could not find step elements');
+                            console.error('Step elements not found');
+                            console.log('roleSelection:', !!roleSelection);
+                            console.log('registrationForm:', !!registrationForm);
                             return;
                         }
 
@@ -572,9 +584,8 @@ function mcqhome_registration_form($atts)
                             roleSelection.style.display = 'block';
                             registrationForm.style.display = 'none';
                             this.currentStep = 'role-selection';
-                            console.log('Showing role selection');
 
-                            // Clear any previous selections
+                            // Clear selections
                             document.querySelectorAll('.role-card').forEach(card => {
                                 card.classList.remove('selected');
                             });
@@ -583,7 +594,6 @@ function mcqhome_registration_form($atts)
                             roleSelection.style.display = 'none';
                             registrationForm.style.display = 'block';
                             this.currentStep = 'registration-form';
-                            console.log('Showing registration form');
 
                             // Show role-specific fields container
                             const roleSpecificFields = document.getElementById('role-specific-fields');
@@ -591,73 +601,76 @@ function mcqhome_registration_form($atts)
                                 roleSpecificFields.style.display = 'block';
                             }
                         }
+
+                        console.log('Step changed to:', step);
                     },
 
                     selectRole: function(role) {
                         console.log('Selecting role:', role);
                         this.selectedRole = role;
 
-                        // Visual feedback - highlight selected card
+                        // Visual feedback
                         document.querySelectorAll('.role-card').forEach(card => {
                             card.classList.remove('selected');
                         });
 
-                        const selectedCard = document.querySelector(`.role-card[data-role="${role}"]`);
+                        const selectedCard = document.querySelector('.role-card[data-role="' + role + '"]');
                         if (selectedCard) {
                             selectedCard.classList.add('selected');
+                            console.log('Card selected visually');
                         }
 
                         // Set hidden input
                         const roleInput = document.getElementById('selected-role');
                         if (roleInput) {
                             roleInput.value = role;
-                            console.log('Role input set to:', role);
-                        } else {
-                            console.error('Role input field not found');
+                            console.log('Hidden input set to:', role);
                         }
 
-                        // Show appropriate fields and update form
+                        // Update form
                         this.showRoleFields(role);
                         this.updateFormTitles(role);
-                        this.updateSubmitButton(role);
 
-                        // Small delay before showing form for better UX
+                        // Show registration form after a brief delay
                         setTimeout(() => {
                             this.showStep('registration-form');
-                        }, 300);
+                        }, 200);
                     },
 
                     showRoleFields: function(role) {
                         console.log('Showing role fields for:', role);
 
-                        // Hide all role fields first
-                        document.querySelectorAll('.role-fields').forEach(field => {
+                        // Hide all role fields
+                        const roleFields = document.querySelectorAll('.role-fields');
+                        roleFields.forEach(field => {
                             field.style.display = 'none';
                         });
 
                         // Show specific role fields
-                        const roleFields = document.getElementById(role + '-fields');
-                        if (roleFields) {
-                            roleFields.style.display = 'block';
-                            console.log('Showing fields for role:', role);
-
-                            // Set required fields based on role
-                            this.setRequiredFields(role);
+                        const targetFields = document.getElementById(role + '-fields');
+                        if (targetFields) {
+                            targetFields.style.display = 'block';
+                            console.log('Showing fields for:', role);
                         } else {
-                            console.log('No specific fields found for role:', role);
+                            console.log('No specific fields for role:', role);
                         }
+
+                        // Set required fields
+                        this.setRequiredFields(role);
                     },
 
                     setRequiredFields: function(role) {
-                        // Remove all role-specific required attributes first
+                        // Remove existing required attributes
                         document.querySelectorAll('#role-specific-fields input, #role-specific-fields select').forEach(field => {
                             field.removeAttribute('required');
                         });
 
-                        // Set required fields based on role
+                        // Set role-specific required fields
                         if (role === 'institution') {
                             const institutionName = document.getElementById('institution_name');
-                            if (institutionName) institutionName.setAttribute('required', 'required');
+                            if (institutionName) {
+                                institutionName.setAttribute('required', 'required');
+                            }
                         }
                     },
 
@@ -665,61 +678,30 @@ function mcqhome_registration_form($atts)
                         const title = document.getElementById('form-title');
                         const subtitle = document.getElementById('form-subtitle');
 
-                        if (!title || !subtitle) return;
+                        if (!title || !subtitle) {
+                            console.log('Title elements not found');
+                            return;
+                        }
 
                         const titles = {
                             student: {
-                                title: 'Student Registration',
-                                subtitle: 'Start your learning journey with MCQHome'
+                                title: strings.studentTitle,
+                                subtitle: strings.studentSubtitle
                             },
                             teacher: {
-                                title: 'Teacher Registration',
-                                subtitle: 'Join as a teacher and create amazing MCQs'
+                                title: strings.teacherTitle,
+                                subtitle: strings.teacherSubtitle
                             },
                             institution: {
-                                title: 'Institution Registration',
-                                subtitle: 'Register your institution and manage your team'
+                                title: strings.institutionTitle,
+                                subtitle: strings.institutionSubtitle
                             }
                         };
 
                         if (titles[role]) {
                             title.textContent = titles[role].title;
                             subtitle.textContent = titles[role].subtitle;
-                            console.log('Updated form titles for role:', role);
-                        }
-                    },
-
-                    updateSubmitButton: function(role) {
-                        const submitBtn = document.getElementById('register-submit');
-                        const submitText = submitBtn.querySelector('.submit-text');
-
-                        if (submitText) {
-                            const buttonTexts = {
-                                student: 'Create Student Account',
-                                teacher: 'Create Teacher Account',
-                                institution: 'Create Institution Account'
-                            };
-
-                            submitText.textContent = buttonTexts[role] || 'Create Account';
-                        }
-                    },
-
-                    validatePasswordMatch: function() {
-                        const password = document.getElementById('password');
-                        const confirmPassword = document.getElementById('confirm_password');
-
-                        if (password.value && confirmPassword.value) {
-                            if (password.value !== confirmPassword.value) {
-                                confirmPassword.setCustomValidity('Passwords do not match');
-                                this.showMessage('Passwords do not match.', 'error');
-                            } else {
-                                confirmPassword.setCustomValidity('');
-                                // Clear error message if passwords now match
-                                const errorMsg = document.querySelector('.message-error');
-                                if (errorMsg && errorMsg.textContent.includes('Passwords do not match')) {
-                                    errorMsg.remove();
-                                }
-                            }
+                            console.log('Form titles updated for:', role);
                         }
                     },
 
@@ -727,7 +709,6 @@ function mcqhome_registration_form($atts)
                         e.preventDefault();
                         console.log('Handling form submission...');
 
-                        // Validate required fields
                         if (!this.selectedRole) {
                             this.showMessage('Please select a role first.', 'error');
                             this.showStep('role-selection');
@@ -739,7 +720,7 @@ function mcqhome_registration_form($atts)
                         const confirmPassword = document.getElementById('confirm_password').value;
 
                         if (password !== confirmPassword) {
-                            this.showMessage('Passwords do not match.', 'error');
+                            this.showMessage(strings.passwordsDontMatch, 'error');
                             return;
                         }
 
@@ -748,7 +729,7 @@ function mcqhome_registration_form($atts)
                             return;
                         }
 
-                        // Terms acceptance
+                        // Terms validation
                         const termsAccepted = document.getElementById('terms_accepted');
                         if (!termsAccepted.checked) {
                             this.showMessage('You must accept the terms and conditions.', 'error');
@@ -764,7 +745,6 @@ function mcqhome_registration_form($atts)
                             }
                         }
 
-                        // Submit form
                         this.submitForm();
                     },
 
@@ -775,27 +755,22 @@ function mcqhome_registration_form($atts)
 
                         // Show loading state
                         submitBtn.disabled = true;
-                        submitBtn.querySelector('.submit-text').style.display = 'none';
-                        submitBtn.querySelector('.loading-text').style.display = 'inline';
+                        const submitText = submitBtn.querySelector('.submit-text');
+                        const loadingText = submitBtn.querySelector('.loading-text');
+
+                        if (submitText) submitText.style.display = 'none';
+                        if (loadingText) loadingText.style.display = 'inline';
 
                         const formData = new FormData(form);
                         formData.append('action', 'mcqhome_register_user');
-
-                        // Debug: Log form data
-                        for (let [key, value] of formData.entries()) {
-                            console.log('Form data:', key, '=', value);
-                        }
 
                         fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
                                 method: 'POST',
                                 body: formData
                             })
-                            .then(response => {
-                                console.log('Response received:', response);
-                                return response.json();
-                            })
+                            .then(response => response.json())
                             .then(data => {
-                                console.log('Response data:', data);
+                                console.log('Response:', data);
                                 if (data.success) {
                                     this.showMessage(data.data.message, 'success');
                                     if (data.data.redirect) {
@@ -804,31 +779,33 @@ function mcqhome_registration_form($atts)
                                         }, 2000);
                                     }
                                 } else {
-                                    this.showMessage(data.data || 'Registration failed. Please try again.', 'error');
+                                    this.showMessage(data.data || strings.registrationFailed, 'error');
                                 }
                             })
                             .catch(error => {
                                 console.error('Error:', error);
-                                this.showMessage('An error occurred. Please try again.', 'error');
+                                this.showMessage(strings.errorOccurred, 'error');
                             })
                             .finally(() => {
                                 submitBtn.disabled = false;
-                                submitBtn.querySelector('.submit-text').style.display = 'inline';
-                                submitBtn.querySelector('.loading-text').style.display = 'none';
+                                if (submitText) submitText.style.display = 'inline';
+                                if (loadingText) loadingText.style.display = 'none';
                             });
                     },
 
                     showMessage: function(message, type) {
                         const messagesDiv = document.getElementById('registration-messages');
-                        if (!messagesDiv) return;
+                        if (!messagesDiv) {
+                            console.error('Messages div not found');
+                            return;
+                        }
 
-                        messagesDiv.innerHTML = `<div class="message message-${type}">${message}</div>`;
+                        messagesDiv.innerHTML = '<div class="message message-' + type + '">' + message + '</div>';
                         messagesDiv.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'nearest'
+                            behavior: 'smooth'
                         });
 
-                        // Auto-hide success messages after 5 seconds
+                        // Auto-hide success messages
                         if (type === 'success') {
                             setTimeout(() => {
                                 messagesDiv.innerHTML = '';
@@ -837,17 +814,19 @@ function mcqhome_registration_form($atts)
                     }
                 };
 
-                // Initialize the registration controller
+                // Initialize
                 try {
                     RegistrationController.init();
-                    console.log('RegistrationController initialized successfully');
-                } catch (e) {
-                    console.error('RegistrationController initialization failed:', e);
+                    console.log('Registration system initialized successfully');
+                } catch (error) {
+                    console.error('Registration system failed to initialize:', error);
                 }
 
-                // Legacy global function for backward compatibility
+                // Global function for compatibility
                 window.selectRole = function(role) {
-                    RegistrationController.selectRole(role);
+                    if (RegistrationController) {
+                        RegistrationController.selectRole(role);
+                    }
                 };
             });
         </script>
