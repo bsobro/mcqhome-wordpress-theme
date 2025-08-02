@@ -492,269 +492,163 @@ function mcqhome_registration_form($atts)
         </div>
 
 
-
         <?php
-        // Replace the JavaScript section (starting from <script> to </script>) in your registration.php with this:
+        // Replace the ENTIRE <script> section in your registration.php with this simple version:
         ?>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM loaded, starting registration initialization...');
+                console.log('Registration script loaded');
 
-                // Localized strings from PHP
-                const strings = {
-                    studentTitle: '<?php echo esc_js(__('Student Registration', 'mcqhome')); ?>',
-                    studentSubtitle: '<?php echo esc_js(__('Start your learning journey with MCQHome', 'mcqhome')); ?>',
-                    teacherTitle: '<?php echo esc_js(__('Teacher Registration', 'mcqhome')); ?>',
-                    teacherSubtitle: '<?php echo esc_js(__('Join as a teacher and create amazing MCQs', 'mcqhome')); ?>',
-                    institutionTitle: '<?php echo esc_js(__('Institution Registration', 'mcqhome')); ?>',
-                    institutionSubtitle: '<?php echo esc_js(__('Register your institution and manage your team', 'mcqhome')); ?>',
-                    backToRoles: '<?php echo esc_js(__('Back to Role Selection', 'mcqhome')); ?>',
-                    createAccount: '<?php echo esc_js(__('Create Account', 'mcqhome')); ?>',
-                    creatingAccount: '<?php echo esc_js(__('Creating Account...', 'mcqhome')); ?>',
-                    passwordsDontMatch: '<?php echo esc_js(__('Passwords do not match.', 'mcqhome')); ?>',
-                    registrationFailed: '<?php echo esc_js(__('Registration failed. Please try again.', 'mcqhome')); ?>',
-                    errorOccurred: '<?php echo esc_js(__('An error occurred. Please try again.', 'mcqhome')); ?>'
-                };
+                // Simple registration controller
+                let selectedRole = null;
 
-                // Registration form controller
-                const RegistrationController = {
-                    currentStep: 'role-selection',
-                    selectedRole: null,
+                function showStep(step) {
+                    const roleSelection = document.getElementById('step-role-selection');
+                    const registrationForm = document.getElementById('step-registration-form');
 
-                    init: function() {
-                        console.log('Initializing RegistrationController...');
-                        this.bindEvents();
-                        this.showStep('role-selection');
-                        console.log('RegistrationController initialized');
-                    },
+                    if (step === 'role-selection') {
+                        roleSelection.style.display = 'block';
+                        registrationForm.style.display = 'none';
+                    } else if (step === 'registration-form') {
+                        roleSelection.style.display = 'none';
+                        registrationForm.style.display = 'block';
+                    }
+                }
 
-                    bindEvents: function() {
-                        console.log('Binding events...');
+                function selectRole(role) {
+                    console.log('Role selected:', role);
+                    selectedRole = role;
 
-                        // Role selection
-                        const roleCards = document.querySelectorAll('.role-card');
-                        console.log('Found role cards:', roleCards.length);
+                    // Update visual selection
+                    document.querySelectorAll('.role-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
 
-                        roleCards.forEach((card, index) => {
-                            console.log('Binding event to card:', index, card.dataset.role);
-                            card.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const role = card.dataset.role;
-                                console.log('Role card clicked:', role);
-                                this.selectRole(role);
-                            });
-                        });
+                    const selectedCard = document.querySelector('[data-role="' + role + '"]');
+                    if (selectedCard) {
+                        selectedCard.classList.add('selected');
+                    }
 
-                        // Back button (using event delegation for multiple instances)
-                        document.addEventListener('click', (e) => {
-                            if (e.target.id === 'back-to-roles' || e.target.closest('#back-to-roles')) {
-                                e.preventDefault();
-                                console.log('Back button clicked');
-                                this.showStep('role-selection');
-                            }
-                        });
+                    // Set hidden input
+                    const roleInput = document.getElementById('selected-role');
+                    if (roleInput) {
+                        roleInput.value = role;
+                    }
 
-                        // Form submission
-                        const form = document.getElementById('mcqhome-register-form');
-                        if (form) {
-                            form.addEventListener('submit', (e) => {
-                                console.log('Form submission attempted');
-                                this.handleSubmit(e);
-                            });
+                    // Show/hide role-specific fields
+                    document.querySelectorAll('.role-fields').forEach(field => {
+                        field.style.display = 'none';
+                    });
+
+                    const roleFields = document.getElementById(role + '-fields');
+                    if (roleFields) {
+                        roleFields.style.display = 'block';
+                    }
+
+                    const roleSpecificContainer = document.getElementById('role-specific-fields');
+                    if (roleSpecificContainer) {
+                        roleSpecificContainer.style.display = 'block';
+                    }
+
+                    // Update form titles
+                    const titles = {
+                        'student': {
+                            title: 'Student Registration',
+                            subtitle: 'Start your learning journey with MCQHome'
+                        },
+                        'teacher': {
+                            title: 'Teacher Registration',
+                            subtitle: 'Join as a teacher and create amazing MCQs'
+                        },
+                        'institution': {
+                            title: 'Institution Registration',
+                            subtitle: 'Register your institution and manage your team'
                         }
+                    };
 
-                        console.log('All events bound successfully');
-                    },
+                    const titleEl = document.getElementById('form-title');
+                    const subtitleEl = document.getElementById('form-subtitle');
 
-                    showStep: function(step) {
-                        console.log('Showing step:', step);
-                        const roleSelection = document.getElementById('step-role-selection');
-                        const registrationForm = document.getElementById('step-registration-form');
+                    if (titles[role] && titleEl && subtitleEl) {
+                        titleEl.textContent = titles[role].title;
+                        subtitleEl.textContent = titles[role].subtitle;
+                    }
 
-                        if (!roleSelection || !registrationForm) {
-                            console.error('Step elements not found');
-                            console.log('roleSelection:', !!roleSelection);
-                            console.log('registrationForm:', !!registrationForm);
-                            return;
-                        }
+                    // Show registration form
+                    setTimeout(function() {
+                        showStep('registration-form');
+                    }, 300);
+                }
 
-                        if (step === 'role-selection') {
-                            roleSelection.style.display = 'block';
-                            registrationForm.style.display = 'none';
-                            this.currentStep = 'role-selection';
+                function showMessage(message, type) {
+                    const messagesDiv = document.getElementById('registration-messages');
+                    if (messagesDiv) {
+                        messagesDiv.innerHTML = '<div class="message message-' + type + '">' + message + '</div>';
+                    }
+                }
 
-                            // Clear selections
-                            document.querySelectorAll('.role-card').forEach(card => {
-                                card.classList.remove('selected');
-                            });
-
-                        } else if (step === 'registration-form') {
-                            roleSelection.style.display = 'none';
-                            registrationForm.style.display = 'block';
-                            this.currentStep = 'registration-form';
-
-                            // Show role-specific fields container
-                            const roleSpecificFields = document.getElementById('role-specific-fields');
-                            if (roleSpecificFields) {
-                                roleSpecificFields.style.display = 'block';
-                            }
-                        }
-
-                        console.log('Step changed to:', step);
-                    },
-
-                    selectRole: function(role) {
-                        console.log('Selecting role:', role);
-                        this.selectedRole = role;
-
-                        // Visual feedback
-                        document.querySelectorAll('.role-card').forEach(card => {
-                            card.classList.remove('selected');
-                        });
-
-                        const selectedCard = document.querySelector('.role-card[data-role="' + role + '"]');
-                        if (selectedCard) {
-                            selectedCard.classList.add('selected');
-                            console.log('Card selected visually');
-                        }
-
-                        // Set hidden input
-                        const roleInput = document.getElementById('selected-role');
-                        if (roleInput) {
-                            roleInput.value = role;
-                            console.log('Hidden input set to:', role);
-                        }
-
-                        // Update form
-                        this.showRoleFields(role);
-                        this.updateFormTitles(role);
-
-                        // Show registration form after a brief delay
-                        setTimeout(() => {
-                            this.showStep('registration-form');
-                        }, 200);
-                    },
-
-                    showRoleFields: function(role) {
-                        console.log('Showing role fields for:', role);
-
-                        // Hide all role fields
-                        const roleFields = document.querySelectorAll('.role-fields');
-                        roleFields.forEach(field => {
-                            field.style.display = 'none';
-                        });
-
-                        // Show specific role fields
-                        const targetFields = document.getElementById(role + '-fields');
-                        if (targetFields) {
-                            targetFields.style.display = 'block';
-                            console.log('Showing fields for:', role);
-                        } else {
-                            console.log('No specific fields for role:', role);
-                        }
-
-                        // Set required fields
-                        this.setRequiredFields(role);
-                    },
-
-                    setRequiredFields: function(role) {
-                        // Remove existing required attributes
-                        document.querySelectorAll('#role-specific-fields input, #role-specific-fields select').forEach(field => {
-                            field.removeAttribute('required');
-                        });
-
-                        // Set role-specific required fields
-                        if (role === 'institution') {
-                            const institutionName = document.getElementById('institution_name');
-                            if (institutionName) {
-                                institutionName.setAttribute('required', 'required');
-                            }
-                        }
-                    },
-
-                    updateFormTitles: function(role) {
-                        const title = document.getElementById('form-title');
-                        const subtitle = document.getElementById('form-subtitle');
-
-                        if (!title || !subtitle) {
-                            console.log('Title elements not found');
-                            return;
-                        }
-
-                        const titles = {
-                            student: {
-                                title: strings.studentTitle,
-                                subtitle: strings.studentSubtitle
-                            },
-                            teacher: {
-                                title: strings.teacherTitle,
-                                subtitle: strings.teacherSubtitle
-                            },
-                            institution: {
-                                title: strings.institutionTitle,
-                                subtitle: strings.institutionSubtitle
-                            }
-                        };
-
-                        if (titles[role]) {
-                            title.textContent = titles[role].title;
-                            subtitle.textContent = titles[role].subtitle;
-                            console.log('Form titles updated for:', role);
-                        }
-                    },
-
-                    handleSubmit: function(e) {
+                // Bind role card clicks
+                document.querySelectorAll('.role-card').forEach(function(card) {
+                    card.addEventListener('click', function(e) {
                         e.preventDefault();
-                        console.log('Handling form submission...');
+                        const role = this.getAttribute('data-role');
+                        console.log('Clicked role:', role);
+                        selectRole(role);
+                    });
+                });
 
-                        if (!this.selectedRole) {
-                            this.showMessage('Please select a role first.', 'error');
-                            this.showStep('role-selection');
+                // Bind back buttons
+                document.addEventListener('click', function(e) {
+                    if (e.target.id === 'back-to-roles' || e.target.closest('#back-to-roles')) {
+                        e.preventDefault();
+                        showStep('role-selection');
+                    }
+                });
+
+                // Form submission
+                const form = document.getElementById('mcqhome-register-form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        if (!selectedRole) {
+                            showMessage('Please select a role first.', 'error');
+                            showStep('role-selection');
                             return;
                         }
 
-                        // Password validation
                         const password = document.getElementById('password').value;
                         const confirmPassword = document.getElementById('confirm_password').value;
 
                         if (password !== confirmPassword) {
-                            this.showMessage(strings.passwordsDontMatch, 'error');
+                            showMessage('Passwords do not match.', 'error');
                             return;
                         }
 
                         if (password.length < 8) {
-                            this.showMessage('Password must be at least 8 characters long.', 'error');
+                            showMessage('Password must be at least 8 characters long.', 'error');
                             return;
                         }
 
-                        // Terms validation
                         const termsAccepted = document.getElementById('terms_accepted');
                         if (!termsAccepted.checked) {
-                            this.showMessage('You must accept the terms and conditions.', 'error');
+                            showMessage('You must accept the terms and conditions.', 'error');
                             return;
                         }
 
-                        // Role-specific validation
-                        if (this.selectedRole === 'institution') {
+                        if (selectedRole === 'institution') {
                             const institutionName = document.getElementById('institution_name').value.trim();
                             if (!institutionName) {
-                                this.showMessage('Institution name is required.', 'error');
+                                showMessage('Institution name is required.', 'error');
                                 return;
                             }
                         }
 
-                        this.submitForm();
-                    },
-
-                    submitForm: function() {
-                        console.log('Submitting form...');
-                        const form = document.getElementById('mcqhome-register-form');
+                        // Submit form
                         const submitBtn = document.getElementById('register-submit');
-
-                        // Show loading state
                         submitBtn.disabled = true;
+
                         const submitText = submitBtn.querySelector('.submit-text');
                         const loadingText = submitBtn.querySelector('.loading-text');
 
@@ -764,70 +658,41 @@ function mcqhome_registration_form($atts)
                         const formData = new FormData(form);
                         formData.append('action', 'mcqhome_register_user');
 
-                        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                        fetch('<?php echo admin_url("admin-ajax.php"); ?>', {
                                 method: 'POST',
                                 body: formData
                             })
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log('Response:', data);
+                            .then(function(response) {
+                                return response.json();
+                            })
+                            .then(function(data) {
                                 if (data.success) {
-                                    this.showMessage(data.data.message, 'success');
+                                    showMessage(data.data.message, 'success');
                                     if (data.data.redirect) {
-                                        setTimeout(() => {
+                                        setTimeout(function() {
                                             window.location.href = data.data.redirect;
                                         }, 2000);
                                     }
                                 } else {
-                                    this.showMessage(data.data || strings.registrationFailed, 'error');
+                                    showMessage(data.data || 'Registration failed. Please try again.', 'error');
                                 }
                             })
-                            .catch(error => {
+                            .catch(function(error) {
                                 console.error('Error:', error);
-                                this.showMessage(strings.errorOccurred, 'error');
+                                showMessage('An error occurred. Please try again.', 'error');
                             })
-                            .finally(() => {
+                            .finally(function() {
                                 submitBtn.disabled = false;
                                 if (submitText) submitText.style.display = 'inline';
                                 if (loadingText) loadingText.style.display = 'none';
                             });
-                    },
-
-                    showMessage: function(message, type) {
-                        const messagesDiv = document.getElementById('registration-messages');
-                        if (!messagesDiv) {
-                            console.error('Messages div not found');
-                            return;
-                        }
-
-                        messagesDiv.innerHTML = '<div class="message message-' + type + '">' + message + '</div>';
-                        messagesDiv.scrollIntoView({
-                            behavior: 'smooth'
-                        });
-
-                        // Auto-hide success messages
-                        if (type === 'success') {
-                            setTimeout(() => {
-                                messagesDiv.innerHTML = '';
-                            }, 5000);
-                        }
-                    }
-                };
-
-                // Initialize
-                try {
-                    RegistrationController.init();
-                    console.log('Registration system initialized successfully');
-                } catch (error) {
-                    console.error('Registration system failed to initialize:', error);
+                    });
                 }
 
-                // Global function for compatibility
-                window.selectRole = function(role) {
-                    if (RegistrationController) {
-                        RegistrationController.selectRole(role);
-                    }
-                };
+                // Initialize - show role selection step
+                showStep('role-selection');
+
+                console.log('Registration script initialized successfully');
             });
         </script>
     <?php
