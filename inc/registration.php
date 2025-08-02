@@ -56,45 +56,72 @@ function mcqhome_registration_form($atts)
     ob_start();
 ?>
     <div id="mcqhome-registration-form" class="mcqhome-form-container">
-        <form id="mcqhome-register-form" class="mcqhome-register-form" method="post">
-            <?php wp_nonce_field('mcqhome_register_nonce', 'mcqhome_register_nonce'); ?>
-
+        <!-- Step 1: Role Selection -->
+        <div id="step-role-selection" class="registration-step">
             <div class="form-header mb-6">
-                <h2 class="text-2xl font-bold text-center mb-2"><?php _e('Create Your Account', 'mcqhome'); ?></h2>
-                <p class="text-gray-600 text-center"><?php _e('Join MCQHome and start your learning journey', 'mcqhome'); ?></p>
+                <h2 class="text-2xl font-bold text-center mb-2"><?php _e('Choose Your Role', 'mcqhome'); ?></h2>
+                <p class="text-gray-600 text-center"><?php _e('Select how you want to use MCQHome', 'mcqhome'); ?></p>
             </div>
 
-            <!-- Role Selection -->
-            <div class="form-group mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <?php _e('Select Your Role', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                </label>
-                <div class="space-y-2 mb-6">
-                    <div class="flex items-center">
-                        <input type="radio" id="role-student" name="user_role" value="student" required
-                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                        <label for="role-student" class="ml-3 block text-sm font-medium text-gray-700">
-                            <?php _e('Student', 'mcqhome'); ?> - <?php _e('Take MCQs and track progress', 'mcqhome'); ?>
-                        </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all" data-role="student">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2"><?php _e('Student', 'mcqhome'); ?></h3>
+                        <p class="text-sm text-gray-600"><?php _e('Take MCQs and track your progress', 'mcqhome'); ?></p>
                     </div>
+                </div>
 
-                    <div class="flex items-center">
-                        <input type="radio" id="role-teacher" name="user_role" value="teacher"
-                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                        <label for="role-teacher" class="ml-3 block text-sm font-medium text-gray-700">
-                            <?php _e('Teacher', 'mcqhome'); ?> - <?php _e('Create and manage MCQs', 'mcqhome'); ?>
-                        </label>
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all" data-role="teacher">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2"><?php _e('Teacher', 'mcqhome'); ?></h3>
+                        <p class="text-sm text-gray-600"><?php _e('Create and manage MCQs', 'mcqhome'); ?></p>
                     </div>
+                </div>
 
-                    <div class="flex items-center">
-                        <input type="radio" id="role-institution" name="user_role" value="institution"
-                            class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                        <label for="role-institution" class="ml-3 block text-sm font-medium text-gray-700">
-                            <?php _e('Institution', 'mcqhome'); ?> - <?php _e('Manage teachers and students', 'mcqhome'); ?>
-                        </label>
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all" data-role="institution">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2"><?php _e('Institution', 'mcqhome'); ?></h3>
+                        <p class="text-sm text-gray-600"><?php _e('Manage teachers and students', 'mcqhome'); ?></p>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Step 2: Registration Form based on Role -->
+        <div id="step-registration-form" class="registration-step" style="display: none;">
+            <div class="form-header mb-6">
+                <button type="button" id="back-to-roles" class="text-blue-600 hover:text-blue-800 mb-4 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    <?php _e('Back to Role Selection', 'mcqhome'); ?>
+                </button>
+                <h2 class="text-2xl font-bold text-center mb-2">
+                    <span id="form-title"><?php _e('Create Your Account', 'mcqhome'); ?></span>
+                </h2>
+                <p class="text-gray-600 text-center">
+                    <span id="form-subtitle"><?php _e('Join MCQHome and start your journey', 'mcqhome'); ?></span>
+                </p>
+            </div>
+
+            <form id="mcqhome-register-form" class="mcqhome-register-form" method="post">
+                <?php wp_nonce_field('mcqhome_register_nonce', 'mcqhome_register_nonce'); ?>
+                <input type="hidden" id="selected-role" name="user_role" value="">
 
             <!-- Basic Information -->
             <div class="basic-info-section">
@@ -300,45 +327,77 @@ function mcqhome_registration_form($atts)
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('mcqhome-register-form');
-            const roleInputs = document.querySelectorAll('input[name="user_role"]');
-            const roleSpecificFields = document.getElementById('role-specific-fields');
+            const stepRoleSelection = document.getElementById('step-role-selection');
+            const stepRegistrationForm = document.getElementById('step-registration-form');
+            const roleCards = document.querySelectorAll('.role-card');
+            const backToRolesBtn = document.getElementById('back-to-roles');
+            const selectedRoleInput = document.getElementById('selected-role');
+            const formTitle = document.getElementById('form-title');
+            const formSubtitle = document.getElementById('form-subtitle');
             const submitButton = document.getElementById('register-submit');
             const messagesDiv = document.getElementById('registration-messages');
 
-            // Handle role selection
-            function handleRoleChange() {
-                // Show/hide role-specific fields
+            // Role selection handling
+            roleCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const role = this.dataset.role;
+                    selectedRoleInput.value = role;
+                    showRegistrationForm(role);
+                });
+            });
+
+            // Back to role selection
+            backToRolesBtn.addEventListener('click', function() {
+                showRoleSelection();
+            });
+
+            function showRoleSelection() {
+                stepRoleSelection.style.display = 'block';
+                stepRegistrationForm.style.display = 'none';
+                // Reset form fields when going back
+                form.reset();
+            }
+
+            function showRegistrationForm(role) {
+                stepRoleSelection.style.display = 'none';
+                stepRegistrationForm.style.display = 'block';
+                
+                // Hide all role-specific fields first
                 document.querySelectorAll('.role-fields').forEach(field => {
                     field.style.display = 'none';
                 });
 
-                const selectedRole = document.querySelector('input[name="user_role"]:checked');
-                if (selectedRole) {
-                    const roleFields = document.getElementById(selectedRole.value + '-fields');
-                    if (roleFields) {
-                        roleSpecificFields.style.display = 'block';
-                        roleFields.style.display = 'block';
+                // Show appropriate role fields
+                const roleFields = document.getElementById(role + '-fields');
+                if (roleFields) {
+                    roleFields.style.display = 'block';
+                }
 
-                        // Set required fields based on role
-                        if (selectedRole.value === 'institution') {
-                            const institutionName = document.getElementById('institution_name');
-                            if (institutionName) institutionName.required = true;
-                        } else {
-                            const institutionName = document.getElementById('institution_name');
-                            if (institutionName) institutionName.required = false;
-                        }
-                    }
+                // Update form titles based on role
+                switch(role) {
+                    case 'student':
+                        formTitle.textContent = '<?php _e('Student Registration', 'mcqhome'); ?>';
+                        formSubtitle.textContent = '<?php _e('Start your learning journey with MCQHome', 'mcqhome'); ?>';
+                        break;
+                    case 'teacher':
+                        formTitle.textContent = '<?php _e('Teacher Registration', 'mcqhome'); ?>';
+                        formSubtitle.textContent = '<?php _e('Join as a teacher and create amazing MCQs', 'mcqhome'); ?>';
+                        break;
+                    case 'institution':
+                        formTitle.textContent = '<?php _e('Institution Registration', 'mcqhome'); ?>';
+                        formSubtitle.textContent = '<?php _e('Register your institution and manage your team', 'mcqhome'); ?>';
+                        break;
+                }
+
+                // Set required fields based on role
+                if (role === 'institution') {
+                    const institutionName = document.getElementById('institution_name');
+                    if (institutionName) institutionName.required = true;
                 } else {
-                    roleSpecificFields.style.display = 'none';
+                    const institutionName = document.getElementById('institution_name');
+                    if (institutionName) institutionName.required = false;
                 }
             }
-
-            roleInputs.forEach(function(input) {
-                input.addEventListener('change', handleRoleChange);
-            });
-
-            // Initialize on page load
-            handleRoleChange();
 
             // Handle form submission
             form.addEventListener('submit', function(e) {
