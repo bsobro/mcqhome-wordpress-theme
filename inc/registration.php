@@ -70,7 +70,7 @@ function mcqhome_registration_form($atts)
                     <?php _e('Select Your Role', 'mcqhome'); ?> <span class="text-red-500">*</span>
                 </label>
                 <div class="space-y-2 mb-6">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center">
                         <input type="radio" id="role-student" name="user_role" value="student" required
                             class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
                         <label for="role-student" class="ml-3 block text-sm font-medium text-gray-700">
