@@ -348,7 +348,20 @@ function mcqhome_registration_form($atts) {
         </form>
     </div>
     
-
+    <style>
+    .role-selection {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 767px) {
+        .role-selection {
+            grid-template-columns: 1fr;
+        }
+    }
+    </style>
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -358,86 +371,83 @@ function mcqhome_registration_form($atts) {
         const submitButton = document.getElementById('register-submit');
         const messagesDiv = document.getElementById('registration-messages');
         
-        // Ensure role selection is visible
-        const roleSelectionSection = document.querySelector('.role-selection');
-        if (roleSelectionSection) {
-            roleSelectionSection.style.display = 'grid';
+        // Function to update role selection visual state
+        function updateRoleSelection(selectedRole) {
+            // Reset all role cards
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
+                
+                // Remove checkmark if exists
+                const checkmark = card.querySelector('.role-checkmark');
+                if (checkmark) {
+                    checkmark.remove();
+                }
+            });
+            
+            // Update selected role card
+            const selectedCard = document.querySelector('label[for="role-' + selectedRole + '"]');
+            if (selectedCard) {
+                // Add appropriate styling based on role
+                if (selectedRole === 'student') {
+                    selectedCard.classList.add('border-blue-500', 'bg-blue-50');
+                } else if (selectedRole === 'teacher') {
+                    selectedCard.classList.add('border-green-500', 'bg-green-50');
+                } else if (selectedRole === 'institution') {
+                    selectedCard.classList.add('border-purple-500', 'bg-purple-50');
+                }
+                
+                // Add checkmark
+                const checkmark = document.createElement('div');
+                checkmark.className = 'role-checkmark absolute top-2 right-2 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold';
+                checkmark.innerHTML = '✓';
+                
+                // Set appropriate background color for checkmark
+                if (selectedRole === 'student') {
+                    checkmark.classList.add('bg-blue-500');
+                } else if (selectedRole === 'teacher') {
+                    checkmark.classList.add('bg-green-500');
+                } else if (selectedRole === 'institution') {
+                    checkmark.classList.add('bg-purple-500');
+                }
+                
+                selectedCard.classList.add('relative');
+                selectedCard.appendChild(checkmark);
+            }
+            
+            // Show/hide role-specific fields
+            document.querySelectorAll('.role-fields').forEach(field => {
+                field.style.display = 'none';
+            });
+            
+            const roleFields = document.getElementById(selectedRole + '-fields');
+            if (roleFields) {
+                roleSpecificFields.style.display = 'block';
+                roleFields.style.display = 'block';
+                
+                // Set required fields based on role
+                const institutionName = document.getElementById('institution_name');
+                if (institutionName) {
+                    institutionName.required = (selectedRole === 'institution');
+                }
+            }
         }
         
         // Handle role selection
         roleInputs.forEach(function(input) {
             input.addEventListener('change', function() {
-                // Update visual selection
-                document.querySelectorAll('.role-card').forEach(card => {
-                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
-                    
-                    // Remove checkmark if exists
-                    const checkmark = card.querySelector('.role-checkmark');
-                    if (checkmark) {
-                        checkmark.remove();
-                    }
-                });
-                
-                const selectedCard = document.querySelector('label[for="role-' + this.value + '"]');
-                if (selectedCard) {
-                    // Add appropriate border and background colors based on role
-                    if (this.value === 'student') {
-                        selectedCard.classList.add('border-blue-500', 'bg-blue-50');
-                    } else if (this.value === 'teacher') {
-                        selectedCard.classList.add('border-green-500', 'bg-green-50');
-                    } else if (this.value === 'institution') {
-                        selectedCard.classList.add('border-purple-500', 'bg-purple-50');
-                    }
-                    
-                    // Add checkmark
-                    const checkmark = document.createElement('div');
-                    checkmark.className = 'role-checkmark absolute top-2 right-2 bg-current text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold';
-                    checkmark.innerHTML = '✓';
-                    selectedCard.classList.add('relative');
-                    selectedCard.appendChild(checkmark);
-                    
-                    // Set appropriate background color for checkmark
-                    if (this.value === 'student') {
-                        checkmark.classList.add('bg-blue-500');
-                    } else if (this.value === 'teacher') {
-                        checkmark.classList.add('bg-green-500');
-                    } else if (this.value === 'institution') {
-                        checkmark.classList.add('bg-purple-500');
-                    }
-                }
-                
-                // Show/hide role-specific fields
-                document.querySelectorAll('.role-fields').forEach(field => {
-                    field.style.display = 'none';
-                });
-                
-                const roleFields = document.getElementById(this.value + '-fields');
-                if (roleFields) {
-                    roleSpecificFields.style.display = 'block';
-                    roleFields.style.display = 'block';
-                    
-                    // Set required fields based on role
-                    if (this.value === 'institution') {
-                        const institutionName = document.getElementById('institution_name');
-                        if (institutionName) institutionName.required = true;
-                    } else {
-                        const institutionName = document.getElementById('institution_name');
-                        if (institutionName) institutionName.required = false;
-                    }
-                }
+                updateRoleSelection(this.value);
             });
         });
         
         // Add click handlers for role cards
         document.querySelectorAll('.role-card').forEach(card => {
             card.addEventListener('click', function(e) {
-                // Find the associated radio input
                 const inputId = this.getAttribute('for');
                 const input = document.getElementById(inputId);
                 
                 if (input && input.type === 'radio') {
                     input.checked = true;
-                    input.dispatchEvent(new Event('change'));
+                    updateRoleSelection(input.value);
                 }
             });
         });
