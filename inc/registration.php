@@ -306,20 +306,21 @@ function mcqhome_registration_form($atts)
             const messagesDiv = document.getElementById('registration-messages');
 
             // Handle role selection
-            roleInputs.forEach(function(input) {
-                input.addEventListener('change', function() {
-                    // Show/hide role-specific fields
-                    document.querySelectorAll('.role-fields').forEach(field => {
-                        field.style.display = 'none';
-                    });
+            function handleRoleChange() {
+                // Show/hide role-specific fields
+                document.querySelectorAll('.role-fields').forEach(field => {
+                    field.style.display = 'none';
+                });
 
-                    const roleFields = document.getElementById(this.value + '-fields');
+                const selectedRole = document.querySelector('input[name="user_role"]:checked');
+                if (selectedRole) {
+                    const roleFields = document.getElementById(selectedRole.value + '-fields');
                     if (roleFields) {
                         roleSpecificFields.style.display = 'block';
                         roleFields.style.display = 'block';
 
                         // Set required fields based on role
-                        if (this.value === 'institution') {
+                        if (selectedRole.value === 'institution') {
                             const institutionName = document.getElementById('institution_name');
                             if (institutionName) institutionName.required = true;
                         } else {
@@ -327,8 +328,17 @@ function mcqhome_registration_form($atts)
                             if (institutionName) institutionName.required = false;
                         }
                     }
-                });
+                } else {
+                    roleSpecificFields.style.display = 'none';
+                }
+            }
+
+            roleInputs.forEach(function(input) {
+                input.addEventListener('change', handleRoleChange);
             });
+
+            // Initialize on page load
+            handleRoleChange();
 
             // Handle form submission
             form.addEventListener('submit', function(e) {
