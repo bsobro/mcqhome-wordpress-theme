@@ -17,8 +17,11 @@ if (!defined('ABSPATH')) {
  */
 function mcqhome_init_registration()
 {
-    // Add custom registration form shortcode
+    // Add custom registration form shortcodes
     add_shortcode('mcqhome_registration', 'mcqhome_registration_form');
+    add_shortcode('mcqhome_registration_student', 'mcqhome_registration_form_student');
+    add_shortcode('mcqhome_registration_teacher', 'mcqhome_registration_form_teacher');
+    add_shortcode('mcqhome_registration_institution', 'mcqhome_registration_form_institution');
 
     // Handle registration form submission
     add_action('wp_ajax_nopriv_mcqhome_register_user', 'mcqhome_handle_registration');
@@ -1022,6 +1025,116 @@ function mcqhome_redirect_signup($url)
 function mcqhome_custom_register_url($url)
 {
     return home_url('/register/');
+}
+
+// Add the new shortcodes
+add_shortcode('mcqhome_registration_student', 'mcqhome_registration_form_student');
+add_shortcode('mcqhome_registration_teacher', 'mcqhome_registration_form_teacher');
+add_shortcode('mcqhome_registration_institution', 'mcqhome_registration_form_institution');
+
+/**
+ * Student registration form shortcode
+ */
+function mcqhome_registration_form_student($atts)
+{
+    $atts = shortcode_atts([
+        'redirect' => '',
+        'show_login_link' => true,
+    ], $atts);
+
+    // If user is already logged in, redirect to dashboard
+    if (is_user_logged_in()) {
+        $user_role = mcqhome_get_user_primary_role();
+        $redirect_url = home_url('/dashboard/');
+        return '<p>' . sprintf(__('You are already logged in. <a href="%s">Go to Dashboard</a>', 'mcqhome'), $redirect_url) . '</p>';
+    }
+
+    ob_start();
+    ?>
+    <div class="mcqhome-form-container">
+        <form id="mcqhome-register-form-student" class="mcqhome-register-form" method="post">
+            <?php wp_nonce_field('mcqhome_register_nonce', 'mcqhome_register_nonce'); ?>
+            <input type="hidden" name="user_role" value="student">
+            <!-- Student form fields here -->
+            <div class="form-group">
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md">
+                    <?php _e('Create Student Account', 'mcqhome'); ?>
+                </button>
+            </div>
+        </form>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Teacher registration form shortcode
+ */
+function mcqhome_registration_form_teacher($atts)
+{
+    $atts = shortcode_atts([
+        'redirect' => '',
+        'show_login_link' => true,
+    ], $atts);
+
+    // If user is already logged in, redirect to dashboard
+    if (is_user_logged_in()) {
+        $user_role = mcqhome_get_user_primary_role();
+        $redirect_url = home_url('/dashboard/');
+        return '<p>' . sprintf(__('You are already logged in. <a href="%s">Go to Dashboard</a>', 'mcqhome'), $redirect_url) . '</p>';
+    }
+
+    ob_start();
+    ?>
+    <div class="mcqhome-form-container">
+        <form id="mcqhome-register-form-teacher" class="mcqhome-register-form" method="post">
+            <?php wp_nonce_field('mcqhome_register_nonce', 'mcqhome_register_nonce'); ?>
+            <input type="hidden" name="user_role" value="teacher">
+            <!-- Teacher form fields here -->
+            <div class="form-group">
+                <button type="submit" class="w-full bg-green-600 text-white py-3 px-4 rounded-md">
+                    <?php _e('Create Teacher Account', 'mcqhome'); ?>
+                </button>
+            </div>
+        </form>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Institution registration form shortcode
+ */
+function mcqhome_registration_form_institution($atts)
+{
+    $atts = shortcode_atts([
+        'redirect' => '',
+        'show_login_link' => true,
+    ], $atts);
+
+    // If user is already logged in, redirect to dashboard
+    if (is_user_logged_in()) {
+        $user_role = mcqhome_get_user_primary_role();
+        $redirect_url = home_url('/dashboard/');
+        return '<p>' . sprintf(__('You are already logged in. <a href="%s">Go to Dashboard</a>', 'mcqhome'), $redirect_url) . '</p>';
+    }
+
+    ob_start();
+    ?>
+    <div class="mcqhome-form-container">
+        <form id="mcqhome-register-form-institution" class="mcqhome-register-form" method="post">
+            <?php wp_nonce_field('mcqhome_register_nonce', 'mcqhome_register_nonce'); ?>
+            <input type="hidden" name="user_role" value="institution">
+            <!-- Institution form fields here -->
+            <div class="form-group">
+                <button type="submit" class="w-full bg-purple-600 text-white py-3 px-4 rounded-md">
+                    <?php _e('Create Institution Account', 'mcqhome'); ?>
+                </button>
+            </div>
+        </form>
+    </div>
+    <?php
+    return ob_get_clean();
 }
 
 // Initialize registration system
