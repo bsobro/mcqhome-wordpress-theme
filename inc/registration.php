@@ -560,13 +560,15 @@ function mcqhome_registration_form($atts)
                     }
                 };
                 
-                // Initialize the registration controller
-                RegistrationController.init();
-                
                 // Legacy global function for backward compatibility
-                window.selectRole = function(role) {
-                    RegistrationController.selectRole(role);
-                };
+            window.selectRole = function(role) {
+                RegistrationController.selectRole(role);
+            };
+            
+            // Initialize the registration controller after DOM is loaded
+            document.addEventListener('DOMContentLoaded', function() {
+                RegistrationController.init();
+            });
             });
     </script>
 <?php
