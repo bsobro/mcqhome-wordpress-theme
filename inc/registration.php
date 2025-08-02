@@ -64,7 +64,7 @@ function mcqhome_registration_form($atts)
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all" data-role="student">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" style="user-select: none;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all" data-role="teacher">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" style="user-select: none;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all" data-role="institution">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" style="user-select: none;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -337,13 +337,30 @@ function mcqhome_registration_form($atts)
             const submitButton = document.getElementById('register-submit');
             const messagesDiv = document.getElementById('registration-messages');
 
+            // Ensure role selection is visible initially
+            if (stepRoleSelection) stepRoleSelection.style.display = 'block';
+            if (stepRegistrationForm) stepRegistrationForm.style.display = 'none';
+
+            console.log('DOM loaded - Registration script initialized');
+            console.log('Role cards found:', roleCards.length);
+
             // Role selection handling
             roleCards.forEach(card => {
-                card.addEventListener('click', function() {
+                console.log('Adding click listener to card with role:', card.dataset.role);
+                
+                // Add click handler
+                card.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Card clicked, role:', this.dataset.role);
                     const role = this.dataset.role;
-                    selectedRoleInput.value = role;
+                    if (selectedRoleInput) selectedRoleInput.value = role;
                     showRegistrationForm(role);
                 });
+                
+                // Make cards more interactive
+                card.style.cursor = 'pointer';
+                card.style.userSelect = 'none';
             });
 
             // Back to role selection
