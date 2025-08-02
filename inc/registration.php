@@ -64,7 +64,7 @@ function mcqhome_registration_form($atts)
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" style="user-select: none;">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" style="user-select: none; position: relative; z-index: 10;" onclick="selectRole('student')">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" style="user-select: none;">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" style="user-select: none; position: relative; z-index: 10;" onclick="selectRole('teacher')">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" style="user-select: none;">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" style="user-select: none; position: relative; z-index: 10;" onclick="selectRole('institution')">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,7 +325,51 @@ function mcqhome_registration_form($atts)
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+            // Global function for onclick handlers
+            function selectRole(role) {
+                alert('Selected role: ' + role);
+                const selectedRoleInput = document.getElementById('selected-role');
+                const stepRoleSelection = document.getElementById('step-role-selection');
+                const stepRegistrationForm = document.getElementById('step-registration-form');
+                const formTitle = document.getElementById('form-title');
+                const formSubtitle = document.getElementById('form-subtitle');
+                
+                if (selectedRoleInput) selectedRoleInput.value = role;
+                
+                if (stepRoleSelection && stepRegistrationForm) {
+                    stepRoleSelection.style.display = 'none';
+                    stepRegistrationForm.style.display = 'block';
+                    
+                    // Hide all role-specific fields first
+                    document.querySelectorAll('.role-fields').forEach(field => {
+                        field.style.display = 'none';
+                    });
+
+                    // Show appropriate role fields
+                    const roleFields = document.getElementById(role + '-fields');
+                    if (roleFields) {
+                        roleFields.style.display = 'block';
+                    }
+
+                    // Update form titles based on role
+                    switch(role) {
+                        case 'student':
+                            formTitle.textContent = '<?php _e('Student Registration', 'mcqhome'); ?>';
+                            formSubtitle.textContent = '<?php _e('Start your learning journey with MCQHome', 'mcqhome'); ?>';
+                            break;
+                        case 'teacher':
+                            formTitle.textContent = '<?php _e('Teacher Registration', 'mcqhome'); ?>';
+                            formSubtitle.textContent = '<?php _e('Join as a teacher and create amazing MCQs', 'mcqhome'); ?>';
+                            break;
+                        case 'institution':
+                            formTitle.textContent = '<?php _e('Institution Registration', 'mcqhome'); ?>';
+                            formSubtitle.textContent = '<?php _e('Register your institution and manage your team', 'mcqhome'); ?>';
+                            break;
+                    }
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('mcqhome-register-form');
             const stepRoleSelection = document.getElementById('step-role-selection');
             const stepRegistrationForm = document.getElementById('step-registration-form');
@@ -352,6 +396,7 @@ function mcqhome_registration_form($atts)
                 card.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
+                    alert('Role selected: ' + this.dataset.role); // Test alert
                     console.log('Card clicked, role:', this.dataset.role);
                     const role = this.dataset.role;
                     if (selectedRoleInput) selectedRoleInput.value = role;
@@ -361,6 +406,8 @@ function mcqhome_registration_form($atts)
                 // Make cards more interactive
                 card.style.cursor = 'pointer';
                 card.style.userSelect = 'none';
+                card.style.pointerEvents = 'auto'; // Ensure clicks work
+                card.style.zIndex = '10';
             });
 
             // Back to role selection
