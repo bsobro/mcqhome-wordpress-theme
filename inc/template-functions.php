@@ -166,6 +166,9 @@ function mcqhome_get_user_role_display_name($role) {
 function mcqhome_get_institution_stats($institution_id) {
     global $wpdb;
     
+    // Check if custom tables exist to prevent fatal errors
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_follows'");
+    
     // Get teachers count
     $teachers_count = $wpdb->get_var($wpdb->prepare("
         SELECT COUNT(DISTINCT u.ID) 
@@ -197,19 +200,22 @@ function mcqhome_get_institution_stats($institution_id) {
         AND pm.meta_value = %d
     ", $institution_id));
     
-    // Get followers count
-    $followers_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(*) 
-        FROM {$wpdb->prefix}mcq_user_follows 
-        WHERE followed_type = 'institution' 
-        AND followed_id = %d
-    ", $institution_id));
+    // Get followers count (only if table exists)
+    $followers_count = 0;
+    if ($table_exists) {
+        $followers_count = $wpdb->get_var($wpdb->prepare("
+            SELECT COUNT(*) 
+            FROM {$wpdb->prefix}mcq_user_follows 
+            WHERE followed_type = 'institution' 
+            AND followed_id = %d
+        ", $institution_id));
+    }
     
     return [
-        'teachers' => (int) $teachers_count,
-        'mcq_sets' => (int) $mcq_sets_count,
-        'total_mcqs' => (int) $total_mcqs_count,
-        'followers' => (int) $followers_count
+        'teachers' => (int) ($teachers_count ?: 0),
+        'mcq_sets' => (int) ($mcq_sets_count ?: 0),
+        'total_mcqs' => (int) ($total_mcqs_count ?: 0),
+        'followers' => (int) ($followers_count ?: 0)
     ];
 }
 
@@ -218,6 +224,10 @@ function mcqhome_get_institution_stats($institution_id) {
  */
 function mcqhome_get_teacher_stats($teacher_id) {
     global $wpdb;
+    
+    // Check if custom tables exist to prevent fatal errors
+    $attempts_table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_attempts'");
+    $follows_table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_follows'");
     
     // Get MCQ sets count
     $mcq_sets_count = $wpdb->get_var($wpdb->prepare("
@@ -237,27 +247,33 @@ function mcqhome_get_teacher_stats($teacher_id) {
         AND post_author = %d
     ", $teacher_id));
     
-    // Get students count (enrolled in teacher's sets)
-    $students_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(DISTINCT user_id) 
-        FROM {$wpdb->prefix}mcq_attempts ma
-        INNER JOIN {$wpdb->posts} p ON ma.mcq_set_id = p.ID
-        WHERE p.post_author = %d
-    ", $teacher_id));
+    // Get students count (enrolled in teacher's sets) - only if table exists
+    $students_count = 0;
+    if ($attempts_table_exists) {
+        $students_count = $wpdb->get_var($wpdb->prepare("
+            SELECT COUNT(DISTINCT user_id) 
+            FROM {$wpdb->prefix}mcq_attempts ma
+            INNER JOIN {$wpdb->posts} p ON ma.mcq_set_id = p.ID
+            WHERE p.post_author = %d
+        ", $teacher_id));
+    }
     
-    // Get followers count
-    $followers_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(*) 
-        FROM {$wpdb->prefix}mcq_user_follows 
-        WHERE followed_type = 'teacher' 
-        AND followed_id = %d
-    ", $teacher_id));
+    // Get followers count - only if table exists
+    $followers_count = 0;
+    if ($follows_table_exists) {
+        $followers_count = $wpdb->get_var($wpdb->prepare("
+            SELECT COUNT(*) 
+            FROM {$wpdb->prefix}mcq_user_follows 
+            WHERE followed_type = 'teacher' 
+            AND followed_id = %d
+        ", $teacher_id));
+    }
     
     return [
-        'mcq_sets' => (int) $mcq_sets_count,
-        'total_mcqs' => (int) $total_mcqs_count,
-        'students' => (int) $students_count,
-        'followers' => (int) $followers_count
+        'mcq_sets' => (int) ($mcq_sets_count ?: 0),
+        'total_mcqs' => (int) ($total_mcqs_count ?: 0),
+        'students' => (int) ($students_count ?: 0),
+        'followers' => (int) ($followers_count ?: 0)
     ];
 }
 
@@ -398,6 +414,13 @@ function mcqhome_get_mcq_set_question_count($mcq_set_id) {
 function mcqhome_get_mcq_set_rating($mcq_set_id) {
     global $wpdb;
     
+    // Check if ratings table exists to prevent fatal errors
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_ratings'");
+    
+    if (!$table_exists) {
+        return 0;
+    }
+    
     $rating = $wpdb->get_var($wpdb->prepare("
         SELECT AVG(rating) 
         FROM {$wpdb->prefix}mcq_ratings 
@@ -433,6 +456,13 @@ function mcqhome_get_user_role($user_id = null) {
  */
 function mcqhome_is_following($follower_id, $followed_id, $followed_type) {
     global $wpdb;
+    
+    // Check if table exists to prevent fatal errors
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_follows'");
+    
+    if (!$table_exists) {
+        return false;
+    }
     
     $count = $wpdb->get_var($wpdb->prepare("
         SELECT COUNT(*) 
@@ -560,14 +590,19 @@ function mcqhome_get_discovery_stats() {
     static $stats = null;
     
     if ($stats === null) {
+        // Safe counting with fallbacks for when post types/taxonomies don't exist yet
+        $mcq_set_count = post_type_exists('mcq_set') ? wp_count_posts('mcq_set') : null;
+        $mcq_count = post_type_exists('mcq') ? wp_count_posts('mcq') : null;
+        $institution_count = post_type_exists('institution') ? wp_count_posts('institution') : null;
+        
         $stats = [
-            'total_mcq_sets' => wp_count_posts('mcq_set')->publish,
-            'total_mcqs' => wp_count_posts('mcq')->publish,
-            'total_institutions' => wp_count_posts('institution')->publish,
-            'total_subjects' => wp_count_terms(['taxonomy' => 'mcq_subject', 'hide_empty' => true]),
-            'total_topics' => wp_count_terms(['taxonomy' => 'mcq_topic', 'hide_empty' => true]),
-            'total_teachers' => count(get_users(['role' => 'teacher'])),
-            'total_students' => count(get_users(['role' => 'student']))
+            'total_mcq_sets' => $mcq_set_count ? $mcq_set_count->publish : 0,
+            'total_mcqs' => $mcq_count ? $mcq_count->publish : 0,
+            'total_institutions' => $institution_count ? $institution_count->publish : 0,
+            'total_subjects' => taxonomy_exists('mcq_subject') ? wp_count_terms(['taxonomy' => 'mcq_subject', 'hide_empty' => true]) : 0,
+            'total_topics' => taxonomy_exists('mcq_topic') ? wp_count_terms(['taxonomy' => 'mcq_topic', 'hide_empty' => true]) : 0,
+            'total_teachers' => get_role('teacher') ? count(get_users(['role' => 'teacher'])) : 0,
+            'total_students' => get_role('student') ? count(get_users(['role' => 'student'])) : 0
         ];
         
         // Cache for 1 hour

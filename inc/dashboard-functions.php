@@ -12,6 +12,53 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Check if MCQ database tables exist
+ */
+function mcqhome_check_db_tables() {
+    global $wpdb;
+    
+    static $tables_checked = false;
+    static $tables_exist = [];
+    
+    if (!$tables_checked) {
+        $required_tables = [
+            'mcq_attempts',
+            'mcq_user_follows',
+            'mcq_user_enrollments',
+            'mcq_user_progress'
+        ];
+        
+        foreach ($required_tables as $table) {
+            $full_table_name = $wpdb->prefix . $table;
+            $tables_exist[$table] = $wpdb->get_var("SHOW TABLES LIKE '$full_table_name'") === $full_table_name;
+        }
+        
+        $tables_checked = true;
+    }
+    
+    return $tables_exist;
+}
+
+/**
+ * Safe database query wrapper
+ */
+function mcqhome_safe_db_query($table_name, $query, $params = [], $default = null) {
+    global $wpdb;
+    
+    $tables = mcqhome_check_db_tables();
+    
+    if (!isset($tables[$table_name]) || !$tables[$table_name]) {
+        return $default;
+    }
+    
+    if (empty($params)) {
+        return $wpdb->get_var($query);
+    } else {
+        return $wpdb->get_var($wpdb->prepare($query, $params));
+    }
+}
+
+/**
  * Render Student Dashboard
  */
 function mcqhome_render_student_dashboard($user_id) {
@@ -190,17 +237,23 @@ function mcqhome_get_student_stats($user_id) {
     $enrolled_courses = get_user_meta($user_id, 'enrolled_mcq_sets', true);
     $enrolled_courses = is_array($enrolled_courses) ? count($enrolled_courses) : 0;
     
-    // Get completed MCQs count
-    $completed_mcqs = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts WHERE user_id = %d AND status = 'completed'",
-        $user_id
-    ));
+    // Get completed MCQs count (check if table exists first)
+    $completed_mcqs = 0;
+    $average_score = 0;
     
-    // Get average score
-    $average_score = $wpdb->get_var($wpdb->prepare(
-        "SELECT AVG(score_percentage) FROM {$wpdb->prefix}mcq_attempts WHERE user_id = %d AND status = 'completed'",
-        $user_id
-    ));
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_attempts'");
+    if ($table_exists) {
+        $completed_mcqs = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts WHERE user_id = %d AND status = 'completed'",
+            $user_id
+        ));
+        
+        // Get average score
+        $average_score = $wpdb->get_var($wpdb->prepare(
+            "SELECT AVG(score_percentage) FROM {$wpdb->prefix}mcq_attempts WHERE user_id = %d AND status = 'completed'",
+            $user_id
+        ));
+    }
     
     // Get following count
     $following_institutions = get_user_meta($user_id, 'following_institutions', true);
@@ -336,12 +389,16 @@ function mcqhome_get_user_set_progress($user_id, $set_id) {
         return ['completed' => 0, 'total' => 0, 'percentage' => 0];
     }
     
-    // Get completed questions
-    $completed = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts 
-         WHERE user_id = %d AND mcq_set_id = %d AND status = 'completed'",
-        $user_id, $set_id
-    ));
+    // Get completed questions (check if table exists first)
+    $completed = 0;
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_attempts'");
+    if ($table_exists) {
+        $completed = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts 
+             WHERE user_id = %d AND mcq_set_id = %d AND status = 'completed'",
+            $user_id, $set_id
+        ));
+    }
     
     $completed = intval($completed ?: 0);
     $percentage = $total_questions > 0 ? round(($completed / $total_questions) * 100, 1) : 0;
@@ -359,17 +416,21 @@ function mcqhome_get_user_set_progress($user_id, $set_id) {
 function mcqhome_render_recent_activity($user_id) {
     global $wpdb;
     
-    // Get recent attempts
-    $recent_attempts = $wpdb->get_results($wpdb->prepare(
-        "SELECT ma.*, ms.post_title as set_title, m.post_title as mcq_title
-         FROM {$wpdb->prefix}mcq_attempts ma
-         LEFT JOIN {$wpdb->posts} ms ON ma.mcq_set_id = ms.ID
-         LEFT JOIN {$wpdb->posts} m ON ma.mcq_id = m.ID
-         WHERE ma.user_id = %d AND ma.status = 'completed'
-         ORDER BY ma.completed_at DESC
-         LIMIT 10",
-        $user_id
-    ));
+    // Get recent attempts (check if table exists first)
+    $recent_attempts = [];
+    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_attempts'");
+    if ($table_exists) {
+        $recent_attempts = $wpdb->get_results($wpdb->prepare(
+            "SELECT ma.*, ms.post_title as set_title, m.post_title as mcq_title
+             FROM {$wpdb->prefix}mcq_attempts ma
+             LEFT JOIN {$wpdb->posts} ms ON ma.mcq_set_id = ms.ID
+             LEFT JOIN {$wpdb->posts} m ON ma.mcq_id = m.ID
+             WHERE ma.user_id = %d AND ma.status = 'completed'
+             ORDER BY ma.completed_at DESC
+             LIMIT 10",
+            $user_id
+        ));
+    }
     
     if (empty($recent_attempts)) {
         echo '<div class="text-center py-8">';

@@ -204,6 +204,16 @@ function mcqhome_activation() {
     // Create default pages if they don't exist
     mcqhome_create_default_pages();
     
+    // Initialize database tables safely
+    if (function_exists('mcqhome_init_database')) {
+        try {
+            mcqhome_init_database();
+        } catch (Exception $e) {
+            // Log error but don't break the site
+            error_log('MCQHome: Database initialization failed - ' . $e->getMessage());
+        }
+    }
+    
     // Schedule any necessary cron jobs
     if (!wp_next_scheduled('mcqhome_daily_cleanup')) {
         wp_schedule_event(time(), 'daily', 'mcqhome_daily_cleanup');
@@ -412,4 +422,55 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/role-settings.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/role-settings.php';
+}/**
+
+ * Admin notice for setup issues
+ */
+function mcqhome_admin_notices() {
+    // Only show to administrators
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    
+    // Check if database tables exist
+    global $wpdb;
+    $required_tables = ['mcq_attempts', 'mcq_user_follows'];
+    $missing_tables = [];
+    
+    foreach ($required_tables as $table) {
+        $full_table_name = $wpdb->prefix . $table;
+        if ($wpdb->get_var("SHOW TABLES LIKE '$full_table_name'") !== $full_table_name) {
+            $missing_tables[] = $table;
+        }
+    }
+    
+    if (!empty($missing_tables)) {
+        echo '<div class="notice notice-warning is-dismissible">';
+        echo '<p><strong>MCQHome Theme:</strong> Some database tables are missing. The theme will work with limited functionality. Missing tables: ' . implode(', ', $missing_tables) . '</p>';
+        echo '<p><a href="' . admin_url('themes.php') . '" class="button">Reactivate Theme</a> to create missing tables.</p>';
+        echo '</div>';
+    }
+    
+    // Check if custom roles exist
+    if (!get_role('student') || !get_role('teacher') || !get_role('institution')) {
+        echo '<div class="notice notice-info is-dismissible">';
+        echo '<p><strong>MCQHome Theme:</strong> Custom user roles are being initialized. Please refresh the page if you encounter any issues.</p>';
+        echo '</div>';
+    }
 }
+add_action('admin_notices', 'mcqhome_admin_notices');
+
+/**
+ * Safe theme initialization
+ */
+function mcqhome_safe_init() {
+    // Initialize database tables if they don't exist
+    if (function_exists('mcqhome_check_database_version')) {
+        try {
+            mcqhome_check_database_version();
+        } catch (Exception $e) {
+            error_log('MCQHome: Database check failed - ' . $e->getMessage());
+        }
+    }
+}
+add_action('init', 'mcqhome_safe_init', 5);

@@ -15,13 +15,10 @@ if (!defined('ABSPATH')) {
  * Initialize custom user roles and capabilities
  */
 function mcqhome_init_user_roles() {
-    // Remove default subscriber role capabilities that we don't want
-    $subscriber = get_role('subscriber');
-    if ($subscriber) {
-        $subscriber->remove_cap('read');
-    }
+    // Don't modify existing WordPress roles - just add our custom ones
+    // This prevents conflicts with other plugins and themes
     
-    // Create custom roles
+    // Create custom roles only if they don't exist
     mcqhome_create_student_role();
     mcqhome_create_teacher_role();
     mcqhome_create_institution_role();
@@ -32,6 +29,11 @@ function mcqhome_init_user_roles() {
  * Create Student role with specific capabilities
  */
 function mcqhome_create_student_role() {
+    // Only create if role doesn't exist
+    if (get_role('student')) {
+        return;
+    }
+    
     $capabilities = [
         // Basic WordPress capabilities
         'read' => true,
@@ -53,11 +55,6 @@ function mcqhome_create_student_role() {
         'rate_content' => true,
     ];
     
-    // Remove existing role if it exists to update capabilities
-    if (get_role('student')) {
-        remove_role('student');
-    }
-    
     add_role('student', __('Student', 'mcqhome'), $capabilities);
 }
 
@@ -65,6 +62,11 @@ function mcqhome_create_student_role() {
  * Create Teacher role with specific capabilities
  */
 function mcqhome_create_teacher_role() {
+    // Only create if role doesn't exist
+    if (get_role('teacher')) {
+        return;
+    }
+    
     $capabilities = [
         // Basic WordPress capabilities
         'read' => true,
@@ -117,11 +119,6 @@ function mcqhome_create_teacher_role() {
         'create_comments' => true,
         'rate_content' => true,
     ];
-    
-    // Remove existing role if it exists to update capabilities
-    if (get_role('teacher')) {
-        remove_role('teacher');
-    }
     
     add_role('teacher', __('Teacher', 'mcqhome'), $capabilities);
 }
@@ -486,18 +483,19 @@ add_action('switch_theme', 'mcqhome_deactivate_user_roles');
  * Safe initialization of user roles - only creates if they don't exist
  */
 function mcqhome_safe_init_user_roles() {
-    // Check if roles already exist to avoid conflicts
-    $roles_exist = get_role('student') && get_role('teacher') && get_role('institution');
-    
-    if (!$roles_exist) {
-        // Only create roles if they don't exist - never remove/modify existing ones
-        mcqhome_create_student_role();
-        mcqhome_create_teacher_role();
-        mcqhome_create_institution_role();
-        
-        // Set flag to prevent repeated attempts
-        update_option('mcqhome_roles_initialized', true);
+    // Check if we've already initialized roles to prevent repeated attempts
+    if (get_option('mcqhome_roles_initialized', false)) {
+        return;
     }
+    
+    // Only create roles if they don't exist - never remove/modify existing ones
+    mcqhome_create_student_role();
+    mcqhome_create_teacher_role();
+    mcqhome_create_institution_role();
+    mcqhome_setup_admin_role();
+    
+    // Set flag to prevent repeated attempts
+    update_option('mcqhome_roles_initialized', true);
 }
 
 /**
