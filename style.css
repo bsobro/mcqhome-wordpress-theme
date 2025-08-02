@@ -15,54 +15,42 @@ Tags: education, mcq, multi-user, responsive, tailwind
 
 /* Theme styles will be compiled from Tailwind CSS */
 
-/* Fix for button text color issues */
-.bg-blue-600.text-white,
-.bg-blue-600.text-white:visited,
-.bg-blue-600.text-white:link {
-  color: #ffffff !important;
+/* Ensure Tailwind CSS takes precedence over WordPress default styles */
+a {
+  color: inherit;
+  text-decoration: inherit;
 }
 
-.bg-blue-600.text-white:hover {
-  color: #ffffff !important;
-  background-color: #1d4ed8 !important;
+/* Fix for Tailwind text color classes not working due to WordPress link styles */
+.text-white {
+  color: rgb(255 255 255) !important;
 }
 
-/* Ensure all primary buttons have white text */
-.btn-primary,
-a.bg-blue-600 {
-  color: #ffffff !important;
+.text-gray-600 {
+  color: rgb(75 85 99) !important;
 }
 
-/* Fix for any link color inheritance issues */
-a.bg-blue-600:hover {
-  color: #ffffff !important;
+.text-gray-700 {
+  color: rgb(55 65 81) !important;
 }
 
-/* More specific rules for buttons with blue background */
-.bg-blue-600 {
-  color: #ffffff !important;
+.text-gray-900 {
+  color: rgb(17 24 39) !important;
 }
 
-.bg-blue-600:hover {
-  color: #ffffff !important;
-  background-color: #1d4ed8 !important;
+.text-blue-600 {
+  color: rgb(37 99 235) !important;
 }
 
-/* Override any theme link colors for blue buttons */
-a.bg-blue-600,
-a.bg-blue-600:link,
-a.bg-blue-600:visited,
-a.bg-blue-600:hover,
-a.bg-blue-600:active,
-a.bg-blue-600:focus {
-  color: #ffffff !important;
-  text-decoration: none !important;
+/* Ensure hover states work properly */
+.hover\:text-blue-600:hover {
+  color: rgb(37 99 235) !important;
 }
 
-/* Button elements with blue background */
-button.bg-blue-600,
-button.bg-blue-600:hover,
-button.bg-blue-600:focus,
-button.bg-blue-600:active {
-  color: #ffffff !important;
+.hover\:text-gray-900:hover {
+  color: rgb(17 24 39) !important;
+}
+
+.hover\:text-white:hover {
+  color: rgb(255 255 255) !important;
 }

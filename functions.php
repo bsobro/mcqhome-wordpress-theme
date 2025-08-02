@@ -87,13 +87,13 @@ add_action('after_setup_theme', 'mcqhome_content_width', 0);
  * Enqueue scripts and styles
  */
 function mcqhome_scripts() {
-    // Enqueue main stylesheet (will be compiled from Tailwind CSS)
-    wp_enqueue_style('mcqhome-style', get_stylesheet_uri(), [], MCQHOME_VERSION);
-    
-    // Enqueue compiled CSS from Tailwind build process
+    // Enqueue compiled CSS from Tailwind build process first
     if (file_exists(MCQHOME_THEME_DIR . '/assets/css/main.css')) {
         wp_enqueue_style('mcqhome-main', MCQHOME_THEME_URL . '/assets/css/main.css', [], MCQHOME_VERSION);
     }
+    
+    // Enqueue main stylesheet after Tailwind CSS to allow overrides
+    wp_enqueue_style('mcqhome-style', get_stylesheet_uri(), ['mcqhome-main'], MCQHOME_VERSION);
     
     // Enqueue dashboard CSS on dashboard page
     if (is_page('dashboard') && file_exists(MCQHOME_THEME_DIR . '/assets/css/dashboard.css')) {

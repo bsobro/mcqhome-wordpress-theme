@@ -64,7 +64,7 @@
 
                     <div class="header-actions flex items-center space-x-4">
                         <?php if (is_user_logged_in()) : ?>
-                            <a href="<?php echo esc_url(get_permalink(get_page_by_path('dashboard'))); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" style="color: white !important;">
+                            <a href="<?php echo esc_url(get_permalink(get_page_by_path('dashboard'))); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
                                 <?php esc_html_e('Dashboard', 'mcqhome'); ?>
                             </a>
                             <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="text-gray-600 hover:text-gray-900">
@@ -74,7 +74,7 @@
                             <a href="<?php echo esc_url(wp_login_url()); ?>" class="text-gray-600 hover:text-gray-900">
                                 <?php esc_html_e('Login', 'mcqhome'); ?>
                             </a>
-                            <a href="<?php echo esc_url(wp_registration_url()); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" style="color: white !important;">
+                            <a href="<?php echo esc_url(wp_registration_url()); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
                                 <?php esc_html_e('Register', 'mcqhome'); ?>
                             </a>
                         <?php endif; ?>
