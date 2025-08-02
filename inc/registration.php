@@ -63,52 +63,31 @@ function mcqhome_registration_form($atts) {
             
             <!-- Role Selection -->
             <div class="form-group mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-3">
-                    <?php _e('I am a:', 'mcqhome'); ?> <span class="text-red-500">*</span>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <?php _e('Select Your Role', 'mcqhome'); ?> <span class="text-red-500">*</span>
                 </label>
-                <div class="role-selection grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="role-option">
-                        <input type="radio" id="role-student" name="user_role" value="student" class="sr-only" required>
-                        <label for="role-student" class="role-card block p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 transition-colors">
-                            <div class="text-center">
-                                <div class="role-icon mb-2">
-                                    <svg class="w-8 h-8 mx-auto text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="font-semibold text-gray-900"><?php _e('Student', 'mcqhome'); ?></h3>
-                                <p class="text-sm text-gray-600 mt-1"><?php _e('Take MCQs and track progress', 'mcqhome'); ?></p>
-                            </div>
+                <div class="space-y-2 mb-6">
+                    <div class="flex items-center">
+                        <input type="radio" id="role-student" name="user_role" value="student" required
+                               class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="role-student" class="ml-3 block text-sm font-medium text-gray-700">
+                            <?php _e('Student', 'mcqhome'); ?> - <?php _e('Take MCQs and track progress', 'mcqhome'); ?>
                         </label>
                     </div>
                     
-                    <div class="role-option">
-                        <input type="radio" id="role-teacher" name="user_role" value="teacher" class="sr-only">
-                        <label for="role-teacher" class="role-card block p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition-colors">
-                            <div class="text-center">
-                                <div class="role-icon mb-2">
-                                    <svg class="w-8 h-8 mx-auto text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="font-semibold text-gray-900"><?php _e('Teacher', 'mcqhome'); ?></h3>
-                                <p class="text-sm text-gray-600 mt-1"><?php _e('Create and manage MCQs', 'mcqhome'); ?></p>
-                            </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="role-teacher" name="user_role" value="teacher"
+                               class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="role-teacher" class="ml-3 block text-sm font-medium text-gray-700">
+                            <?php _e('Teacher', 'mcqhome'); ?> - <?php _e('Create and manage MCQs', 'mcqhome'); ?>
                         </label>
                     </div>
                     
-                    <div class="role-option">
-                        <input type="radio" id="role-institution" name="user_role" value="institution" class="sr-only">
-                        <label for="role-institution" class="role-card block p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-500 transition-colors">
-                            <div class="text-center">
-                                <div class="role-icon mb-2">
-                                    <svg class="w-8 h-8 mx-auto text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                    </svg>
-                                </div>
-                                <h3 class="font-semibold text-gray-900"><?php _e('Institution', 'mcqhome'); ?></h3>
-                                <p class="text-sm text-gray-600 mt-1"><?php _e('Manage teachers and students', 'mcqhome'); ?></p>
-                            </div>
+                    <div class="flex items-center">
+                        <input type="radio" id="role-institution" name="user_role" value="institution"
+                               class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                        <label for="role-institution" class="ml-3 block text-sm font-medium text-gray-700">
+                            <?php _e('Institution', 'mcqhome'); ?> - <?php _e('Manage teachers and students', 'mcqhome'); ?>
                         </label>
                     </div>
                 </div>
@@ -348,20 +327,7 @@ function mcqhome_registration_form($atts) {
         </form>
     </div>
     
-    <style>
-    .role-selection {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    @media (max-width: 767px) {
-        .role-selection {
-            grid-template-columns: 1fr;
-        }
-    }
-    </style>
+
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -371,83 +337,27 @@ function mcqhome_registration_form($atts) {
         const submitButton = document.getElementById('register-submit');
         const messagesDiv = document.getElementById('registration-messages');
         
-        // Function to update role selection visual state
-        function updateRoleSelection(selectedRole) {
-            // Reset all role cards
-            document.querySelectorAll('.role-card').forEach(card => {
-                card.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
-                
-                // Remove checkmark if exists
-                const checkmark = card.querySelector('.role-checkmark');
-                if (checkmark) {
-                    checkmark.remove();
-                }
-            });
-            
-            // Update selected role card
-            const selectedCard = document.querySelector('label[for="role-' + selectedRole + '"]');
-            if (selectedCard) {
-                // Add appropriate styling based on role
-                if (selectedRole === 'student') {
-                    selectedCard.classList.add('border-blue-500', 'bg-blue-50');
-                } else if (selectedRole === 'teacher') {
-                    selectedCard.classList.add('border-green-500', 'bg-green-50');
-                } else if (selectedRole === 'institution') {
-                    selectedCard.classList.add('border-purple-500', 'bg-purple-50');
-                }
-                
-                // Add checkmark
-                const checkmark = document.createElement('div');
-                checkmark.className = 'role-checkmark absolute top-2 right-2 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold';
-                checkmark.innerHTML = '✓';
-                
-                // Set appropriate background color for checkmark
-                if (selectedRole === 'student') {
-                    checkmark.classList.add('bg-blue-500');
-                } else if (selectedRole === 'teacher') {
-                    checkmark.classList.add('bg-green-500');
-                } else if (selectedRole === 'institution') {
-                    checkmark.classList.add('bg-purple-500');
-                }
-                
-                selectedCard.classList.add('relative');
-                selectedCard.appendChild(checkmark);
-            }
-            
-            // Show/hide role-specific fields
-            document.querySelectorAll('.role-fields').forEach(field => {
-                field.style.display = 'none';
-            });
-            
-            const roleFields = document.getElementById(selectedRole + '-fields');
-            if (roleFields) {
-                roleSpecificFields.style.display = 'block';
-                roleFields.style.display = 'block';
-                
-                // Set required fields based on role
-                const institutionName = document.getElementById('institution_name');
-                if (institutionName) {
-                    institutionName.required = (selectedRole === 'institution');
-                }
-            }
-        }
-        
         // Handle role selection
         roleInputs.forEach(function(input) {
             input.addEventListener('change', function() {
-                updateRoleSelection(this.value);
-            });
-        });
-        
-        // Add click handlers for role cards
-        document.querySelectorAll('.role-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                const inputId = this.getAttribute('for');
-                const input = document.getElementById(inputId);
+                // Show/hide role-specific fields
+                document.querySelectorAll('.role-fields').forEach(field => {
+                    field.style.display = 'none';
+                });
                 
-                if (input && input.type === 'radio') {
-                    input.checked = true;
-                    updateRoleSelection(input.value);
+                const roleFields = document.getElementById(this.value + '-fields');
+                if (roleFields) {
+                    roleSpecificFields.style.display = 'block';
+                    roleFields.style.display = 'block';
+                    
+                    // Set required fields based on role
+                    if (this.value === 'institution') {
+                        const institutionName = document.getElementById('institution_name');
+                        if (institutionName) institutionName.required = true;
+                    } else {
+                        const institutionName = document.getElementById('institution_name');
+                        if (institutionName) institutionName.required = false;
+                    }
                 }
             });
         });
