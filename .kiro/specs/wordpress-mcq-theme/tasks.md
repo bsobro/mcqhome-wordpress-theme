@@ -192,9 +192,9 @@
   - Implement CSS and JavaScript minification
   - _Requirements: 8.1, 8.2, 8.3, 8.4_
 
-- [ ] 13. Create demo content and default institution setup
+- [x] 13. Create demo content and default institution setup
 
-  - [ ] 13.1 Generate comprehensive demo content
+  - [x] 13.1 Generate comprehensive demo content
 
     - Create demo institutions with realistic profiles and branding
     - Add demo teachers associated with institutions and complete profiles
@@ -202,7 +202,7 @@
     - Build comprehensive category structure with subjects and topics
     - _Requirements: 12.1, 12.2, 12.3, 12.4_
 
-  - [ ] 13.2 Create sample MCQs and sets with various configurations
+  - [x] 13.2 Create sample MCQs and sets with various configurations
 
     - Generate sample MCQs across different subjects and difficulty levels
     - Create demo MCQ sets with different marking schemes and formats
@@ -210,8 +210,10 @@
     - Implement demo content cleanup functionality
     - _Requirements: 12.5, 12.6, 12.7, 12.8, 12.9_
 
-  - [ ] 13.3 Set up MCQ Academy default institution
+  - [x] 13.3 Set up MCQ Academy default institution
+
     - Create "MCQ Academy" as default institution for independent teachers
+
     - Configure automatic assignment for teachers without institution selection
     - Set up proper display and identification as default institution
     - Organize independent teacher content under MCQ Academy structure

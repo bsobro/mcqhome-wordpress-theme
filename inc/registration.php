@@ -177,12 +177,29 @@ function mcqhome_registration_form($atts) {
                                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
                             <option value=""><?php _e('Select Institution (Optional)', 'mcqhome'); ?></option>
                             <?php
+                            // Show default institution first
+                            $default_institution = mcqhome_get_default_institution();
+                            if ($default_institution):
+                            ?>
+                                <option value="<?php echo $default_institution->ID; ?>" selected>
+                                    <?php echo esc_html($default_institution->post_title); ?> <?php _e('(Default)', 'mcqhome'); ?>
+                                </option>
+                                <option disabled>──────────</option>
+                            <?php endif; ?>
+                            
+                            <?php
                             $institutions = get_posts([
                                 'post_type' => 'institution',
                                 'post_status' => 'publish',
                                 'numberposts' => -1,
                                 'orderby' => 'title',
                                 'order' => 'ASC',
+                                'meta_query' => [
+                                    [
+                                        'key' => '_is_default_institution',
+                                        'compare' => 'NOT EXISTS'
+                                    ]
+                                ]
                             ]);
                             foreach ($institutions as $institution):
                             ?>
@@ -191,7 +208,7 @@ function mcqhome_registration_form($atts) {
                                 </option>
                             <?php endforeach; ?>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1"><?php _e('If no institution is selected, you will be assigned to "MCQ Academy"', 'mcqhome'); ?></p>
+                        <p class="text-xs text-gray-500 mt-1"><?php _e('If no institution is selected, you will be assigned to "MCQ Academy" - our default institution for independent teachers', 'mcqhome'); ?></p>
                     </div>
                     
                     <div class="form-group mb-4">
@@ -546,7 +563,10 @@ function mcqhome_handle_registration() {
         
         // If no institution selected, assign to MCQ Academy (default institution)
         if (!$institution_id) {
-            $institution_id = mcqhome_get_default_institution_id();
+            $default_institution = mcqhome_get_default_institution();
+            if ($default_institution) {
+                $institution_id = $default_institution->ID;
+            }
         }
         
         if ($institution_id) {
@@ -580,6 +600,9 @@ function mcqhome_handle_registration() {
     // Set user as pending verification
     update_user_meta($user_id, 'email_verified', false);
     update_user_meta($user_id, 'verification_key', wp_generate_password(32, false));
+    
+    // Trigger action for successful registration
+    do_action('mcqhome_user_registered', $user_id, $user_role, $_POST);
     
     $message = __('Account created successfully! Please check your email to verify your account.', 'mcqhome');
     $redirect_url = home_url('/login/?registered=1');
