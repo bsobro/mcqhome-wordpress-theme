@@ -59,54 +59,157 @@ function mcqhome_registration_form($atts)
         .role-card {
             transition: all 0.3s ease;
         }
+
         .role-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
+
         .role-card:active {
             transform: scale(0.98);
         }
+
         .role-card.selected {
             border-color: #3b82f6;
             background-color: #eff6ff;
         }
-        
+
         .message {
             padding: 1rem;
             border-radius: 0.375rem;
             margin-bottom: 1rem;
             font-weight: 500;
         }
+
         .message-success {
             background-color: #d1fae5;
             color: #065f46;
             border: 1px solid #6ee7b7;
         }
+
         .message-error {
             background-color: #fee2e2;
             color: #991b1b;
             border: 1px solid #fca5a5;
         }
-        
+
         #registration-messages {
             transition: all 0.3s ease;
         }
-        
+
         .loading-text svg {
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .form-step {
             transition: all 0.3s ease;
         }
-        
+
         .role-fields {
             transition: all 0.3s ease;
+        }
+
+        .role-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        .role-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .role-card:active {
+            transform: scale(0.98);
+        }
+
+        .role-card.selected {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .role-card.selected h3 {
+            color: #1d4ed8;
+        }
+
+        .role-card.selected p {
+            color: #1e40af;
+        }
+
+        /* Ensure role-specific fields are properly hidden initially */
+        #role-specific-fields {
+            display: none;
+        }
+
+        .role-fields {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading state improvements */
+        .loading-text svg {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Message styling improvements */
+        .message {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .message-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .message-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        /* Form step transitions */
+        .registration-step {
+            transition: all 0.3s ease-in-out;
         }
     </style>
 
@@ -178,411 +281,577 @@ function mcqhome_registration_form($atts)
                 <?php wp_nonce_field('mcqhome_register_nonce', 'mcqhome_register_nonce'); ?>
                 <input type="hidden" id="selected-role" name="user_role" value="">
 
-            <!-- Basic Information -->
-            <div class="basic-info-section">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="form-group">
-                        <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('First Name', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="first_name" name="first_name" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <!-- Basic Information -->
+                <div class="basic-info-section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('First Name', 'mcqhome'); ?> <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="first_name" name="first_name" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Last Name', 'mcqhome'); ?> <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="last_name" name="last_name" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Last Name', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="last_name" name="last_name" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                        <?php _e('Email Address', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                    </label>
-                    <input type="email" id="email" name="email" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="form-group">
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Password', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                        </label>
-                        <input type="password" id="password" name="password" required minlength="8"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <p class="text-xs text-gray-500 mt-1"><?php _e('Minimum 8 characters', 'mcqhome'); ?></p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Confirm Password', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                        </label>
-                        <input type="password" id="confirm_password" name="confirm_password" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Role-specific fields (will be shown/hidden based on role selection) -->
-            <div id="role-specific-fields" class="role-specific-section" style="display: none;">
-
-                <!-- Teacher-specific fields -->
-                <div id="teacher-fields" class="role-fields" style="display: none;">
-                    <h3 class="text-lg font-semibold mb-4 text-green-700"><?php _e('Teacher Information', 'mcqhome'); ?></h3>
 
                     <div class="form-group mb-4">
-                        <label for="teacher_specialization" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Specialization', 'mcqhome'); ?>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                            <?php _e('Email Address', 'mcqhome'); ?> <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" id="teacher_specialization" name="specialization"
-                            placeholder="<?php _e('e.g., Mathematics, Physics, Chemistry', 'mcqhome'); ?>"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <input type="email" id="email" name="email" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
-                    <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-                        <p class="text-sm text-green-700">
-                            <strong><?php _e('Note:', 'mcqhome'); ?></strong> 
-                            <?php _e('You will be automatically assigned to MCQ Academy (our default institution) during registration. You can change your institution later when invited by another institution from their dashboard.', 'mcqhome'); ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Password', 'mcqhome'); ?> <span class="text-red-500">*</span>
+                            </label>
+                            <input type="password" id="password" name="password" required minlength="8"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <p class="text-xs text-gray-500 mt-1"><?php _e('Minimum 8 characters', 'mcqhome'); ?></p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Confirm Password', 'mcqhome'); ?> <span class="text-red-500">*</span>
+                            </label>
+                            <input type="password" id="confirm_password" name="confirm_password" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role-specific fields (will be shown/hidden based on role selection) -->
+                <div id="role-specific-fields" class="role-specific-section" style="display: none;">
+
+                    <!-- Teacher-specific fields -->
+                    <div id="teacher-fields" class="role-fields" style="display: none;">
+                        <h3 class="text-lg font-semibold mb-4 text-green-700"><?php _e('Teacher Information', 'mcqhome'); ?></h3>
+
+                        <div class="form-group mb-4">
+                            <label for="teacher_specialization" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Specialization', 'mcqhome'); ?>
+                            </label>
+                            <input type="text" id="teacher_specialization" name="specialization"
+                                placeholder="<?php _e('e.g., Mathematics, Physics, Chemistry', 'mcqhome'); ?>"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+
+                        <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                            <p class="text-sm text-green-700">
+                                <strong><?php _e('Note:', 'mcqhome'); ?></strong>
+                                <?php _e('You will be automatically assigned to MCQ Academy (our default institution) during registration. You can change your institution later when invited by another institution from their dashboard.', 'mcqhome'); ?>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Institution-specific fields -->
+                    <div id="institution-fields" class="role-fields" style="display: none;">
+                        <h3 class="text-lg font-semibold mb-4 text-purple-700"><?php _e('Institution Information', 'mcqhome'); ?></h3>
+
+                        <div class="form-group mb-4">
+                            <label for="institution_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Institution Name', 'mcqhome'); ?> <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="institution_name" name="institution_name"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="institution_type" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Institution Type', 'mcqhome'); ?>
+                            </label>
+                            <select id="institution_type" name="institution_type"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value=""><?php _e('Select Type', 'mcqhome'); ?></option>
+                                <option value="school"><?php _e('School', 'mcqhome'); ?></option>
+                                <option value="college"><?php _e('College', 'mcqhome'); ?></option>
+                                <option value="university"><?php _e('University', 'mcqhome'); ?></option>
+                                <option value="coaching"><?php _e('Coaching Center', 'mcqhome'); ?></option>
+                                <option value="online"><?php _e('Online Platform', 'mcqhome'); ?></option>
+                                <option value="other"><?php _e('Other', 'mcqhome'); ?></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="institution_website" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Website', 'mcqhome'); ?>
+                            </label>
+                            <input type="url" id="institution_website" name="institution_website"
+                                placeholder="https://example.com"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <!-- Student-specific fields -->
+                    <div id="student-fields" class="role-fields" style="display: none;">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700"><?php _e('Student Information', 'mcqhome'); ?></h3>
+
+                        <div class="form-group mb-4">
+                            <label for="education_level" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Education Level', 'mcqhome'); ?>
+                            </label>
+                            <select id="education_level" name="education_level"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value=""><?php _e('Select Level', 'mcqhome'); ?></option>
+                                <option value="high_school"><?php _e('High School', 'mcqhome'); ?></option>
+                                <option value="undergraduate"><?php _e('Undergraduate', 'mcqhome'); ?></option>
+                                <option value="graduate"><?php _e('Graduate', 'mcqhome'); ?></option>
+                                <option value="professional"><?php _e('Professional', 'mcqhome'); ?></option>
+                                <option value="other"><?php _e('Other', 'mcqhome'); ?></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="interests" class="block text-sm font-medium text-gray-700 mb-1">
+                                <?php _e('Subjects of Interest', 'mcqhome'); ?>
+                            </label>
+                            <input type="text" id="interests" name="interests"
+                                placeholder="<?php _e('e.g., Mathematics, Science, History', 'mcqhome'); ?>"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bio field for all roles -->
+                <div class="form-group mb-6">
+                    <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">
+                        <?php _e('Bio', 'mcqhome'); ?>
+                    </label>
+                    <textarea id="bio" name="bio" rows="3"
+                        placeholder="<?php _e('Tell us a bit about yourself...', 'mcqhome'); ?>"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="form-group mb-6">
+                    <label class="flex items-start">
+                        <input type="checkbox" id="terms_accepted" name="terms_accepted" required
+                            class="mt-1 mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <span class="text-sm text-gray-700">
+                            <?php _e('I agree to the', 'mcqhome'); ?>
+                            <a href="<?php echo home_url('/terms/'); ?>" target="_blank" class="text-blue-600 hover:underline">
+                                <?php _e('Terms of Service', 'mcqhome'); ?>
+                            </a>
+                            <?php _e('and', 'mcqhome'); ?>
+                            <a href="<?php echo home_url('/privacy/'); ?>" target="_blank" class="text-blue-600 hover:underline">
+                                <?php _e('Privacy Policy', 'mcqhome'); ?>
+                            </a>
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    <button type="submit" id="register-submit"
+                        class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
+                        <span class="submit-text"><?php _e('Create Account', 'mcqhome'); ?></span>
+                        <span class="loading-text" style="display: none;">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <?php _e('Creating Account...', 'mcqhome'); ?>
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Messages -->
+                <div id="registration-messages" class="mt-4"></div>
+
+                <!-- Back Button -->
+                <div class="text-center mt-6">
+                    <button type="button" id="back-to-roles"
+                        class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        <?php _e('Back to Role Selection', 'mcqhome'); ?>
+                    </button>
+                </div>
+
+                <?php if ($atts['show_login_link']): ?>
+                    <div class="text-center mt-4">
+                        <p class="text-gray-600">
+                            <?php _e('Already have an account?', 'mcqhome'); ?>
+                            <a href="<?php echo wp_login_url(); ?>" class="text-blue-600 hover:underline font-medium">
+                                <?php _e('Sign In', 'mcqhome'); ?>
+                            </a>
                         </p>
                     </div>
-                </div>
-
-                <!-- Institution-specific fields -->
-                <div id="institution-fields" class="role-fields" style="display: none;">
-                    <h3 class="text-lg font-semibold mb-4 text-purple-700"><?php _e('Institution Information', 'mcqhome'); ?></h3>
-
-                    <div class="form-group mb-4">
-                        <label for="institution_name" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Institution Name', 'mcqhome'); ?> <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="institution_name" name="institution_name"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="institution_type" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Institution Type', 'mcqhome'); ?>
-                        </label>
-                        <select id="institution_type" name="institution_type"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            <option value=""><?php _e('Select Type', 'mcqhome'); ?></option>
-                            <option value="school"><?php _e('School', 'mcqhome'); ?></option>
-                            <option value="college"><?php _e('College', 'mcqhome'); ?></option>
-                            <option value="university"><?php _e('University', 'mcqhome'); ?></option>
-                            <option value="coaching"><?php _e('Coaching Center', 'mcqhome'); ?></option>
-                            <option value="online"><?php _e('Online Platform', 'mcqhome'); ?></option>
-                            <option value="other"><?php _e('Other', 'mcqhome'); ?></option>
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="institution_website" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Website', 'mcqhome'); ?>
-                        </label>
-                        <input type="url" id="institution_website" name="institution_website"
-                            placeholder="https://example.com"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Student-specific fields -->
-                <div id="student-fields" class="role-fields" style="display: none;">
-                    <h3 class="text-lg font-semibold mb-4 text-blue-700"><?php _e('Student Information', 'mcqhome'); ?></h3>
-
-                    <div class="form-group mb-4">
-                        <label for="education_level" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Education Level', 'mcqhome'); ?>
-                        </label>
-                        <select id="education_level" name="education_level"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value=""><?php _e('Select Level', 'mcqhome'); ?></option>
-                            <option value="high_school"><?php _e('High School', 'mcqhome'); ?></option>
-                            <option value="undergraduate"><?php _e('Undergraduate', 'mcqhome'); ?></option>
-                            <option value="graduate"><?php _e('Graduate', 'mcqhome'); ?></option>
-                            <option value="professional"><?php _e('Professional', 'mcqhome'); ?></option>
-                            <option value="other"><?php _e('Other', 'mcqhome'); ?></option>
-                        </select>
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label for="interests" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Subjects of Interest', 'mcqhome'); ?>
-                        </label>
-                        <input type="text" id="interests" name="interests"
-                            placeholder="<?php _e('e.g., Mathematics, Science, History', 'mcqhome'); ?>"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bio field for all roles -->
-            <div class="form-group mb-6">
-                <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">
-                    <?php _e('Bio', 'mcqhome'); ?>
-                </label>
-                <textarea id="bio" name="bio" rows="3"
-                    placeholder="<?php _e('Tell us a bit about yourself...', 'mcqhome'); ?>"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
-            </div>
-
-            <!-- Terms and Conditions -->
-            <div class="form-group mb-6">
-                <label class="flex items-start">
-                    <input type="checkbox" id="terms_accepted" name="terms_accepted" required
-                        class="mt-1 mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <span class="text-sm text-gray-700">
-                        <?php _e('I agree to the', 'mcqhome'); ?>
-                        <a href="<?php echo home_url('/terms/'); ?>" target="_blank" class="text-blue-600 hover:underline">
-                            <?php _e('Terms of Service', 'mcqhome'); ?>
-                        </a>
-                        <?php _e('and', 'mcqhome'); ?>
-                        <a href="<?php echo home_url('/privacy/'); ?>" target="_blank" class="text-blue-600 hover:underline">
-                            <?php _e('Privacy Policy', 'mcqhome'); ?>
-                        </a>
-                    </span>
-                </label>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="form-group">
-                <button type="submit" id="register-submit"
-                    class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium">
-                    <span class="submit-text"><?php _e('Create Account', 'mcqhome'); ?></span>
-                    <span class="loading-text" style="display: none;">
-                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <?php _e('Creating Account...', 'mcqhome'); ?>
-                    </span>
-                </button>
-            </div>
-
-            <!-- Messages -->
-            <div id="registration-messages" class="mt-4"></div>
-
-            <!-- Back Button -->
-            <div class="text-center mt-6">
-                <button type="button" id="back-to-roles"
-                    class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
-                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    <?php _e('Back to Role Selection', 'mcqhome'); ?>
-                </button>
-            </div>
-
-            <?php if ($atts['show_login_link']): ?>
-                <div class="text-center mt-4">
-                    <p class="text-gray-600">
-                        <?php _e('Already have an account?', 'mcqhome'); ?>
-                        <a href="<?php echo wp_login_url(); ?>" class="text-blue-600 hover:underline font-medium">
-                            <?php _e('Sign In', 'mcqhome'); ?>
-                        </a>
-                    </p>
-                </div>
-            <?php endif; ?>
-        </form>
-    </div>
+                <?php endif; ?>
+            </form>
+        </div>
 
 
 
-    <script>
+        <script>
             document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, initializing registration...');
+
                 // Registration form controller
                 const RegistrationController = {
                     currentStep: 'role-selection',
                     selectedRole: null,
-                    
+
                     init: function() {
+                        console.log('Initializing RegistrationController...');
                         this.bindEvents();
                         this.showStep('role-selection');
                     },
-                    
+
                     bindEvents: function() {
                         console.log('Binding events...');
-                        // Role selection
-                        const roleCards = document.querySelectorAll('.role-card');
-                        console.log('Found', roleCards.length, 'role cards');
-                        roleCards.forEach(card => {
-                            card.addEventListener('click', (e) => {
-                                console.log('Role card clicked:', card.dataset.role);
-                                const role = card.dataset.role;
-                                this.selectRole(role);
+
+                        // Role selection - Use event delegation to handle clicks
+                        const container = document.getElementById('role-selection-container');
+                        if (container) {
+                            container.addEventListener('click', (e) => {
+                                const card = e.target.closest('.role-card');
+                                if (card && card.dataset.role) {
+                                    console.log('Role card clicked:', card.dataset.role);
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    this.selectRole(card.dataset.role);
+                                }
                             });
-                        });
-                        
-                        // Back button
-                        const backBtn = document.getElementById('back-to-roles');
-                        if (backBtn) {
-                            backBtn.addEventListener('click', () => this.showStep('role-selection'));
+                            console.log('Role selection event bound to container');
+                        } else {
+                            console.error('Role selection container not found');
                         }
-                        
+
+                        // Back buttons - handle multiple back buttons
+                        document.addEventListener('click', (e) => {
+                            if (e.target.id === 'back-to-roles' || e.target.closest('#back-to-roles')) {
+                                e.preventDefault();
+                                console.log('Back button clicked');
+                                this.showStep('role-selection');
+                            }
+                        });
+
                         // Form submission
                         const form = document.getElementById('mcqhome-register-form');
                         if (form) {
-                            form.addEventListener('submit', (e) => this.handleSubmit(e));
+                            form.addEventListener('submit', (e) => {
+                                console.log('Form submission attempted');
+                                this.handleSubmit(e);
+                            });
+                            console.log('Form submission event bound');
+                        } else {
+                            console.error('Registration form not found');
+                        }
+
+                        // Password confirmation validation
+                        const confirmPassword = document.getElementById('confirm_password');
+                        if (confirmPassword) {
+                            confirmPassword.addEventListener('blur', () => {
+                                this.validatePasswordMatch();
+                            });
                         }
                     },
-                    
+
                     showStep: function(step) {
                         console.log('Showing step:', step);
                         const roleSelection = document.getElementById('step-role-selection');
                         const registrationForm = document.getElementById('step-registration-form');
-                        
+
                         if (!roleSelection || !registrationForm) {
                             console.error('Could not find step elements');
                             return;
                         }
-                        
+
                         if (step === 'role-selection') {
                             roleSelection.style.display = 'block';
                             registrationForm.style.display = 'none';
                             this.currentStep = 'role-selection';
                             console.log('Showing role selection');
+
+                            // Clear any previous selections
+                            document.querySelectorAll('.role-card').forEach(card => {
+                                card.classList.remove('selected');
+                            });
+
                         } else if (step === 'registration-form') {
                             roleSelection.style.display = 'none';
                             registrationForm.style.display = 'block';
                             this.currentStep = 'registration-form';
                             console.log('Showing registration form');
+
+                            // Show role-specific fields container
+                            const roleSpecificFields = document.getElementById('role-specific-fields');
+                            if (roleSpecificFields) {
+                                roleSpecificFields.style.display = 'block';
+                            }
                         }
                     },
-                    
+
                     selectRole: function(role) {
                         console.log('Selecting role:', role);
                         this.selectedRole = role;
-                        
+
+                        // Visual feedback - highlight selected card
+                        document.querySelectorAll('.role-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+
+                        const selectedCard = document.querySelector(`.role-card[data-role="${role}"]`);
+                        if (selectedCard) {
+                            selectedCard.classList.add('selected');
+                        }
+
                         // Set hidden input
                         const roleInput = document.getElementById('selected-role');
-                        if (roleInput) roleInput.value = role;
-                        
-                        // Show appropriate fields
+                        if (roleInput) {
+                            roleInput.value = role;
+                            console.log('Role input set to:', role);
+                        } else {
+                            console.error('Role input field not found');
+                        }
+
+                        // Show appropriate fields and update form
                         this.showRoleFields(role);
                         this.updateFormTitles(role);
-                        this.showStep('registration-form');
+                        this.updateSubmitButton(role);
+
+                        // Small delay before showing form for better UX
+                        setTimeout(() => {
+                            this.showStep('registration-form');
+                        }, 300);
                     },
-                    
+
                     showRoleFields: function(role) {
-                        // Hide all role fields
+                        console.log('Showing role fields for:', role);
+
+                        // Hide all role fields first
                         document.querySelectorAll('.role-fields').forEach(field => {
                             field.style.display = 'none';
                         });
-                        
+
                         // Show specific role fields
                         const roleFields = document.getElementById(role + '-fields');
                         if (roleFields) {
                             roleFields.style.display = 'block';
+                            console.log('Showing fields for role:', role);
+
+                            // Set required fields based on role
+                            this.setRequiredFields(role);
+                        } else {
+                            console.log('No specific fields found for role:', role);
                         }
                     },
-                    
+
+                    setRequiredFields: function(role) {
+                        // Remove all role-specific required attributes first
+                        document.querySelectorAll('#role-specific-fields input, #role-specific-fields select').forEach(field => {
+                            field.removeAttribute('required');
+                        });
+
+                        // Set required fields based on role
+                        if (role === 'institution') {
+                            const institutionName = document.getElementById('institution_name');
+                            if (institutionName) institutionName.setAttribute('required', 'required');
+                        }
+                    },
+
                     updateFormTitles: function(role) {
                         const title = document.getElementById('form-title');
                         const subtitle = document.getElementById('form-subtitle');
-                        
+
                         if (!title || !subtitle) return;
-                        
+
                         const titles = {
                             student: {
-                                title: '<?php _e('Student Registration', 'mcqhome'); ?>',
-                                subtitle: '<?php _e('Start your learning journey with MCQHome', 'mcqhome'); ?>'
+                                title: 'Student Registration',
+                                subtitle: 'Start your learning journey with MCQHome'
                             },
                             teacher: {
-                                title: '<?php _e('Teacher Registration', 'mcqhome'); ?>',
-                                subtitle: '<?php _e('Join as a teacher and create amazing MCQs', 'mcqhome'); ?>'
+                                title: 'Teacher Registration',
+                                subtitle: 'Join as a teacher and create amazing MCQs'
                             },
                             institution: {
-                                title: '<?php _e('Institution Registration', 'mcqhome'); ?>',
-                                subtitle: '<?php _e('Register your institution and manage your team', 'mcqhome'); ?>'
+                                title: 'Institution Registration',
+                                subtitle: 'Register your institution and manage your team'
                             }
                         };
-                        
+
                         if (titles[role]) {
                             title.textContent = titles[role].title;
                             subtitle.textContent = titles[role].subtitle;
+                            console.log('Updated form titles for role:', role);
                         }
                     },
-                    
+
+                    updateSubmitButton: function(role) {
+                        const submitBtn = document.getElementById('register-submit');
+                        const submitText = submitBtn.querySelector('.submit-text');
+
+                        if (submitText) {
+                            const buttonTexts = {
+                                student: 'Create Student Account',
+                                teacher: 'Create Teacher Account',
+                                institution: 'Create Institution Account'
+                            };
+
+                            submitText.textContent = buttonTexts[role] || 'Create Account';
+                        }
+                    },
+
+                    validatePasswordMatch: function() {
+                        const password = document.getElementById('password');
+                        const confirmPassword = document.getElementById('confirm_password');
+
+                        if (password.value && confirmPassword.value) {
+                            if (password.value !== confirmPassword.value) {
+                                confirmPassword.setCustomValidity('Passwords do not match');
+                                this.showMessage('Passwords do not match.', 'error');
+                            } else {
+                                confirmPassword.setCustomValidity('');
+                                // Clear error message if passwords now match
+                                const errorMsg = document.querySelector('.message-error');
+                                if (errorMsg && errorMsg.textContent.includes('Passwords do not match')) {
+                                    errorMsg.remove();
+                                }
+                            }
+                        }
+                    },
+
                     handleSubmit: function(e) {
                         e.preventDefault();
-                        
+                        console.log('Handling form submission...');
+
+                        // Validate required fields
+                        if (!this.selectedRole) {
+                            this.showMessage('Please select a role first.', 'error');
+                            this.showStep('role-selection');
+                            return;
+                        }
+
                         // Password validation
                         const password = document.getElementById('password').value;
                         const confirmPassword = document.getElementById('confirm_password').value;
-                        
+
                         if (password !== confirmPassword) {
-                            this.showMessage('<?php _e('Passwords do not match.', 'mcqhome'); ?>', 'error');
+                            this.showMessage('Passwords do not match.', 'error');
                             return;
                         }
-                        
+
+                        if (password.length < 8) {
+                            this.showMessage('Password must be at least 8 characters long.', 'error');
+                            return;
+                        }
+
+                        // Terms acceptance
+                        const termsAccepted = document.getElementById('terms_accepted');
+                        if (!termsAccepted.checked) {
+                            this.showMessage('You must accept the terms and conditions.', 'error');
+                            return;
+                        }
+
+                        // Role-specific validation
+                        if (this.selectedRole === 'institution') {
+                            const institutionName = document.getElementById('institution_name').value.trim();
+                            if (!institutionName) {
+                                this.showMessage('Institution name is required.', 'error');
+                                return;
+                            }
+                        }
+
                         // Submit form
                         this.submitForm();
                     },
-                    
+
                     submitForm: function() {
+                        console.log('Submitting form...');
                         const form = document.getElementById('mcqhome-register-form');
                         const submitBtn = document.getElementById('register-submit');
-                        const messagesDiv = document.getElementById('registration-messages');
-                        
+
                         // Show loading state
                         submitBtn.disabled = true;
                         submitBtn.querySelector('.submit-text').style.display = 'none';
                         submitBtn.querySelector('.loading-text').style.display = 'inline';
-                        
+
                         const formData = new FormData(form);
                         formData.append('action', 'mcqhome_register_user');
-                        
+
+                        // Debug: Log form data
+                        for (let [key, value] of formData.entries()) {
+                            console.log('Form data:', key, '=', value);
+                        }
+
                         fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                this.showMessage(data.data.message, 'success');
-                                if (data.data.redirect) {
-                                    setTimeout(() => {
-                                        window.location.href = data.data.redirect;
-                                    }, 2000);
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => {
+                                console.log('Response received:', response);
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log('Response data:', data);
+                                if (data.success) {
+                                    this.showMessage(data.data.message, 'success');
+                                    if (data.data.redirect) {
+                                        setTimeout(() => {
+                                            window.location.href = data.data.redirect;
+                                        }, 2000);
+                                    }
+                                } else {
+                                    this.showMessage(data.data || 'Registration failed. Please try again.', 'error');
                                 }
-                            } else {
-                                this.showMessage(data.data || '<?php _e('Registration failed. Please try again.', 'mcqhome'); ?>', 'error');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            this.showMessage('<?php _e('An error occurred. Please try again.', 'mcqhome'); ?>', 'error');
-                        })
-                        .finally(() => {
-                            submitBtn.disabled = false;
-                            submitBtn.querySelector('.submit-text').style.display = 'inline';
-                            submitBtn.querySelector('.loading-text').style.display = 'none';
-                        });
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                this.showMessage('An error occurred. Please try again.', 'error');
+                            })
+                            .finally(() => {
+                                submitBtn.disabled = false;
+                                submitBtn.querySelector('.submit-text').style.display = 'inline';
+                                submitBtn.querySelector('.loading-text').style.display = 'none';
+                            });
                     },
-                    
+
                     showMessage: function(message, type) {
                         const messagesDiv = document.getElementById('registration-messages');
                         if (!messagesDiv) return;
-                        
+
                         messagesDiv.innerHTML = `<div class="message message-${type}">${message}</div>`;
-                        messagesDiv.scrollIntoView({ behavior: 'smooth' });
+                        messagesDiv.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'nearest'
+                        });
+
+                        // Auto-hide success messages after 5 seconds
+                        if (type === 'success') {
+                            setTimeout(() => {
+                                messagesDiv.innerHTML = '';
+                            }, 5000);
+                        }
                     }
                 };
-                
+
+                // Initialize the registration controller
+                try {
+                    RegistrationController.init();
+                    console.log('RegistrationController initialized successfully');
+                } catch (e) {
+                    console.error('RegistrationController initialization failed:', e);
+                }
+
                 // Legacy global function for backward compatibility
-            window.selectRole = function(role) {
-                RegistrationController.selectRole(role);
-            };
-            
-            // Initialize the registration controller after DOM is loaded
-            document.addEventListener('DOMContentLoaded', function() {
-                RegistrationController.init();
+                window.selectRole = function(role) {
+                    RegistrationController.selectRole(role);
+                };
             });
-            });
-    </script>
-<?php
+        </script>
+    <?php
 
     return ob_get_clean();
 }
