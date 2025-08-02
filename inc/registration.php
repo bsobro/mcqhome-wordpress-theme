@@ -348,60 +348,7 @@ function mcqhome_registration_form($atts) {
         </form>
     </div>
     
-    <style>
-    .role-selection {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .role-card {
-        border: 2px solid #e5e7eb;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        background-color: #ffffff;
-    }
-    
-    .role-card:hover {
-        border-color: #9ca3af;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .role-card.selected {
-        border-color: #3B82F6;
-        background-color: #EFF6FF;
-    }
-    
-    .role-card.selected.teacher {
-        border-color: #10B981;
-        background-color: #ECFDF5;
-    }
-    
-    .role-card.selected.institution {
-        border-color: #8B5CF6;
-        background-color: #F3E8FF;
-    }
-    
-    .role-icon {
-        margin-bottom: 0.5rem;
-    }
-    
-    .role-icon svg {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto;
-    }
-    
-    @media (max-width: 767px) {
-        .role-selection {
-            grid-template-columns: 1fr;
-        }
-    }
-    </style>
+
     
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -422,12 +369,41 @@ function mcqhome_registration_form($atts) {
             input.addEventListener('change', function() {
                 // Update visual selection
                 document.querySelectorAll('.role-card').forEach(card => {
-                    card.classList.remove('selected', 'student', 'teacher', 'institution');
+                    card.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50', 'border-purple-500', 'bg-purple-50');
+                    
+                    // Remove checkmark if exists
+                    const checkmark = card.querySelector('.role-checkmark');
+                    if (checkmark) {
+                        checkmark.remove();
+                    }
                 });
                 
                 const selectedCard = document.querySelector('label[for="role-' + this.value + '"]');
                 if (selectedCard) {
-                    selectedCard.classList.add('selected', this.value);
+                    // Add appropriate border and background colors based on role
+                    if (this.value === 'student') {
+                        selectedCard.classList.add('border-blue-500', 'bg-blue-50');
+                    } else if (this.value === 'teacher') {
+                        selectedCard.classList.add('border-green-500', 'bg-green-50');
+                    } else if (this.value === 'institution') {
+                        selectedCard.classList.add('border-purple-500', 'bg-purple-50');
+                    }
+                    
+                    // Add checkmark
+                    const checkmark = document.createElement('div');
+                    checkmark.className = 'role-checkmark absolute top-2 right-2 bg-current text-white w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold';
+                    checkmark.innerHTML = '✓';
+                    selectedCard.classList.add('relative');
+                    selectedCard.appendChild(checkmark);
+                    
+                    // Set appropriate background color for checkmark
+                    if (this.value === 'student') {
+                        checkmark.classList.add('bg-blue-500');
+                    } else if (this.value === 'teacher') {
+                        checkmark.classList.add('bg-green-500');
+                    } else if (this.value === 'institution') {
+                        checkmark.classList.add('bg-purple-500');
+                    }
                 }
                 
                 // Show/hide role-specific fields
@@ -455,12 +431,13 @@ function mcqhome_registration_form($atts) {
         // Add click handlers for role cards
         document.querySelectorAll('.role-card').forEach(card => {
             card.addEventListener('click', function(e) {
-                if (e.target.tagName !== 'INPUT') {
-                    const input = this.previousElementSibling;
-                    if (input && input.type === 'radio') {
-                        input.checked = true;
-                        input.dispatchEvent(new Event('change'));
-                    }
+                // Find the associated radio input
+                const inputId = this.getAttribute('for');
+                const input = document.getElementById(inputId);
+                
+                if (input && input.type === 'radio') {
+                    input.checked = true;
+                    input.dispatchEvent(new Event('change'));
                 }
             });
         });
