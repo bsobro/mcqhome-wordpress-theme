@@ -175,7 +175,7 @@
     - Add mobile-specific assessment controls
     - _Requirements: 7.1, 7.2, 7.3_
 
-  - [ ] 11.2 Make dashboards responsive across all screen sizes
+  - [x] 11.2 Make dashboards responsive across all screen sizes
 
     - Adapt dashboard layouts for mobile and tablet views
     - Ensure no horizontal scrolling on any screen size

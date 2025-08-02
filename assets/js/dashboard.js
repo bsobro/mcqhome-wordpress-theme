@@ -10,6 +10,7 @@
     init: function () {
       this.bindEvents();
       this.initComponents();
+      this.initResponsiveFeatures();
     },
 
     bindEvents: function () {
@@ -72,6 +73,116 @@
 
       // Load initial notifications count
       this.refreshNotifications();
+    },
+
+    initResponsiveFeatures: function () {
+      // Handle mobile navigation for dashboard tabs
+      this.initMobileTabNavigation();
+
+      // Handle responsive card layouts
+      this.handleResponsiveCards();
+
+      // Handle touch interactions
+      this.initTouchInteractions();
+
+      // Handle orientation changes
+      this.handleOrientationChange();
+    },
+
+    initMobileTabNavigation: function () {
+      const tabContainer = document.querySelector(".dashboard-tabs");
+      if (!tabContainer) return;
+
+      // Add scroll indicators for mobile tab navigation
+      const scrollIndicator = document.createElement("div");
+      scrollIndicator.className = "tab-scroll-indicator hidden";
+      scrollIndicator.innerHTML = "→";
+      tabContainer.parentNode.appendChild(scrollIndicator);
+
+      // Show/hide scroll indicator based on scroll position
+      tabContainer.addEventListener("scroll", function () {
+        const isScrollable =
+          tabContainer.scrollWidth > tabContainer.clientWidth;
+        const isAtEnd =
+          tabContainer.scrollLeft >=
+          tabContainer.scrollWidth - tabContainer.clientWidth - 10;
+
+        if (isScrollable && !isAtEnd) {
+          scrollIndicator.classList.remove("hidden");
+        } else {
+          scrollIndicator.classList.add("hidden");
+        }
+      });
+
+      // Initial check
+      if (tabContainer.scrollWidth > tabContainer.clientWidth) {
+        scrollIndicator.classList.remove("hidden");
+      }
+    },
+
+    handleResponsiveCards: function () {
+      // Adjust card layouts based on screen size
+      const adjustCardLayouts = () => {
+        const cards = document.querySelectorAll(".dashboard-card");
+        const isMobile = window.innerWidth < 768;
+
+        cards.forEach((card) => {
+          if (isMobile) {
+            card.classList.add("mobile-card");
+          } else {
+            card.classList.remove("mobile-card");
+          }
+        });
+      };
+
+      // Initial adjustment
+      adjustCardLayouts();
+
+      // Adjust on resize
+      window.addEventListener("resize", adjustCardLayouts);
+    },
+
+    initTouchInteractions: function () {
+      // Improve touch interactions for mobile devices
+      if ("ontouchstart" in window) {
+        // Add touch-friendly classes
+        document.body.classList.add("touch-device");
+
+        // Handle touch feedback for buttons
+        const buttons = document.querySelectorAll(
+          ".btn-primary, .btn-secondary, .btn-success"
+        );
+        buttons.forEach((button) => {
+          button.addEventListener("touchstart", function () {
+            this.classList.add("touch-active");
+          });
+
+          button.addEventListener("touchend", function () {
+            setTimeout(() => {
+              this.classList.remove("touch-active");
+            }, 150);
+          });
+        });
+      }
+    },
+
+    handleOrientationChange: function () {
+      // Handle orientation changes on mobile devices
+      window.addEventListener("orientationchange", function () {
+        setTimeout(() => {
+          // Recalculate layouts after orientation change
+          MCQHomeDashboard.handleResponsiveCards();
+
+          // Refresh any charts or visualizations
+          const charts = document.querySelectorAll(".performance-chart");
+          charts.forEach((chart) => {
+            // Trigger resize event for charts
+            if (chart.chart && typeof chart.chart.resize === "function") {
+              chart.chart.resize();
+            }
+          });
+        }, 100);
+      });
     },
 
     followInstitution: function (e) {
@@ -670,13 +781,54 @@
         $notification.addClass("show");
       }, 100);
 
-      // Hide notification after 5 seconds
+      // Hide notification after 5 seconds (longer on mobile)
+      const hideDelay = window.innerWidth < 768 ? 7000 : 5000;
       setTimeout(function () {
         $notification.removeClass("show");
         setTimeout(function () {
           $notification.remove();
         }, 300);
-      }, 5000);
+      }, hideDelay);
+    },
+
+    // Responsive utility functions
+    isMobile: function () {
+      return window.innerWidth < 768;
+    },
+
+    isTablet: function () {
+      return window.innerWidth >= 768 && window.innerWidth < 1024;
+    },
+
+    isDesktop: function () {
+      return window.innerWidth >= 1024;
+    },
+
+    // Handle responsive table/list views
+    handleResponsiveTable: function (selector) {
+      const tables = document.querySelectorAll(selector);
+
+      tables.forEach((table) => {
+        if (this.isMobile()) {
+          // Convert table to card layout on mobile
+          table.classList.add("mobile-table");
+        } else {
+          table.classList.remove("mobile-table");
+        }
+      });
+    },
+
+    // Optimize images for different screen sizes
+    optimizeImages: function () {
+      const images = document.querySelectorAll("img[data-src-mobile]");
+
+      images.forEach((img) => {
+        if (this.isMobile() && img.dataset.srcMobile) {
+          img.src = img.dataset.srcMobile;
+        } else if (img.dataset.srcDesktop) {
+          img.src = img.dataset.srcDesktop;
+        }
+      });
     },
   };
 

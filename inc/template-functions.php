@@ -119,8 +119,44 @@ function mcqhome_mobile_menu_script() {
     </script>
     <?php
 }
-add_action('wp_footer', 'mcqhome_mobile_menu_script');/**
+add_action('wp_footer', 'mcqhome_mobile_menu_script');
 
+/**
+ * Get user primary role
+ */
+function mcqhome_get_user_primary_role($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    
+    if (!$user_id) {
+        return false;
+    }
+    
+    $user = get_userdata($user_id);
+    if (!$user || empty($user->roles)) {
+        return false;
+    }
+    
+    // Return the first role (primary role)
+    return $user->roles[0];
+}
+
+/**
+ * Get user role display name
+ */
+function mcqhome_get_user_role_display_name($role) {
+    $role_names = [
+        'administrator' => __('Administrator', 'mcqhome'),
+        'institution' => __('Institution', 'mcqhome'),
+        'teacher' => __('Teacher', 'mcqhome'),
+        'student' => __('Student', 'mcqhome'),
+    ];
+    
+    return isset($role_names[$role]) ? $role_names[$role] : ucfirst($role);
+}
+
+/**
  * Browse and Discovery System Functions
  */
 
