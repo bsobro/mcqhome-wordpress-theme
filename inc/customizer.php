@@ -233,8 +233,11 @@ function mcqhome_customizer_styles() {
             max-width: var(--mcqhome-container-width);
         }
 
-        .bg-blue-600, .text-blue-600 {
+        .bg-blue-600 {
             background-color: var(--mcqhome-primary-color) !important;
+        }
+        
+        .text-blue-600 {
             color: var(--mcqhome-primary-color) !important;
         }
 
