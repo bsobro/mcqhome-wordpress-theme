@@ -152,54 +152,19 @@ function mcqhome_registration_form($atts)
                     <h3 class="text-lg font-semibold mb-4 text-green-700"><?php _e('Teacher Information', 'mcqhome'); ?></h3>
 
                     <div class="form-group mb-4">
-                        <label for="institution_select" class="block text-sm font-medium text-gray-700 mb-1">
-                            <?php _e('Institution', 'mcqhome'); ?>
-                        </label>
-                        <select id="institution_select" name="institution_id"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                            <option value=""><?php _e('Select Institution (Optional)', 'mcqhome'); ?></option>
-                            <?php
-                            // Show default institution first
-                            $default_institution = mcqhome_get_default_institution();
-                            if ($default_institution):
-                            ?>
-                                <option value="<?php echo $default_institution->ID; ?>" selected>
-                                    <?php echo esc_html($default_institution->post_title); ?> <?php _e('(Default)', 'mcqhome'); ?>
-                                </option>
-                                <option disabled>──────────</option>
-                            <?php endif; ?>
-
-                            <?php
-                            $institutions = get_posts([
-                                'post_type' => 'institution',
-                                'post_status' => 'publish',
-                                'numberposts' => -1,
-                                'orderby' => 'title',
-                                'order' => 'ASC',
-                                'meta_query' => [
-                                    [
-                                        'key' => '_is_default_institution',
-                                        'compare' => 'NOT EXISTS'
-                                    ]
-                                ]
-                            ]);
-                            foreach ($institutions as $institution):
-                            ?>
-                                <option value="<?php echo $institution->ID; ?>">
-                                    <?php echo esc_html($institution->post_title); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1"><?php _e('If no institution is selected, you will be assigned to "MCQ Academy" - our default institution for independent teachers', 'mcqhome'); ?></p>
-                    </div>
-
-                    <div class="form-group mb-4">
                         <label for="teacher_specialization" class="block text-sm font-medium text-gray-700 mb-1">
                             <?php _e('Specialization', 'mcqhome'); ?>
                         </label>
                         <input type="text" id="teacher_specialization" name="specialization"
                             placeholder="<?php _e('e.g., Mathematics, Physics, Chemistry', 'mcqhome'); ?>"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+                        <p class="text-sm text-green-700">
+                            <strong><?php _e('Note:', 'mcqhome'); ?></strong> 
+                            <?php _e('You will be automatically assigned to MCQ Academy (our default institution) during registration. You can change your institution later when invited by another institution from their dashboard.', 'mcqhome'); ?>
+                        </p>
                     </div>
                 </div>
 
@@ -522,18 +487,10 @@ function mcqhome_handle_registration()
 
     // Handle role-specific data
     if ($user_role === 'teacher') {
-        $institution_id = !empty($_POST['institution_id']) ? intval($_POST['institution_id']) : null;
-
-        // If no institution selected, assign to MCQ Academy (default institution)
-        if (!$institution_id) {
-            $default_institution = mcqhome_get_default_institution();
-            if ($default_institution) {
-                $institution_id = $default_institution->ID;
-            }
-        }
-
-        if ($institution_id) {
-            update_user_meta($user_id, 'institution_id', $institution_id);
+        // Automatically assign teachers to the default institution
+        $default_institution_id = mcqhome_get_default_institution_id();
+        if ($default_institution_id) {
+            update_user_meta($user_id, 'institution_id', $default_institution_id);
         }
     } elseif ($user_role === 'institution') {
         // Create institution post
