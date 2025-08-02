@@ -28,10 +28,13 @@ class MCQHome_Demo_Content {
      * Initialize demo content generation
      */
     public function __construct() {
-        add_action('admin_menu', [$this, 'add_admin_menu']);
-        add_action('wp_ajax_mcqhome_generate_demo_content', [$this, 'ajax_generate_demo_content']);
-        add_action('wp_ajax_mcqhome_cleanup_demo_content', [$this, 'ajax_cleanup_demo_content']);
-        add_action('wp_ajax_mcqhome_test_demo_step', [$this, 'ajax_test_demo_step']);
+        // Only add hooks if WordPress is fully loaded
+        if (function_exists('add_action') && function_exists('admin_url')) {
+            add_action('admin_menu', [$this, 'add_admin_menu']);
+            add_action('wp_ajax_mcqhome_generate_demo_content', [$this, 'ajax_generate_demo_content']);
+            add_action('wp_ajax_mcqhome_cleanup_demo_content', [$this, 'ajax_cleanup_demo_content']);
+            add_action('wp_ajax_mcqhome_test_demo_step', [$this, 'ajax_test_demo_step']);
+        }
     }
     
     /**
@@ -1737,8 +1740,12 @@ class MCQHome_Demo_Content {
 // Initialize demo content system only after all dependencies are loaded
 function mcqhome_init_demo_content() {
     // Only initialize if we're in admin and all dependencies are available
-    if (is_admin()) {
-        new MCQHome_Demo_Content();
+    if (is_admin() && class_exists('MCQHome_Demo_Content')) {
+        try {
+            new MCQHome_Demo_Content();
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to initialize demo content system - ' . $e->getMessage());
+        }
     }
 }
 add_action('admin_init', 'mcqhome_init_demo_content', 20);

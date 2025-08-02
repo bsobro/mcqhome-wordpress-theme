@@ -440,8 +440,8 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/semantic-html.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/semantic-html.php';
 }
 
-if (file_exists(MCQHOME_THEME_DIR . '/inc/demo-content.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/demo-content.php';
+if (file_exists(MCQHOME_THEME_DIR . '/inc/demo-content-safe.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/demo-content-safe.php';
 }
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/default-institution.php')) {

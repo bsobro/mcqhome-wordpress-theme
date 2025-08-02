@@ -367,8 +367,17 @@ class MCQHome_Default_Institution {
     }
 }
 
-// Initialize default institution manager
-new MCQHome_Default_Institution();
+// Initialize default institution manager safely
+function mcqhome_init_default_institution() {
+    if (class_exists('MCQHome_Default_Institution')) {
+        try {
+            new MCQHome_Default_Institution();
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to initialize default institution - ' . $e->getMessage());
+        }
+    }
+}
+add_action('init', 'mcqhome_init_default_institution', 15);
 
 /**
  * Helper functions for default institution
@@ -378,8 +387,16 @@ new MCQHome_Default_Institution();
  * Get the default institution
  */
 function mcqhome_get_default_institution() {
-    $manager = new MCQHome_Default_Institution();
-    return $manager->get_default_institution();
+    static $manager = null;
+    if ($manager === null && class_exists('MCQHome_Default_Institution')) {
+        try {
+            $manager = new MCQHome_Default_Institution();
+        } catch (Exception $e) {
+            error_log('MCQHome: Error creating default institution manager - ' . $e->getMessage());
+            return null;
+        }
+    }
+    return $manager ? $manager->get_default_institution() : null;
 }
 
 /**
@@ -390,16 +407,32 @@ function mcqhome_is_default_institution_member($user_id = null) {
         $user_id = get_current_user_id();
     }
     
-    $manager = new MCQHome_Default_Institution();
-    return $manager->is_default_institution_member($user_id);
+    static $manager = null;
+    if ($manager === null && class_exists('MCQHome_Default_Institution')) {
+        try {
+            $manager = new MCQHome_Default_Institution();
+        } catch (Exception $e) {
+            error_log('MCQHome: Error creating default institution manager - ' . $e->getMessage());
+            return false;
+        }
+    }
+    return $manager ? $manager->is_default_institution_member($user_id) : false;
 }
 
 /**
  * Get default institution teachers
  */
 function mcqhome_get_default_institution_teachers() {
-    $manager = new MCQHome_Default_Institution();
-    return $manager->get_default_institution_teachers();
+    static $manager = null;
+    if ($manager === null && class_exists('MCQHome_Default_Institution')) {
+        try {
+            $manager = new MCQHome_Default_Institution();
+        } catch (Exception $e) {
+            error_log('MCQHome: Error creating default institution manager - ' . $e->getMessage());
+            return [];
+        }
+    }
+    return $manager ? $manager->get_default_institution_teachers() : [];
 }
 
 /**
