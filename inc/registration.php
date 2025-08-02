@@ -55,6 +55,61 @@ function mcqhome_registration_form($atts)
 
     ob_start();
 ?>
+    <style>
+        .role-card {
+            transition: all 0.3s ease;
+        }
+        .role-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .role-card:active {
+            transform: scale(0.98);
+        }
+        .role-card.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .message-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .message-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        #registration-messages {
+            transition: all 0.3s ease;
+        }
+        
+        .loading-text svg {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .form-step {
+            transition: all 0.3s ease;
+        }
+        
+        .role-fields {
+            transition: all 0.3s ease;
+        }
+    </style>
+
     <div id="mcqhome-registration-form" class="mcqhome-form-container">
         <!-- Step 1: Role Selection -->
         <div id="step-role-selection" class="registration-step">
@@ -63,8 +118,8 @@ function mcqhome_registration_form($atts)
                 <p class="text-gray-600 text-center"><?php _e('Select how you want to use MCQHome', 'mcqhome'); ?></p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" style="user-select: none; position: relative; z-index: 10;" onclick="selectRole('student')">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="role-selection-container">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" style="user-select: none; position: relative; z-index: 10;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +131,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" style="user-select: none; position: relative; z-index: 10;" onclick="selectRole('teacher')">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" style="user-select: none; position: relative; z-index: 10;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +143,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" style="user-select: none; position: relative; z-index: 10;" onclick="selectRole('institution')">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" style="user-select: none; position: relative; z-index: 10;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,8 +364,19 @@ function mcqhome_registration_form($atts)
             <!-- Messages -->
             <div id="registration-messages" class="mt-4"></div>
 
+            <!-- Back Button -->
+            <div class="text-center mt-6">
+                <button type="button" id="back-to-roles"
+                    class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    <?php _e('Back to Role Selection', 'mcqhome'); ?>
+                </button>
+            </div>
+
             <?php if ($atts['show_login_link']): ?>
-                <div class="text-center mt-6">
+                <div class="text-center mt-4">
                     <p class="text-gray-600">
                         <?php _e('Already have an account?', 'mcqhome'); ?>
                         <a href="<?php echo wp_login_url(); ?>" class="text-blue-600 hover:underline font-medium">
@@ -325,51 +391,182 @@ function mcqhome_registration_form($atts)
 
 
     <script>
-            // Global function for onclick handlers - defined immediately at top level
-            function selectRole(role) {
-                console.log('selectRole called with:', role);
-                const selectedRoleInput = document.getElementById('selected-role');
-                const stepRoleSelection = document.getElementById('step-role-selection');
-                const stepRegistrationForm = document.getElementById('step-registration-form');
-                const formTitle = document.getElementById('form-title');
-                const formSubtitle = document.getElementById('form-subtitle');
-                
-                if (selectedRoleInput) selectedRoleInput.value = role;
-                
-                if (stepRoleSelection && stepRegistrationForm) {
-                    stepRoleSelection.style.display = 'none';
-                    stepRegistrationForm.style.display = 'block';
-                    
-                    // Hide all role-specific fields first
-                    document.querySelectorAll('.role-fields').forEach(field => {
-                        field.style.display = 'none';
-                    });
-
-                    // Show appropriate role fields
-                    const roleFields = document.getElementById(role + '-fields');
-                    if (roleFields) {
-                        roleFields.style.display = 'block';
-                    }
-
-                    // Update form titles based on role
-                    switch(role) {
-                        case 'student':
-                            formTitle.textContent = '<?php _e('Student Registration', 'mcqhome'); ?>';
-                            formSubtitle.textContent = '<?php _e('Start your learning journey with MCQHome', 'mcqhome'); ?>';
-                            break;
-                        case 'teacher':
-                            formTitle.textContent = '<?php _e('Teacher Registration', 'mcqhome'); ?>';
-                            formSubtitle.textContent = '<?php _e('Join as a teacher and create amazing MCQs', 'mcqhome'); ?>';
-                            break;
-                        case 'institution':
-                            formTitle.textContent = '<?php _e('Institution Registration', 'mcqhome'); ?>';
-                            formSubtitle.textContent = '<?php _e('Register your institution and manage your team', 'mcqhome'); ?>';
-                            break;
-                    }
-                }
-            }
-
             document.addEventListener('DOMContentLoaded', function() {
+                // Registration form controller
+                const RegistrationController = {
+                    currentStep: 'role-selection',
+                    selectedRole: null,
+                    
+                    init: function() {
+                        this.bindEvents();
+                        this.showStep('role-selection');
+                    },
+                    
+                    bindEvents: function() {
+                        // Role selection
+                        const roleCards = document.querySelectorAll('.role-card');
+                        roleCards.forEach(card => {
+                            card.addEventListener('click', (e) => {
+                                const role = card.dataset.role;
+                                this.selectRole(role);
+                            });
+                        });
+                        
+                        // Back button
+                        const backBtn = document.getElementById('back-to-roles');
+                        if (backBtn) {
+                            backBtn.addEventListener('click', () => this.showStep('role-selection'));
+                        }
+                        
+                        // Form submission
+                        const form = document.getElementById('mcqhome-register-form');
+                        if (form) {
+                            form.addEventListener('submit', (e) => this.handleSubmit(e));
+                        }
+                    },
+                    
+                    showStep: function(step) {
+                        const roleSelection = document.getElementById('step-role-selection');
+                        const registrationForm = document.getElementById('step-registration-form');
+                        
+                        if (step === 'role-selection') {
+                            roleSelection.style.display = 'block';
+                            registrationForm.style.display = 'none';
+                            this.currentStep = 'role-selection';
+                        } else if (step === 'registration-form') {
+                            roleSelection.style.display = 'none';
+                            registrationForm.style.display = 'block';
+                            this.currentStep = 'registration-form';
+                        }
+                    },
+                    
+                    selectRole: function(role) {
+                        console.log('Selecting role:', role);
+                        this.selectedRole = role;
+                        
+                        // Set hidden input
+                        const roleInput = document.getElementById('selected-role');
+                        if (roleInput) roleInput.value = role;
+                        
+                        // Show appropriate fields
+                        this.showRoleFields(role);
+                        this.updateFormTitles(role);
+                        this.showStep('registration-form');
+                    },
+                    
+                    showRoleFields: function(role) {
+                        // Hide all role fields
+                        document.querySelectorAll('.role-fields').forEach(field => {
+                            field.style.display = 'none';
+                        });
+                        
+                        // Show specific role fields
+                        const roleFields = document.getElementById(role + '-fields');
+                        if (roleFields) {
+                            roleFields.style.display = 'block';
+                        }
+                    },
+                    
+                    updateFormTitles: function(role) {
+                        const title = document.getElementById('form-title');
+                        const subtitle = document.getElementById('form-subtitle');
+                        
+                        if (!title || !subtitle) return;
+                        
+                        const titles = {
+                            student: {
+                                title: '<?php _e('Student Registration', 'mcqhome'); ?>',
+                                subtitle: '<?php _e('Start your learning journey with MCQHome', 'mcqhome'); ?>'
+                            },
+                            teacher: {
+                                title: '<?php _e('Teacher Registration', 'mcqhome'); ?>',
+                                subtitle: '<?php _e('Join as a teacher and create amazing MCQs', 'mcqhome'); ?>'
+                            },
+                            institution: {
+                                title: '<?php _e('Institution Registration', 'mcqhome'); ?>',
+                                subtitle: '<?php _e('Register your institution and manage your team', 'mcqhome'); ?>'
+                            }
+                        };
+                        
+                        if (titles[role]) {
+                            title.textContent = titles[role].title;
+                            subtitle.textContent = titles[role].subtitle;
+                        }
+                    },
+                    
+                    handleSubmit: function(e) {
+                        e.preventDefault();
+                        
+                        // Password validation
+                        const password = document.getElementById('password').value;
+                        const confirmPassword = document.getElementById('confirm_password').value;
+                        
+                        if (password !== confirmPassword) {
+                            this.showMessage('<?php _e('Passwords do not match.', 'mcqhome'); ?>', 'error');
+                            return;
+                        }
+                        
+                        // Submit form
+                        this.submitForm();
+                    },
+                    
+                    submitForm: function() {
+                        const form = document.getElementById('mcqhome-register-form');
+                        const submitBtn = document.getElementById('register-submit');
+                        const messagesDiv = document.getElementById('registration-messages');
+                        
+                        // Show loading state
+                        submitBtn.disabled = true;
+                        submitBtn.querySelector('.submit-text').style.display = 'none';
+                        submitBtn.querySelector('.loading-text').style.display = 'inline';
+                        
+                        const formData = new FormData(form);
+                        formData.append('action', 'mcqhome_register_user');
+                        
+                        fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                this.showMessage(data.data.message, 'success');
+                                if (data.data.redirect) {
+                                    setTimeout(() => {
+                                        window.location.href = data.data.redirect;
+                                    }, 2000);
+                                }
+                            } else {
+                                this.showMessage(data.data || '<?php _e('Registration failed. Please try again.', 'mcqhome'); ?>', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            this.showMessage('<?php _e('An error occurred. Please try again.', 'mcqhome'); ?>', 'error');
+                        })
+                        .finally(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.querySelector('.submit-text').style.display = 'inline';
+                            submitBtn.querySelector('.loading-text').style.display = 'none';
+                        });
+                    },
+                    
+                    showMessage: function(message, type) {
+                        const messagesDiv = document.getElementById('registration-messages');
+                        if (!messagesDiv) return;
+                        
+                        messagesDiv.innerHTML = `<div class="message message-${type}">${message}</div>`;
+                        messagesDiv.scrollIntoView({ behavior: 'smooth' });
+                    }
+                };
+                
+                // Initialize the registration controller
+                RegistrationController.init();
+                
+                // Legacy global function for backward compatibility
+                window.selectRole = function(role) {
+                    RegistrationController.selectRole(role);
+                };
             const form = document.getElementById('mcqhome-register-form');
             const stepRoleSelection = document.getElementById('step-role-selection');
             const stepRegistrationForm = document.getElementById('step-registration-form');
