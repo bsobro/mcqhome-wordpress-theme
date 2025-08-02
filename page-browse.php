@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Template for displaying browse MCQs page
  *
@@ -8,21 +9,21 @@
 
 get_header(); ?>
 
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 pt-0 pb-8">
     <!-- Page Header -->
     <div class="page-header mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-4"><?php _e('Browse MCQs', 'mcqhome'); ?></h1>
         <p class="text-gray-600"><?php _e('Discover MCQ sets and questions from various institutions and teachers.', 'mcqhome'); ?></p>
     </div>
-    
+
     <!-- Hierarchical Category Navigation -->
     <div class="category-navigation bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-xl font-semibold mb-4"><?php _e('Browse by Category', 'mcqhome'); ?></h2>
-        
+
         <!-- Subject Categories with Topics -->
         <div class="subjects-section mb-6">
             <h3 class="text-lg font-medium mb-3"><?php _e('Subjects & Topics', 'mcqhome'); ?></h3>
-            
+
             <?php
             $subjects = get_terms([
                 'taxonomy' => 'mcq_subject',
@@ -31,15 +32,15 @@ get_header(); ?>
                 'order' => 'DESC',
                 'number' => 8 // Show top 8 subjects
             ]);
-            
+
             if ($subjects && !is_wp_error($subjects)) :
             ?>
                 <div class="subjects-hierarchy">
                     <?php foreach ($subjects as $subject) : ?>
                         <div class="subject-group mb-4 p-4 bg-gray-50 rounded-lg">
                             <div class="subject-header flex items-center justify-between mb-3">
-                                <a href="<?php echo get_term_link($subject); ?>" 
-                                   class="subject-title flex items-center text-lg font-medium text-blue-700 hover:text-blue-900">
+                                <a href="<?php echo get_term_link($subject); ?>"
+                                    class="subject-title flex items-center text-lg font-medium text-blue-700 hover:text-blue-900">
                                     <i class="fas fa-book mr-2"></i>
                                     <?php echo esc_html($subject->name); ?>
                                     <span class="ml-2 text-sm text-gray-500">(<?php echo $subject->count; ?>)</span>
@@ -48,7 +49,7 @@ get_header(); ?>
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
                             </div>
-                            
+
                             <?php
                             // Get topics for this subject
                             $topics = get_terms([
@@ -65,14 +66,14 @@ get_header(); ?>
                                 'order' => 'ASC',
                                 'number' => 6 // Show top 6 topics per subject
                             ]);
-                            
+
                             if ($topics && !is_wp_error($topics)) :
                             ?>
                                 <div class="topics-list hidden" id="topics-<?php echo $subject->term_id; ?>">
                                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                                         <?php foreach ($topics as $topic) : ?>
-                                            <a href="<?php echo get_term_link($topic); ?>" 
-                                               class="topic-link bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-md p-2 text-sm transition-colors">
+                                            <a href="<?php echo get_term_link($topic); ?>"
+                                                class="topic-link bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-md p-2 text-sm transition-colors">
                                                 <div class="flex items-center justify-between">
                                                     <span class="text-gray-700"><?php echo esc_html($topic->name); ?></span>
                                                     <span class="text-xs text-gray-500"><?php echo $topic->count; ?></span>
@@ -80,7 +81,7 @@ get_header(); ?>
                                             </a>
                                         <?php endforeach; ?>
                                     </div>
-                                    
+
                                     <?php
                                     // Check if there are more topics
                                     $total_topics = wp_count_terms([
@@ -94,12 +95,12 @@ get_header(); ?>
                                             ]
                                         ]
                                     ]);
-                                    
+
                                     if ($total_topics > 6) :
                                     ?>
                                         <div class="mt-2 text-center">
-                                            <a href="<?php echo get_term_link($subject); ?>" 
-                                               class="text-blue-600 hover:text-blue-800 text-sm">
+                                            <a href="<?php echo get_term_link($subject); ?>"
+                                                class="text-blue-600 hover:text-blue-800 text-sm">
                                                 <?php printf(__('View all %d topics', 'mcqhome'), $total_topics); ?>
                                             </a>
                                         </div>
@@ -109,14 +110,14 @@ get_header(); ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
-                
+
                 <!-- View All Subjects Link -->
                 <?php
                 $total_subjects = wp_count_terms([
                     'taxonomy' => 'mcq_subject',
                     'hide_empty' => true
                 ]);
-                
+
                 if ($total_subjects > 8) :
                 ?>
                     <div class="text-center mt-4">
@@ -125,12 +126,12 @@ get_header(); ?>
                         </a>
                     </div>
                 <?php endif; ?>
-                
+
             <?php else : ?>
                 <p class="text-gray-600"><?php _e('No subjects found.', 'mcqhome'); ?></p>
             <?php endif; ?>
         </div>
-        
+
         <!-- Quick Access Categories -->
         <div class="quick-categories">
             <h3 class="text-lg font-medium mb-3"><?php _e('Quick Access', 'mcqhome'); ?></h3>
@@ -143,7 +144,7 @@ get_header(); ?>
                     'orderby' => 'name',
                     'order' => 'ASC'
                 ]);
-                
+
                 if ($difficulties && !is_wp_error($difficulties)) :
                     foreach ($difficulties as $difficulty) :
                         $color_class = '';
@@ -166,40 +167,40 @@ get_header(); ?>
                                 $icon_class = 'text-gray-600';
                         }
                 ?>
-                    <a href="<?php echo get_term_link($difficulty); ?>" 
-                       class="difficulty-card <?php echo $color_class; ?> border rounded-lg p-3 text-center transition-colors">
-                        <div class="<?php echo $icon_class; ?> text-xl mb-2">
-                            <i class="fas fa-signal"></i>
-                        </div>
-                        <div class="text-sm font-medium"><?php echo esc_html($difficulty->name); ?></div>
-                        <div class="text-xs opacity-75"><?php echo $difficulty->count; ?> <?php _e('items', 'mcqhome'); ?></div>
-                    </a>
-                <?php 
+                        <a href="<?php echo get_term_link($difficulty); ?>"
+                            class="difficulty-card <?php echo $color_class; ?> border rounded-lg p-3 text-center transition-colors">
+                            <div class="<?php echo $icon_class; ?> text-xl mb-2">
+                                <i class="fas fa-signal"></i>
+                            </div>
+                            <div class="text-sm font-medium"><?php echo esc_html($difficulty->name); ?></div>
+                            <div class="text-xs opacity-75"><?php echo $difficulty->count; ?> <?php _e('items', 'mcqhome'); ?></div>
+                        </a>
+                <?php
                     endforeach;
                 endif;
                 ?>
-                
+
                 <!-- Popular Categories -->
-                <a href="<?php echo add_query_arg('sort', 'popular', get_permalink()); ?>" 
-                   class="category-card bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 rounded-lg p-3 text-center transition-colors">
+                <a href="<?php echo add_query_arg('sort', 'popular', get_permalink()); ?>"
+                    class="category-card bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 rounded-lg p-3 text-center transition-colors">
                     <div class="text-purple-600 text-xl mb-2">
                         <i class="fas fa-fire"></i>
                     </div>
                     <div class="text-sm font-medium"><?php _e('Popular', 'mcqhome'); ?></div>
                     <div class="text-xs opacity-75"><?php _e('Trending', 'mcqhome'); ?></div>
                 </a>
-                
-                <a href="<?php echo add_query_arg('price', 'free', get_permalink()); ?>" 
-                   class="category-card bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-lg p-3 text-center transition-colors">
+
+                <a href="<?php echo add_query_arg('price', 'free', get_permalink()); ?>"
+                    class="category-card bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 rounded-lg p-3 text-center transition-colors">
                     <div class="text-emerald-600 text-xl mb-2">
                         <i class="fas fa-gift"></i>
                     </div>
                     <div class="text-sm font-medium"><?php _e('Free', 'mcqhome'); ?></div>
                     <div class="text-xs opacity-75"><?php _e('No cost', 'mcqhome'); ?></div>
                 </a>
-                
-                <a href="<?php echo add_query_arg('sort', 'date', get_permalink()); ?>" 
-                   class="category-card bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 rounded-lg p-3 text-center transition-colors">
+
+                <a href="<?php echo add_query_arg('sort', 'date', get_permalink()); ?>"
+                    class="category-card bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 rounded-lg p-3 text-center transition-colors">
                     <div class="text-blue-600 text-xl mb-2">
                         <i class="fas fa-clock"></i>
                     </div>
@@ -209,7 +210,7 @@ get_header(); ?>
             </div>
         </div>
     </div>
-    
+
     <!-- Advanced Search and Filters -->
     <div class="search-filters bg-white rounded-lg shadow-md p-6 mb-8">
         <div class="filter-header flex items-center justify-between mb-4">
@@ -219,7 +220,7 @@ get_header(); ?>
                 <i class="fas fa-chevron-down ml-1"></i>
             </button>
         </div>
-        
+
         <form method="GET" class="mcq-search-form">
             <!-- Basic Search Row -->
             <div class="basic-filters grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
@@ -229,26 +230,26 @@ get_header(); ?>
                         <?php _e('Search', 'mcqhome'); ?>
                     </label>
                     <div class="relative">
-                        <input type="text" 
-                               id="search" 
-                               name="search" 
-                               value="<?php echo esc_attr(get_query_var('search', '')); ?>"
-                               placeholder="<?php _e('Search questions, topics, institutions...', 'mcqhome'); ?>"
-                               class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text"
+                            id="search"
+                            name="search"
+                            value="<?php echo esc_attr(get_query_var('search', '')); ?>"
+                            placeholder="<?php _e('Search questions, topics, institutions...', 'mcqhome'); ?>"
+                            class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Subject Filter -->
                 <div>
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
                         <?php _e('Subject', 'mcqhome'); ?>
                     </label>
-                    <select id="subject" 
-                            name="subject" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="subject"
+                        name="subject"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value=""><?php _e('All Subjects', 'mcqhome'); ?></option>
                         <?php
                         $all_subjects = get_terms([
@@ -257,28 +258,28 @@ get_header(); ?>
                             'orderby' => 'name',
                             'order' => 'ASC'
                         ]);
-                        
+
                         if ($all_subjects && !is_wp_error($all_subjects)) :
                             foreach ($all_subjects as $subject) :
                         ?>
-                            <option value="<?php echo $subject->slug; ?>" <?php selected(get_query_var('subject'), $subject->slug); ?>>
-                                <?php echo esc_html($subject->name); ?> (<?php echo $subject->count; ?>)
-                            </option>
-                        <?php 
+                                <option value="<?php echo $subject->slug; ?>" <?php selected(get_query_var('subject'), $subject->slug); ?>>
+                                    <?php echo esc_html($subject->name); ?> (<?php echo $subject->count; ?>)
+                                </option>
+                        <?php
                             endforeach;
                         endif;
                         ?>
                     </select>
                 </div>
-                
+
                 <!-- Topic Filter -->
                 <div>
                     <label for="topic" class="block text-sm font-medium text-gray-700 mb-2">
                         <?php _e('Topic', 'mcqhome'); ?>
                     </label>
-                    <select id="topic" 
-                            name="topic" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="topic"
+                        name="topic"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value=""><?php _e('All Topics', 'mcqhome'); ?></option>
                         <?php
                         $all_topics = get_terms([
@@ -287,28 +288,28 @@ get_header(); ?>
                             'orderby' => 'name',
                             'order' => 'ASC'
                         ]);
-                        
+
                         if ($all_topics && !is_wp_error($all_topics)) :
                             foreach ($all_topics as $topic) :
                         ?>
-                            <option value="<?php echo $topic->slug; ?>" <?php selected(get_query_var('topic'), $topic->slug); ?>>
-                                <?php echo esc_html($topic->name); ?> (<?php echo $topic->count; ?>)
-                            </option>
-                        <?php 
+                                <option value="<?php echo $topic->slug; ?>" <?php selected(get_query_var('topic'), $topic->slug); ?>>
+                                    <?php echo esc_html($topic->name); ?> (<?php echo $topic->count; ?>)
+                                </option>
+                        <?php
                             endforeach;
                         endif;
                         ?>
                     </select>
                 </div>
-                
+
                 <!-- Difficulty Filter -->
                 <div>
                     <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
                         <?php _e('Difficulty', 'mcqhome'); ?>
                     </label>
-                    <select id="difficulty" 
-                            name="difficulty" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="difficulty"
+                        name="difficulty"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value=""><?php _e('All Levels', 'mcqhome'); ?></option>
                         <?php
                         $all_difficulties = get_terms([
@@ -317,28 +318,28 @@ get_header(); ?>
                             'orderby' => 'name',
                             'order' => 'ASC'
                         ]);
-                        
+
                         if ($all_difficulties && !is_wp_error($all_difficulties)) :
                             foreach ($all_difficulties as $difficulty) :
                         ?>
-                            <option value="<?php echo $difficulty->slug; ?>" <?php selected(get_query_var('difficulty'), $difficulty->slug); ?>>
-                                <?php echo esc_html($difficulty->name); ?> (<?php echo $difficulty->count; ?>)
-                            </option>
-                        <?php 
+                                <option value="<?php echo $difficulty->slug; ?>" <?php selected(get_query_var('difficulty'), $difficulty->slug); ?>>
+                                    <?php echo esc_html($difficulty->name); ?> (<?php echo $difficulty->count; ?>)
+                                </option>
+                        <?php
                             endforeach;
                         endif;
                         ?>
                     </select>
                 </div>
-                
+
                 <!-- Sort Options -->
                 <div>
                     <label for="sort" class="block text-sm font-medium text-gray-700 mb-2">
                         <?php _e('Sort By', 'mcqhome'); ?>
                     </label>
-                    <select id="sort" 
-                            name="sort" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="sort"
+                        name="sort"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="date" <?php selected(get_query_var('sort'), 'date'); ?>><?php _e('Latest', 'mcqhome'); ?></option>
                         <option value="title" <?php selected(get_query_var('sort'), 'title'); ?>><?php _e('Title A-Z', 'mcqhome'); ?></option>
                         <option value="popular" <?php selected(get_query_var('sort'), 'popular'); ?>><?php _e('Most Popular', 'mcqhome'); ?></option>
@@ -347,35 +348,35 @@ get_header(); ?>
                     </select>
                 </div>
             </div>
-            
+
             <!-- Advanced Filters (Initially Hidden) -->
             <div class="advanced-filters hidden">
                 <div class="border-t pt-4">
                     <h4 class="text-md font-medium text-gray-800 mb-3"><?php _e('Advanced Filters', 'mcqhome'); ?></h4>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                         <!-- Price Filter -->
                         <div>
                             <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Price', 'mcqhome'); ?>
                             </label>
-                            <select id="price" 
-                                    name="price" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="price"
+                                name="price"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value=""><?php _e('All', 'mcqhome'); ?></option>
                                 <option value="free" <?php selected(get_query_var('price'), 'free'); ?>><?php _e('Free', 'mcqhome'); ?></option>
                                 <option value="paid" <?php selected(get_query_var('price'), 'paid'); ?>><?php _e('Paid', 'mcqhome'); ?></option>
                             </select>
                         </div>
-                        
+
                         <!-- Institution Filter -->
                         <div>
                             <label for="institution" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Institution', 'mcqhome'); ?>
                             </label>
-                            <select id="institution" 
-                                    name="institution" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="institution"
+                                name="institution"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value=""><?php _e('All Institutions', 'mcqhome'); ?></option>
                                 <?php
                                 $institutions = get_posts([
@@ -385,7 +386,7 @@ get_header(); ?>
                                     'orderby' => 'title',
                                     'order' => 'ASC'
                                 ]);
-                                
+
                                 foreach ($institutions as $institution) :
                                 ?>
                                     <option value="<?php echo $institution->ID; ?>" <?php selected(get_query_var('institution'), $institution->ID); ?>>
@@ -394,15 +395,15 @@ get_header(); ?>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        
+
                         <!-- Teacher Filter -->
                         <div>
                             <label for="teacher" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Teacher', 'mcqhome'); ?>
                             </label>
-                            <select id="teacher" 
-                                    name="teacher" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="teacher"
+                                name="teacher"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value=""><?php _e('All Teachers', 'mcqhome'); ?></option>
                                 <?php
                                 $teachers = get_users([
@@ -411,7 +412,7 @@ get_header(); ?>
                                     'order' => 'ASC',
                                     'number' => 100 // Limit to prevent performance issues
                                 ]);
-                                
+
                                 foreach ($teachers as $teacher) :
                                 ?>
                                     <option value="<?php echo $teacher->ID; ?>" <?php selected(get_query_var('teacher'), $teacher->ID); ?>>
@@ -420,22 +421,22 @@ get_header(); ?>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        
+
                         <!-- Content Type -->
                         <div>
                             <label for="content_type" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Content Type', 'mcqhome'); ?>
                             </label>
-                            <select id="content_type" 
-                                    name="content_type" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="content_type"
+                                name="content_type"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value="" <?php selected(get_query_var('content_type', ''), ''); ?>><?php _e('All Types', 'mcqhome'); ?></option>
                                 <option value="mcq_set" <?php selected(get_query_var('content_type'), 'mcq_set'); ?>><?php _e('MCQ Sets', 'mcqhome'); ?></option>
                                 <option value="mcq" <?php selected(get_query_var('content_type'), 'mcq'); ?>><?php _e('Individual MCQs', 'mcqhome'); ?></option>
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Rating and Question Count Filters -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <!-- Minimum Rating -->
@@ -443,24 +444,24 @@ get_header(); ?>
                             <label for="min_rating" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Minimum Rating', 'mcqhome'); ?>
                             </label>
-                            <select id="min_rating" 
-                                    name="min_rating" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="min_rating"
+                                name="min_rating"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value=""><?php _e('Any Rating', 'mcqhome'); ?></option>
                                 <option value="4" <?php selected(get_query_var('min_rating'), '4'); ?>><?php _e('4+ Stars', 'mcqhome'); ?></option>
                                 <option value="3" <?php selected(get_query_var('min_rating'), '3'); ?>><?php _e('3+ Stars', 'mcqhome'); ?></option>
                                 <option value="2" <?php selected(get_query_var('min_rating'), '2'); ?>><?php _e('2+ Stars', 'mcqhome'); ?></option>
                             </select>
                         </div>
-                        
+
                         <!-- Question Count Range (for MCQ Sets) -->
                         <div>
                             <label for="min_questions" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Min Questions', 'mcqhome'); ?>
                             </label>
-                            <select id="min_questions" 
-                                    name="min_questions" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="min_questions"
+                                name="min_questions"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value=""><?php _e('Any Amount', 'mcqhome'); ?></option>
                                 <option value="5" <?php selected(get_query_var('min_questions'), '5'); ?>><?php _e('5+ Questions', 'mcqhome'); ?></option>
                                 <option value="10" <?php selected(get_query_var('min_questions'), '10'); ?>><?php _e('10+ Questions', 'mcqhome'); ?></option>
@@ -468,15 +469,15 @@ get_header(); ?>
                                 <option value="50" <?php selected(get_query_var('min_questions'), '50'); ?>><?php _e('50+ Questions', 'mcqhome'); ?></option>
                             </select>
                         </div>
-                        
+
                         <!-- Date Range -->
                         <div>
                             <label for="date_range" class="block text-sm font-medium text-gray-700 mb-2">
                                 <?php _e('Published', 'mcqhome'); ?>
                             </label>
-                            <select id="date_range" 
-                                    name="date_range" 
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <select id="date_range"
+                                name="date_range"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                                 <option value=""><?php _e('Any Time', 'mcqhome'); ?></option>
                                 <option value="week" <?php selected(get_query_var('date_range'), 'week'); ?>><?php _e('Past Week', 'mcqhome'); ?></option>
                                 <option value="month" <?php selected(get_query_var('date_range'), 'month'); ?>><?php _e('Past Month', 'mcqhome'); ?></option>
@@ -486,7 +487,7 @@ get_header(); ?>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Action Buttons -->
             <div class="flex flex-wrap items-center justify-between gap-4 mt-6">
                 <div class="flex gap-2">
@@ -498,7 +499,7 @@ get_header(); ?>
                         <?php _e('Clear All', 'mcqhome'); ?>
                     </a>
                 </div>
-                
+
                 <!-- Quick Filter Tags -->
                 <div class="flex flex-wrap gap-2">
                     <?php
@@ -510,7 +511,7 @@ get_header(); ?>
                     if (get_query_var('price')) $active_filters[] = __('Price', 'mcqhome');
                     if (get_query_var('institution')) $active_filters[] = __('Institution', 'mcqhome');
                     if (get_query_var('teacher')) $active_filters[] = __('Teacher', 'mcqhome');
-                    
+
                     if (!empty($active_filters)) :
                     ?>
                         <span class="text-sm text-gray-600"><?php _e('Active filters:', 'mcqhome'); ?></span>
@@ -524,7 +525,7 @@ get_header(); ?>
             </div>
         </form>
     </div>
-    
+
     <!-- Results -->
     <div class="browse-results">
         <?php
@@ -542,27 +543,27 @@ get_header(); ?>
         $min_questions = get_query_var('min_questions');
         $date_range = get_query_var('date_range');
         $sort = get_query_var('sort', 'date');
-        
+
         // Default to MCQ sets if no content type specified
         $post_types = $content_type ? [$content_type] : ['mcq_set'];
-        
+
         $args = [
             'post_type' => $post_types,
             'posts_per_page' => 12,
             'paged' => $paged,
             'post_status' => 'publish'
         ];
-        
+
         // Add search
         if ($search) {
             $args['s'] = $search;
         }
-        
+
         // Add author filter
         if ($teacher) {
             $args['author'] = $teacher;
         }
-        
+
         // Add taxonomy queries
         $tax_query = [];
         if ($subject) {
@@ -572,7 +573,7 @@ get_header(); ?>
                 'terms' => $subject
             ];
         }
-        
+
         if ($topic) {
             $tax_query[] = [
                 'taxonomy' => 'mcq_topic',
@@ -580,7 +581,7 @@ get_header(); ?>
                 'terms' => $topic
             ];
         }
-        
+
         if ($difficulty) {
             $tax_query[] = [
                 'taxonomy' => 'mcq_difficulty',
@@ -588,12 +589,12 @@ get_header(); ?>
                 'terms' => $difficulty
             ];
         }
-        
+
         if (!empty($tax_query)) {
             $tax_query['relation'] = 'AND';
             $args['tax_query'] = $tax_query;
         }
-        
+
         // Add meta queries
         $meta_query = [];
         if ($price) {
@@ -603,7 +604,7 @@ get_header(); ?>
                 'compare' => '='
             ];
         }
-        
+
         if ($institution) {
             $meta_query[] = [
                 'key' => '_institution_id',
@@ -611,7 +612,7 @@ get_header(); ?>
                 'compare' => '='
             ];
         }
-        
+
         if ($min_rating) {
             $meta_query[] = [
                 'key' => '_average_rating',
@@ -620,7 +621,7 @@ get_header(); ?>
                 'type' => 'DECIMAL'
             ];
         }
-        
+
         if ($min_questions && in_array('mcq_set', $post_types)) {
             $meta_query[] = [
                 'key' => '_question_count',
@@ -629,12 +630,12 @@ get_header(); ?>
                 'type' => 'NUMERIC'
             ];
         }
-        
+
         if (!empty($meta_query)) {
             $meta_query['relation'] = 'AND';
             $args['meta_query'] = $meta_query;
         }
-        
+
         // Add date range filter
         if ($date_range) {
             $date_query = [];
@@ -655,12 +656,12 @@ get_header(); ?>
                     ];
                     break;
             }
-            
+
             if (!empty($date_query)) {
                 $args['date_query'] = [$date_query];
             }
         }
-        
+
         // Add sorting
         switch ($sort) {
             case 'title':
@@ -686,21 +687,23 @@ get_header(); ?>
                 $args['orderby'] = 'date';
                 $args['order'] = 'DESC';
         }
-        
+
         $browse_query = new WP_Query($args);
-        
+
         if ($browse_query->have_posts()) :
         ?>
             <!-- Results Header -->
             <div class="results-header flex justify-between items-center mb-6">
                 <div class="results-count">
                     <span class="text-gray-600">
-                        <?php printf(__('Showing %d of %d results', 'mcqhome'), 
-                            min($browse_query->post_count, $browse_query->found_posts), 
-                            $browse_query->found_posts); ?>
+                        <?php printf(
+                            __('Showing %d of %d results', 'mcqhome'),
+                            min($browse_query->post_count, $browse_query->found_posts),
+                            $browse_query->found_posts
+                        ); ?>
                     </span>
                 </div>
-                
+
                 <div class="view-toggle">
                     <button class="view-grid-btn bg-blue-600 text-white px-3 py-2 rounded-l-md">
                         <i class="fas fa-th"></i>
@@ -710,7 +713,7 @@ get_header(); ?>
                     </button>
                 </div>
             </div>
-            
+
             <!-- Results Grid -->
             <div class="results-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 <?php while ($browse_query->have_posts()) : $browse_query->the_post(); ?>
@@ -728,13 +731,13 @@ get_header(); ?>
                                 <span><?php echo get_the_date(); ?></span>
                             </div>
                         </div>
-                        
+
                         <!-- Card Content -->
                         <div class="card-content p-4">
                             <p class="text-gray-600 text-sm mb-4 line-clamp-3">
                                 <?php echo wp_trim_words(get_the_excerpt(), 20); ?>
                             </p>
-                            
+
                             <!-- Content Stats -->
                             <?php if (get_post_type() === 'mcq_set') : ?>
                                 <div class="content-stats flex justify-between items-center mb-4 text-sm">
@@ -742,8 +745,8 @@ get_header(); ?>
                                         <i class="fas fa-question-circle mr-1"></i>
                                         <?php echo mcqhome_get_mcq_set_question_count(get_the_ID()); ?> <?php _e('questions', 'mcqhome'); ?>
                                     </span>
-                                    
-                                    <?php 
+
+                                    <?php
                                     $rating = mcqhome_get_mcq_set_rating(get_the_ID());
                                     if ($rating > 0) :
                                     ?>
@@ -758,23 +761,23 @@ get_header(); ?>
                                     <?php endif; ?>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <!-- Tags -->
                             <div class="content-tags mb-4">
                                 <?php
                                 $subjects = get_the_terms(get_the_ID(), 'mcq_subject');
                                 $difficulties = get_the_terms(get_the_ID(), 'mcq_difficulty');
-                                
+
                                 if ($subjects && !is_wp_error($subjects)) :
                                     foreach (array_slice($subjects, 0, 2) as $subject) :
                                 ?>
-                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2 mb-1">
-                                        <?php echo esc_html($subject->name); ?>
-                                    </span>
-                                <?php 
+                                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2 mb-1">
+                                            <?php echo esc_html($subject->name); ?>
+                                        </span>
+                                    <?php
                                     endforeach;
                                 endif;
-                                
+
                                 if ($difficulties && !is_wp_error($difficulties)) :
                                     foreach ($difficulties as $difficulty) :
                                         $color_class = '';
@@ -791,23 +794,23 @@ get_header(); ?>
                                             default:
                                                 $color_class = 'bg-gray-100 text-gray-800';
                                         }
-                                ?>
-                                    <span class="inline-block <?php echo $color_class; ?> text-xs px-2 py-1 rounded-full mr-2 mb-1">
-                                        <?php echo esc_html($difficulty->name); ?>
-                                    </span>
-                                <?php 
+                                    ?>
+                                        <span class="inline-block <?php echo $color_class; ?> text-xs px-2 py-1 rounded-full mr-2 mb-1">
+                                            <?php echo esc_html($difficulty->name); ?>
+                                        </span>
+                                <?php
                                     endforeach;
                                 endif;
                                 ?>
                             </div>
-                            
+
                             <!-- Actions -->
                             <div class="card-actions flex justify-between items-center">
-                                <a href="<?php the_permalink(); ?>" 
-                                   class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                                <a href="<?php the_permalink(); ?>"
+                                    class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
                                     <?php echo get_post_type() === 'mcq_set' ? __('Take Assessment', 'mcqhome') : __('View Question', 'mcqhome'); ?>
                                 </a>
-                                
+
                                 <?php
                                 $pricing_type = get_post_meta(get_the_ID(), '_pricing_type', true);
                                 if ($pricing_type === 'paid') :
@@ -826,7 +829,7 @@ get_header(); ?>
                     </div>
                 <?php endwhile; ?>
             </div>
-            
+
             <!-- Pagination -->
             <div class="pagination-wrapper">
                 <?php
@@ -840,10 +843,10 @@ get_header(); ?>
                 ]);
                 ?>
             </div>
-            
-        <?php 
+
+        <?php
             wp_reset_postdata();
-        else : 
+        else :
         ?>
             <div class="no-results text-center py-12">
                 <div class="text-gray-400 mb-4">
