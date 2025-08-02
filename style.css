@@ -14,3 +14,55 @@ Tags: education, mcq, multi-user, responsive, tailwind
 */
 
 /* Theme styles will be compiled from Tailwind CSS */
+
+/* Fix for button text color issues */
+.bg-blue-600.text-white,
+.bg-blue-600.text-white:visited,
+.bg-blue-600.text-white:link {
+  color: #ffffff !important;
+}
+
+.bg-blue-600.text-white:hover {
+  color: #ffffff !important;
+  background-color: #1d4ed8 !important;
+}
+
+/* Ensure all primary buttons have white text */
+.btn-primary,
+a.bg-blue-600 {
+  color: #ffffff !important;
+}
+
+/* Fix for any link color inheritance issues */
+a.bg-blue-600:hover {
+  color: #ffffff !important;
+}
+
+/* More specific rules for buttons with blue background */
+.bg-blue-600 {
+  color: #ffffff !important;
+}
+
+.bg-blue-600:hover {
+  color: #ffffff !important;
+  background-color: #1d4ed8 !important;
+}
+
+/* Override any theme link colors for blue buttons */
+a.bg-blue-600,
+a.bg-blue-600:link,
+a.bg-blue-600:visited,
+a.bg-blue-600:hover,
+a.bg-blue-600:active,
+a.bg-blue-600:focus {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
+/* Button elements with blue background */
+button.bg-blue-600,
+button.bg-blue-600:hover,
+button.bg-blue-600:focus,
+button.bg-blue-600:active {
+  color: #ffffff !important;
+}

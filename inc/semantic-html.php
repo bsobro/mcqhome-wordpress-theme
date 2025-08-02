@@ -53,7 +53,7 @@ function mcqhome_semantic_header() {
 
                 <div class="header-actions flex items-center space-x-4">
                     <?php if (is_user_logged_in()) : ?>
-                        <a href="<?php echo esc_url(get_permalink(get_page_by_path('dashboard'))); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                        <a href="<?php echo esc_url(get_permalink(get_page_by_path('dashboard'))); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" style="color: white !important;">
                             <?php esc_html_e('Dashboard', 'mcqhome'); ?>
                         </a>
                         <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="text-gray-600 hover:text-gray-900">
@@ -63,7 +63,7 @@ function mcqhome_semantic_header() {
                         <a href="<?php echo esc_url(wp_login_url()); ?>" class="text-gray-600 hover:text-gray-900">
                             <?php esc_html_e('Login', 'mcqhome'); ?>
                         </a>
-                        <a href="<?php echo esc_url(wp_registration_url()); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                        <a href="<?php echo esc_url(wp_registration_url()); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors" style="color: white !important;">
                             <?php esc_html_e('Register', 'mcqhome'); ?>
                         </a>
                     <?php endif; ?>
@@ -417,9 +417,9 @@ function mcqhome_semantic_pagination($query = null) {
 function mcqhome_semantic_skip_links() {
     ?>
     <div class="skip-links">
-        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#main-content"><?php esc_html_e('Skip to main content', 'mcqhome'); ?></a>
-        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#site-navigation"><?php esc_html_e('Skip to navigation', 'mcqhome'); ?></a>
-        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#colophon"><?php esc_html_e('Skip to footer', 'mcqhome'); ?></a>
+        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#main-content" style="color: white !important;"><?php esc_html_e('Skip to main content', 'mcqhome'); ?></a>
+        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#site-navigation" style="color: white !important;"><?php esc_html_e('Skip to navigation', 'mcqhome'); ?></a>
+        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#colophon" style="color: white !important;"><?php esc_html_e('Skip to footer', 'mcqhome'); ?></a>
     </div>
     <?php
 }
