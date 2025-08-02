@@ -403,10 +403,13 @@ function mcqhome_registration_form($atts)
                     },
                     
                     bindEvents: function() {
+                        console.log('Binding events...');
                         // Role selection
                         const roleCards = document.querySelectorAll('.role-card');
+                        console.log('Found', roleCards.length, 'role cards');
                         roleCards.forEach(card => {
                             card.addEventListener('click', (e) => {
+                                console.log('Role card clicked:', card.dataset.role);
                                 const role = card.dataset.role;
                                 this.selectRole(role);
                             });
@@ -426,17 +429,25 @@ function mcqhome_registration_form($atts)
                     },
                     
                     showStep: function(step) {
+                        console.log('Showing step:', step);
                         const roleSelection = document.getElementById('step-role-selection');
                         const registrationForm = document.getElementById('step-registration-form');
+                        
+                        if (!roleSelection || !registrationForm) {
+                            console.error('Could not find step elements');
+                            return;
+                        }
                         
                         if (step === 'role-selection') {
                             roleSelection.style.display = 'block';
                             registrationForm.style.display = 'none';
                             this.currentStep = 'role-selection';
+                            console.log('Showing role selection');
                         } else if (step === 'registration-form') {
                             roleSelection.style.display = 'none';
                             registrationForm.style.display = 'block';
                             this.currentStep = 'registration-form';
+                            console.log('Showing registration form');
                         }
                     },
                     
