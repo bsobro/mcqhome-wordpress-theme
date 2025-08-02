@@ -1014,31 +1014,9 @@ function mcqhome_ajax_get_performance_analytics() {
 }
 add_action('wp_ajax_mcqhome_get_performance_analytics', 'mcqhome_ajax_get_performance_analytics');
 
-/**
- * Check if user is enrolled in MCQ set
- */
-function mcqhome_check_user_enrollment($user_id, $mcq_set_id) {
-    global $wpdb;
-    
-    return $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}mcq_user_enrollments 
-         WHERE user_id = %d AND mcq_set_id = %d AND status = 'active'",
-        $user_id, $mcq_set_id
-    ));
-}
+// Function mcqhome_check_user_enrollment is defined in database-setup.php
 
-/**
- * Get user's current progress for MCQ set
- */
-function mcqhome_get_user_progress($user_id, $mcq_set_id) {
-    global $wpdb;
-    
-    return $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$wpdb->prefix}mcq_user_progress 
-         WHERE user_id = %d AND mcq_set_id = %d",
-        $user_id, $mcq_set_id
-    ));
-}
+// Function mcqhome_get_user_progress is defined in database-setup.php
 
 /**
  * Handle toggle follow AJAX request (unified for institutions and teachers)

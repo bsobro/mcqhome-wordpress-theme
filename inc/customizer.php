@@ -196,7 +196,8 @@ function mcqhome_sanitize_select($input, $setting) {
  * Binds JS handlers to make Theme Customizer preview reload changes asynchronously.
  */
 function mcqhome_customize_preview_js() {
-    wp_enqueue_script('mcqhome-customizer', get_template_directory_uri() . '/assets/js/customizer.js', ['customize-preview'], MCQHOME_VERSION, true);
+    $version = defined('MCQHOME_VERSION') ? MCQHOME_VERSION : '1.0.0';
+    wp_enqueue_script('mcqhome-customizer', get_template_directory_uri() . '/assets/js/customizer.js', ['customize-preview'], $version, true);
 }
 add_action('customize_preview_init', 'mcqhome_customize_preview_js');
 

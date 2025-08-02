@@ -121,161 +121,17 @@ function mcqhome_mobile_menu_script() {
 }
 add_action('wp_footer', 'mcqhome_mobile_menu_script');
 
-/**
- * Get user primary role
- */
-function mcqhome_get_user_primary_role($user_id = null) {
-    if (!$user_id) {
-        $user_id = get_current_user_id();
-    }
-    
-    if (!$user_id) {
-        return false;
-    }
-    
-    $user = get_userdata($user_id);
-    if (!$user || empty($user->roles)) {
-        return false;
-    }
-    
-    // Return the first role (primary role)
-    return $user->roles[0];
-}
+// Function mcqhome_get_user_primary_role is defined in user-roles.php
 
-/**
- * Get user role display name
- */
-function mcqhome_get_user_role_display_name($role) {
-    $role_names = [
-        'administrator' => __('Administrator', 'mcqhome'),
-        'institution' => __('Institution', 'mcqhome'),
-        'teacher' => __('Teacher', 'mcqhome'),
-        'student' => __('Student', 'mcqhome'),
-    ];
-    
-    return isset($role_names[$role]) ? $role_names[$role] : ucfirst($role);
-}
+// Function mcqhome_get_user_role_display_name is defined in user-roles.php
 
 /**
  * Browse and Discovery System Functions
  */
 
-/**
- * Get institution statistics
- */
-function mcqhome_get_institution_stats($institution_id) {
-    global $wpdb;
-    
-    // Check if custom tables exist to prevent fatal errors
-    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_follows'");
-    
-    // Get teachers count
-    $teachers_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(DISTINCT u.ID) 
-        FROM {$wpdb->users} u 
-        INNER JOIN {$wpdb->usermeta} um ON u.ID = um.user_id 
-        WHERE um.meta_key = 'institution_id' 
-        AND um.meta_value = %d
-    ", $institution_id));
-    
-    // Get MCQ sets count
-    $mcq_sets_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(p.ID) 
-        FROM {$wpdb->posts} p 
-        INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id 
-        WHERE p.post_type = 'mcq_set' 
-        AND p.post_status = 'publish' 
-        AND pm.meta_key = '_institution_id' 
-        AND pm.meta_value = %d
-    ", $institution_id));
-    
-    // Get total MCQs count
-    $total_mcqs_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(p.ID) 
-        FROM {$wpdb->posts} p 
-        INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id 
-        WHERE p.post_type = 'mcq' 
-        AND p.post_status = 'publish' 
-        AND pm.meta_key = '_institution_id' 
-        AND pm.meta_value = %d
-    ", $institution_id));
-    
-    // Get followers count (only if table exists)
-    $followers_count = 0;
-    if ($table_exists) {
-        $followers_count = $wpdb->get_var($wpdb->prepare("
-            SELECT COUNT(*) 
-            FROM {$wpdb->prefix}mcq_user_follows 
-            WHERE followed_type = 'institution' 
-            AND followed_id = %d
-        ", $institution_id));
-    }
-    
-    return [
-        'teachers' => (int) ($teachers_count ?: 0),
-        'mcq_sets' => (int) ($mcq_sets_count ?: 0),
-        'total_mcqs' => (int) ($total_mcqs_count ?: 0),
-        'followers' => (int) ($followers_count ?: 0)
-    ];
-}
+// Function mcqhome_get_institution_stats is defined in dashboard-functions.php
 
-/**
- * Get teacher statistics
- */
-function mcqhome_get_teacher_stats($teacher_id) {
-    global $wpdb;
-    
-    // Check if custom tables exist to prevent fatal errors
-    $attempts_table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_attempts'");
-    $follows_table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_follows'");
-    
-    // Get MCQ sets count
-    $mcq_sets_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(ID) 
-        FROM {$wpdb->posts} 
-        WHERE post_type = 'mcq_set' 
-        AND post_status = 'publish' 
-        AND post_author = %d
-    ", $teacher_id));
-    
-    // Get total MCQs count
-    $total_mcqs_count = $wpdb->get_var($wpdb->prepare("
-        SELECT COUNT(ID) 
-        FROM {$wpdb->posts} 
-        WHERE post_type = 'mcq' 
-        AND post_status = 'publish' 
-        AND post_author = %d
-    ", $teacher_id));
-    
-    // Get students count (enrolled in teacher's sets) - only if table exists
-    $students_count = 0;
-    if ($attempts_table_exists) {
-        $students_count = $wpdb->get_var($wpdb->prepare("
-            SELECT COUNT(DISTINCT user_id) 
-            FROM {$wpdb->prefix}mcq_attempts ma
-            INNER JOIN {$wpdb->posts} p ON ma.mcq_set_id = p.ID
-            WHERE p.post_author = %d
-        ", $teacher_id));
-    }
-    
-    // Get followers count - only if table exists
-    $followers_count = 0;
-    if ($follows_table_exists) {
-        $followers_count = $wpdb->get_var($wpdb->prepare("
-            SELECT COUNT(*) 
-            FROM {$wpdb->prefix}mcq_user_follows 
-            WHERE followed_type = 'teacher' 
-            AND followed_id = %d
-        ", $teacher_id));
-    }
-    
-    return [
-        'mcq_sets' => (int) ($mcq_sets_count ?: 0),
-        'total_mcqs' => (int) ($total_mcqs_count ?: 0),
-        'students' => (int) ($students_count ?: 0),
-        'followers' => (int) ($followers_count ?: 0)
-    ];
-}
+// Function mcqhome_get_teacher_stats is defined in dashboard-functions.php
 
 /**
  * Get teachers associated with an institution
