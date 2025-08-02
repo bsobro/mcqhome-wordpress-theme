@@ -16,31 +16,78 @@ if (!defined('ABSPATH')) {
  */
 function mcqhome_semantic_header() {
     ?>
-    <header class="site-header" role="banner" itemscope itemtype="https://schema.org/WPHeader">
-        <div class="container">
-            <div class="header-content">
-                <?php if (has_custom_logo()) : ?>
-                    <div class="site-logo" itemprop="logo">
-                        <?php the_custom_logo(); ?>
-                    </div>
-                <?php else : ?>
-                    <h1 class="site-title" itemprop="name">
-                        <a href="<?php echo esc_url(home_url('/')); ?>" rel="home">
-                            <?php bloginfo('name'); ?>
-                        </a>
-                    </h1>
-                <?php endif; ?>
-                
-                <nav class="main-navigation" role="navigation" aria-label="<?php esc_attr_e('Primary Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/SiteNavigationElement">
+    <header id="masthead" class="site-header bg-white shadow-sm border-b" role="banner" itemscope itemtype="https://schema.org/WPHeader">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <div class="site-branding">
+                    <?php if (has_custom_logo()) : ?>
+                        <div class="site-logo" itemprop="logo">
+                            <?php the_custom_logo(); ?>
+                        </div>
+                    <?php else : ?>
+                        <h1 class="site-title text-2xl font-bold" itemprop="name">
+                            <a href="<?php echo esc_url(home_url('/')); ?>" rel="home" class="text-gray-900 hover:text-blue-600">
+                                <?php bloginfo('name'); ?>
+                            </a>
+                        </h1>
+                        <?php
+                        $description = get_bloginfo('description', 'display');
+                        if ($description || is_customize_preview()) :
+                        ?>
+                            <p class="site-description text-gray-600 text-sm"><?php echo $description; ?></p>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+
+                <nav id="site-navigation" class="main-navigation hidden md:block" role="navigation" aria-label="<?php esc_attr_e('Primary Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/SiteNavigationElement">
                     <?php
                     wp_nav_menu([
                         'theme_location' => 'primary',
-                        'menu_class' => 'nav-menu',
+                        'menu_id' => 'primary-menu',
                         'container' => false,
+                        'menu_class' => 'flex space-x-6',
                         'fallback_cb' => 'mcqhome_fallback_menu'
                     ]);
                     ?>
                 </nav>
+
+                <div class="header-actions flex items-center space-x-4">
+                    <?php if (is_user_logged_in()) : ?>
+                        <a href="<?php echo esc_url(get_permalink(get_page_by_path('dashboard'))); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            <?php esc_html_e('Dashboard', 'mcqhome'); ?>
+                        </a>
+                        <a href="<?php echo esc_url(wp_logout_url(home_url())); ?>" class="text-gray-600 hover:text-gray-900">
+                            <?php esc_html_e('Logout', 'mcqhome'); ?>
+                        </a>
+                    <?php else : ?>
+                        <a href="<?php echo esc_url(wp_login_url()); ?>" class="text-gray-600 hover:text-gray-900">
+                            <?php esc_html_e('Login', 'mcqhome'); ?>
+                        </a>
+                        <a href="<?php echo esc_url(wp_registration_url()); ?>" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            <?php esc_html_e('Register', 'mcqhome'); ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Mobile menu button -->
+                <button class="mobile-menu-toggle md:hidden p-2" aria-label="<?php esc_attr_e('Toggle mobile menu', 'mcqhome'); ?>">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile menu -->
+            <div class="mobile-menu hidden md:hidden py-4 border-t">
+                <?php
+                wp_nav_menu([
+                    'theme_location' => 'primary',
+                    'menu_id' => 'mobile-menu',
+                    'container' => false,
+                    'menu_class' => 'flex flex-col space-y-2',
+                    'fallback_cb' => 'mcqhome_fallback_menu'
+                ]);
+                ?>
             </div>
         </div>
     </header>
@@ -52,36 +99,82 @@ function mcqhome_semantic_header() {
  */
 function mcqhome_semantic_footer() {
     ?>
-    <footer class="site-footer" role="contentinfo" itemscope itemtype="https://schema.org/WPFooter">
-        <div class="container">
-            <div class="footer-content">
-                <?php if (is_active_sidebar('footer-1')) : ?>
-                    <aside class="footer-widgets" role="complementary" aria-label="<?php esc_attr_e('Footer Widgets', 'mcqhome'); ?>">
-                        <?php dynamic_sidebar('footer-1'); ?>
-                    </aside>
-                <?php endif; ?>
-                
-                <div class="footer-info">
-                    <p class="copyright" itemprop="copyrightNotice">
-                        &copy; <?php echo date('Y'); ?> 
-                        <span itemprop="copyrightHolder" itemscope itemtype="https://schema.org/Organization">
-                            <span itemprop="name"><?php bloginfo('name'); ?></span>
-                        </span>
-                        <?php esc_html_e('All rights reserved.', 'mcqhome'); ?>
+    <footer id="colophon" class="site-footer bg-gray-900 text-white mt-auto" role="contentinfo" itemscope itemtype="https://schema.org/WPFooter">
+        <div class="container mx-auto px-4 py-8">
+            <?php if (is_active_sidebar('footer-1')) : ?>
+                <div class="footer-widgets mb-8" role="complementary" aria-label="<?php esc_attr_e('Footer Widgets', 'mcqhome'); ?>">
+                    <?php dynamic_sidebar('footer-1'); ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="footer-info grid md:grid-cols-3 gap-8 mb-8">
+                <div class="footer-about">
+                    <h3 class="text-lg font-semibold mb-4" itemprop="name"><?php bloginfo('name'); ?></h3>
+                    <p class="text-gray-300">
+                        <?php 
+                        $description = get_bloginfo('description');
+                        echo $description ? esc_html($description) : esc_html__('Your comprehensive MCQ learning platform', 'mcqhome');
+                        ?>
                     </p>
-                    
+                </div>
+
+                <div class="footer-links">
+                    <h3 class="text-lg font-semibold mb-4"><?php esc_html_e('Quick Links', 'mcqhome'); ?></h3>
                     <?php if (has_nav_menu('footer')) : ?>
                         <nav class="footer-navigation" role="navigation" aria-label="<?php esc_attr_e('Footer Navigation', 'mcqhome'); ?>">
                             <?php
                             wp_nav_menu([
                                 'theme_location' => 'footer',
-                                'menu_class' => 'footer-nav-menu',
+                                'menu_id' => 'footer-menu',
                                 'container' => false,
+                                'menu_class' => 'space-y-2',
                                 'depth' => 1
                             ]);
                             ?>
                         </nav>
+                    <?php else : ?>
+                        <?php if (function_exists('mcqhome_default_footer_menu')) mcqhome_default_footer_menu(); ?>
                     <?php endif; ?>
+                </div>
+
+                <div class="footer-contact">
+                    <h3 class="text-lg font-semibold mb-4"><?php esc_html_e('Contact Info', 'mcqhome'); ?></h3>
+                    <div class="space-y-2 text-gray-300">
+                        <p><?php esc_html_e('Email: info@mcqhome.com', 'mcqhome'); ?></p>
+                        <p><?php esc_html_e('Phone: +1 (555) 123-4567', 'mcqhome'); ?></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <div class="site-info text-gray-300 text-sm">
+                    <p class="copyright" itemprop="copyrightNotice">
+                        &copy; <?php echo date('Y'); ?> 
+                        <span itemprop="copyrightHolder" itemscope itemtype="https://schema.org/Organization">
+                            <span itemprop="name"><?php bloginfo('name'); ?></span>
+                        </span>. 
+                        <?php esc_html_e('All rights reserved.', 'mcqhome'); ?>
+                    </p>
+                </div>
+                
+                <div class="footer-social mt-4 md:mt-0">
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors" aria-label="<?php esc_attr_e('Facebook', 'mcqhome'); ?>">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors" aria-label="<?php esc_attr_e('Twitter', 'mcqhome'); ?>">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white transition-colors" aria-label="<?php esc_attr_e('LinkedIn', 'mcqhome'); ?>">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -227,17 +320,20 @@ function mcqhome_semantic_breadcrumbs() {
     
     if (count($breadcrumbs) > 1) {
         ?>
-        <nav class="breadcrumbs" role="navigation" aria-label="<?php esc_attr_e('Breadcrumb Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/BreadcrumbList">
-            <ol class="breadcrumb-list">
+        <nav class="breadcrumbs mb-4 px-4" role="navigation" aria-label="<?php esc_attr_e('Breadcrumb Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/BreadcrumbList">
+            <ol class="flex items-center space-x-2 text-sm text-gray-600">
                 <?php foreach ($breadcrumbs as $index => $breadcrumb) : ?>
+                    <?php if ($index > 0) : ?>
+                        <li><span class="mx-2">/</span></li>
+                    <?php endif; ?>
                     <li class="breadcrumb-item<?php echo isset($breadcrumb['current']) ? ' current' : ''; ?>" 
                         itemprop="itemListElement" 
                         itemscope 
                         itemtype="https://schema.org/ListItem">
                         <?php if (isset($breadcrumb['current'])) : ?>
-                            <span itemprop="name" aria-current="page"><?php echo esc_html($breadcrumb['title']); ?></span>
+                            <span itemprop="name" aria-current="page" class="text-blue-600 font-medium"><?php echo esc_html($breadcrumb['title']); ?></span>
                         <?php else : ?>
-                            <a href="<?php echo esc_url($breadcrumb['url']); ?>" itemprop="item">
+                            <a href="<?php echo esc_url($breadcrumb['url']); ?>" itemprop="item" class="hover:text-blue-600">
                                 <span itemprop="name"><?php echo esc_html($breadcrumb['title']); ?></span>
                             </a>
                         <?php endif; ?>
@@ -321,9 +417,9 @@ function mcqhome_semantic_pagination($query = null) {
 function mcqhome_semantic_skip_links() {
     ?>
     <div class="skip-links">
-        <a class="skip-link sr-only-focusable" href="#main-content"><?php esc_html_e('Skip to main content', 'mcqhome'); ?></a>
-        <a class="skip-link sr-only-focusable" href="#main-navigation"><?php esc_html_e('Skip to navigation', 'mcqhome'); ?></a>
-        <a class="skip-link sr-only-focusable" href="#footer"><?php esc_html_e('Skip to footer', 'mcqhome'); ?></a>
+        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#main-content"><?php esc_html_e('Skip to main content', 'mcqhome'); ?></a>
+        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#site-navigation"><?php esc_html_e('Skip to navigation', 'mcqhome'); ?></a>
+        <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#colophon"><?php esc_html_e('Skip to footer', 'mcqhome'); ?></a>
     </div>
     <?php
 }
@@ -352,15 +448,15 @@ add_filter('mcqhome_body_attributes', 'mcqhome_body_semantic_attributes');
  */
 function mcqhome_fallback_menu() {
     ?>
-    <ul class="nav-menu fallback-menu">
-        <li><a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Home', 'mcqhome'); ?></a></li>
-        <li><a href="<?php echo esc_url(home_url('/browse/')); ?>"><?php esc_html_e('Browse', 'mcqhome'); ?></a></li>
-        <li><a href="<?php echo esc_url(home_url('/institutions/')); ?>"><?php esc_html_e('Institutions', 'mcqhome'); ?></a></li>
+    <ul class="flex space-x-6">
+        <li><a href="<?php echo esc_url(home_url('/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Home', 'mcqhome'); ?></a></li>
+        <li><a href="<?php echo esc_url(home_url('/browse/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Browse', 'mcqhome'); ?></a></li>
+        <li><a href="<?php echo esc_url(home_url('/institutions/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Institutions', 'mcqhome'); ?></a></li>
         <?php if (is_user_logged_in()) : ?>
-            <li><a href="<?php echo esc_url(home_url('/dashboard/')); ?>"><?php esc_html_e('Dashboard', 'mcqhome'); ?></a></li>
+            <li><a href="<?php echo esc_url(home_url('/dashboard/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Dashboard', 'mcqhome'); ?></a></li>
         <?php else : ?>
-            <li><a href="<?php echo esc_url(home_url('/register/')); ?>"><?php esc_html_e('Register', 'mcqhome'); ?></a></li>
-            <li><a href="<?php echo esc_url(wp_login_url()); ?>"><?php esc_html_e('Login', 'mcqhome'); ?></a></li>
+            <li><a href="<?php echo esc_url(home_url('/register/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Register', 'mcqhome'); ?></a></li>
+            <li><a href="<?php echo esc_url(wp_login_url()); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Login', 'mcqhome'); ?></a></li>
         <?php endif; ?>
     </ul>
     <?php
