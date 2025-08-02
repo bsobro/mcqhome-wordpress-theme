@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Semantic HTML Helper Functions
  *
@@ -14,8 +15,9 @@ if (!defined('ABSPATH')) {
 /**
  * Output semantic header with proper ARIA attributes
  */
-function mcqhome_semantic_header() {
-    ?>
+function mcqhome_semantic_header()
+{
+?>
     <header id="masthead" class="site-header bg-white shadow-sm border-b" role="banner" itemscope itemtype="https://schema.org/WPHeader">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between py-4">
@@ -91,14 +93,15 @@ function mcqhome_semantic_header() {
             </div>
         </div>
     </header>
-    <?php
+<?php
 }
 
 /**
  * Output semantic footer with proper ARIA attributes
  */
-function mcqhome_semantic_footer() {
-    ?>
+function mcqhome_semantic_footer()
+{
+?>
     <footer id="colophon" class="site-footer bg-gray-900 text-white mt-auto" role="contentinfo" itemscope itemtype="https://schema.org/WPFooter">
         <div class="container mx-auto px-4 py-8">
             <?php if (is_active_sidebar('footer-1')) : ?>
@@ -111,7 +114,7 @@ function mcqhome_semantic_footer() {
                 <div class="footer-about">
                     <h3 class="text-lg font-semibold mb-4" itemprop="name"><?php bloginfo('name'); ?></h3>
                     <p class="text-gray-300">
-                        <?php 
+                        <?php
                         $description = get_bloginfo('description');
                         echo $description ? esc_html($description) : esc_html__('Your comprehensive MCQ learning platform', 'mcqhome');
                         ?>
@@ -149,29 +152,29 @@ function mcqhome_semantic_footer() {
             <div class="footer-bottom border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center">
                 <div class="site-info text-gray-300 text-sm">
                     <p class="copyright" itemprop="copyrightNotice">
-                        &copy; <?php echo date('Y'); ?> 
+                        &copy; <?php echo date('Y'); ?>
                         <span itemprop="copyrightHolder" itemscope itemtype="https://schema.org/Organization">
                             <span itemprop="name"><?php bloginfo('name'); ?></span>
-                        </span>. 
+                        </span>.
                         <?php esc_html_e('All rights reserved.', 'mcqhome'); ?>
                     </p>
                 </div>
-                
+
                 <div class="footer-social mt-4 md:mt-0">
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-300 hover:text-white transition-colors" aria-label="<?php esc_attr_e('Facebook', 'mcqhome'); ?>">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                             </svg>
                         </a>
                         <a href="#" class="text-gray-300 hover:text-white transition-colors" aria-label="<?php esc_attr_e('Twitter', 'mcqhome'); ?>">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
                             </svg>
                         </a>
                         <a href="#" class="text-gray-300 hover:text-white transition-colors" aria-label="<?php esc_attr_e('LinkedIn', 'mcqhome'); ?>">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                             </svg>
                         </a>
                     </div>
@@ -179,18 +182,19 @@ function mcqhome_semantic_footer() {
             </div>
         </div>
     </footer>
-    <?php
+<?php
 }
 
 /**
  * Output semantic main content area
  */
-function mcqhome_semantic_main_start($class = '') {
+function mcqhome_semantic_main_start($class = '')
+{
     $classes = 'main-content';
     if ($class) {
         $classes .= ' ' . $class;
     }
-    ?>
+?>
     <main class="<?php echo esc_attr($classes); ?>" role="main" id="main-content" tabindex="-1">
     <?php
 }
@@ -198,24 +202,26 @@ function mcqhome_semantic_main_start($class = '') {
 /**
  * Close semantic main content area
  */
-function mcqhome_semantic_main_end() {
+function mcqhome_semantic_main_end()
+{
     ?>
     </main>
-    <?php
+<?php
 }
 
 /**
  * Output semantic article with proper microdata
  */
-function mcqhome_semantic_article_start($post_id = null) {
+function mcqhome_semantic_article_start($post_id = null)
+{
     if (!$post_id) {
         global $post;
         $post_id = $post->ID;
     }
-    
+
     $post_type = get_post_type($post_id);
     $schema_type = 'Article';
-    
+
     // Set appropriate schema type based on post type
     switch ($post_type) {
         case 'mcq_set':
@@ -228,18 +234,19 @@ function mcqhome_semantic_article_start($post_id = null) {
             $schema_type = 'Question';
             break;
     }
-    ?>
-    <article class="post-<?php echo $post_id; ?> <?php echo esc_attr($post_type); ?>" 
-             itemscope 
-             itemtype="https://schema.org/<?php echo $schema_type; ?>"
-             role="article">
+?>
+    <article class="post-<?php echo $post_id; ?> <?php echo esc_attr($post_type); ?>"
+        itemscope
+        itemtype="https://schema.org/<?php echo $schema_type; ?>"
+        role="article">
     <?php
 }
 
 /**
  * Close semantic article
  */
-function mcqhome_semantic_article_end() {
+function mcqhome_semantic_article_end()
+{
     ?>
     </article>
     <?php
@@ -248,40 +255,42 @@ function mcqhome_semantic_article_end() {
 /**
  * Output semantic heading with proper hierarchy
  */
-function mcqhome_semantic_heading($text, $level = 1, $class = '', $itemprop = '') {
+function mcqhome_semantic_heading($text, $level = 1, $class = '', $itemprop = '')
+{
     $level = max(1, min(6, intval($level))); // Ensure level is between 1-6
     $classes = $class ? ' class="' . esc_attr($class) . '"' : '';
     $microdata = $itemprop ? ' itemprop="' . esc_attr($itemprop) . '"' : '';
-    
+
     echo "<h{$level}{$classes}{$microdata}>" . esc_html($text) . "</h{$level}>";
 }
 
 /**
  * Output semantic breadcrumbs
  */
-function mcqhome_semantic_breadcrumbs() {
+function mcqhome_semantic_breadcrumbs()
+{
     if (is_front_page()) {
         return;
     }
-    
+
     $breadcrumbs = [];
-    
+
     // Home
     $breadcrumbs[] = [
         'url' => home_url('/'),
         'title' => __('Home', 'mcqhome')
     ];
-    
+
     // Add breadcrumbs based on current page
     if (is_singular()) {
         $post_type = get_post_type();
-        
+
         if ($post_type === 'mcq_set') {
             $breadcrumbs[] = [
                 'url' => home_url('/browse/'),
                 'title' => __('Browse', 'mcqhome')
             ];
-            
+
             $subjects = wp_get_post_terms(get_the_ID(), 'mcq_subject');
             if (!empty($subjects)) {
                 $breadcrumbs[] = [
@@ -295,7 +304,7 @@ function mcqhome_semantic_breadcrumbs() {
                 'title' => __('Institutions', 'mcqhome')
             ];
         }
-        
+
         // Current page
         $breadcrumbs[] = [
             'url' => get_permalink(),
@@ -317,18 +326,18 @@ function mcqhome_semantic_breadcrumbs() {
             'current' => true
         ];
     }
-    
+
     if (count($breadcrumbs) > 1) {
-        ?>
-        <nav class="breadcrumbs mb-4 px-4" role="navigation" aria-label="<?php esc_attr_e('Breadcrumb Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/BreadcrumbList">
+    ?>
+        <nav class="container breadcrumbs mb-4 px-4" role="navigation" aria-label="<?php esc_attr_e('Breadcrumb Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/BreadcrumbList">
             <ol class="flex items-center space-x-2 text-sm text-gray-600">
                 <?php foreach ($breadcrumbs as $index => $breadcrumb) : ?>
                     <?php if ($index > 0) : ?>
                         <li><span class="mx-2">/</span></li>
                     <?php endif; ?>
-                    <li class="breadcrumb-item<?php echo isset($breadcrumb['current']) ? ' current' : ''; ?>" 
-                        itemprop="itemListElement" 
-                        itemscope 
+                    <li class="breadcrumb-item<?php echo isset($breadcrumb['current']) ? ' current' : ''; ?>"
+                        itemprop="itemListElement"
+                        itemscope
                         itemtype="https://schema.org/ListItem">
                         <?php if (isset($breadcrumb['current'])) : ?>
                             <span itemprop="name" aria-current="page" class="text-blue-600 font-medium"><?php echo esc_html($breadcrumb['title']); ?></span>
@@ -342,58 +351,60 @@ function mcqhome_semantic_breadcrumbs() {
                 <?php endforeach; ?>
             </ol>
         </nav>
-        <?php
+    <?php
     }
 }
 
 /**
  * Output semantic search form
  */
-function mcqhome_semantic_search_form($placeholder = '') {
+function mcqhome_semantic_search_form($placeholder = '')
+{
     if (!$placeholder) {
         $placeholder = __('Search MCQs, institutions, teachers...', 'mcqhome');
     }
     ?>
     <form class="search-form" role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>" aria-label="<?php esc_attr_e('Site Search', 'mcqhome'); ?>">
         <label for="search-field" class="sr-only"><?php esc_html_e('Search for:', 'mcqhome'); ?></label>
-        <input type="search" 
-               id="search-field" 
-               class="search-field" 
-               placeholder="<?php echo esc_attr($placeholder); ?>" 
-               value="<?php echo get_search_query(); ?>" 
-               name="s" 
-               required
-               aria-describedby="search-submit">
-        <button type="submit" 
-                id="search-submit" 
-                class="search-submit" 
-                aria-label="<?php esc_attr_e('Submit Search', 'mcqhome'); ?>">
+        <input type="search"
+            id="search-field"
+            class="search-field"
+            placeholder="<?php echo esc_attr($placeholder); ?>"
+            value="<?php echo get_search_query(); ?>"
+            name="s"
+            required
+            aria-describedby="search-submit">
+        <button type="submit"
+            id="search-submit"
+            class="search-submit"
+            aria-label="<?php esc_attr_e('Submit Search', 'mcqhome'); ?>">
             <span class="sr-only"><?php esc_html_e('Search', 'mcqhome'); ?></span>
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
             </svg>
         </button>
     </form>
-    <?php
+<?php
 }
 
 /**
  * Output semantic pagination
  */
-function mcqhome_semantic_pagination($query = null) {
+function mcqhome_semantic_pagination($query = null)
+{
     global $wp_query;
-    
+
     if (!$query) {
         $query = $wp_query;
     }
-    
+
     $total_pages = $query->max_num_pages;
     $current_page = max(1, get_query_var('paged'));
-    
+
     if ($total_pages <= 1) {
         return;
     }
-    ?>
+?>
     <nav class="pagination-nav" role="navigation" aria-label="<?php esc_attr_e('Posts Navigation', 'mcqhome'); ?>">
         <?php
         echo paginate_links([
@@ -408,29 +419,31 @@ function mcqhome_semantic_pagination($query = null) {
         ]);
         ?>
     </nav>
-    <?php
+<?php
 }
 
 /**
  * Output semantic skip links for accessibility
  */
-function mcqhome_semantic_skip_links() {
-    ?>
+function mcqhome_semantic_skip_links()
+{
+?>
     <div class="skip-links">
         <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#main-content"><?php esc_html_e('Skip to main content', 'mcqhome'); ?></a>
         <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#site-navigation"><?php esc_html_e('Skip to navigation', 'mcqhome'); ?></a>
         <a class="skip-link sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 bg-blue-600 text-white p-2 z-50" href="#colophon"><?php esc_html_e('Skip to footer', 'mcqhome'); ?></a>
     </div>
-    <?php
+<?php
 }
 
 /**
  * Add semantic attributes to body tag
  */
-function mcqhome_body_semantic_attributes($attributes) {
+function mcqhome_body_semantic_attributes($attributes)
+{
     $attributes['itemscope'] = '';
     $attributes['itemtype'] = 'https://schema.org/WebPage';
-    
+
     if (is_singular('mcq_set')) {
         $attributes['itemtype'] = 'https://schema.org/Quiz';
     } elseif (is_singular('institution')) {
@@ -438,7 +451,7 @@ function mcqhome_body_semantic_attributes($attributes) {
     } elseif (is_author()) {
         $attributes['itemtype'] = 'https://schema.org/ProfilePage';
     }
-    
+
     return $attributes;
 }
 add_filter('mcqhome_body_attributes', 'mcqhome_body_semantic_attributes');
@@ -446,8 +459,9 @@ add_filter('mcqhome_body_attributes', 'mcqhome_body_semantic_attributes');
 /**
  * Fallback menu for primary navigation
  */
-function mcqhome_fallback_menu() {
-    ?>
+function mcqhome_fallback_menu()
+{
+?>
     <ul class="flex space-x-6">
         <li><a href="<?php echo esc_url(home_url('/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Home', 'mcqhome'); ?></a></li>
         <li><a href="<?php echo esc_url(home_url('/browse/')); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Browse', 'mcqhome'); ?></a></li>
@@ -459,24 +473,25 @@ function mcqhome_fallback_menu() {
             <li><a href="<?php echo esc_url(wp_login_url()); ?>" class="text-gray-700 hover:text-blue-600"><?php esc_html_e('Login', 'mcqhome'); ?></a></li>
         <?php endif; ?>
     </ul>
-    <?php
+<?php
 }
 
 /**
  * Add ARIA attributes to menu items
  */
-function mcqhome_add_menu_aria_attributes($atts, $item, $args) {
+function mcqhome_add_menu_aria_attributes($atts, $item, $args)
+{
     // Add ARIA attributes for dropdown menus
     if (in_array('menu-item-has-children', $item->classes)) {
         $atts['aria-haspopup'] = 'true';
         $atts['aria-expanded'] = 'false';
     }
-    
+
     // Add current page indicator
     if (in_array('current-menu-item', $item->classes)) {
         $atts['aria-current'] = 'page';
     }
-    
+
     return $atts;
 }
 add_filter('nav_menu_link_attributes', 'mcqhome_add_menu_aria_attributes', 10, 3);
@@ -484,7 +499,8 @@ add_filter('nav_menu_link_attributes', 'mcqhome_add_menu_aria_attributes', 10, 3
 /**
  * Add semantic HTML5 input types
  */
-function mcqhome_html5_input_types($field_type, $field_name) {
+function mcqhome_html5_input_types($field_type, $field_name)
+{
     $html5_types = [
         'email' => 'email',
         'url' => 'url',
@@ -494,27 +510,28 @@ function mcqhome_html5_input_types($field_type, $field_name) {
         'time' => 'time',
         'search' => 'search'
     ];
-    
+
     foreach ($html5_types as $pattern => $type) {
         if (strpos($field_name, $pattern) !== false) {
             return $type;
         }
     }
-    
+
     return $field_type;
 }
 
 /**
  * Add semantic validation attributes
  */
-function mcqhome_add_validation_attributes($field_name, $required = false) {
+function mcqhome_add_validation_attributes($field_name, $required = false)
+{
     $attributes = [];
-    
+
     if ($required) {
         $attributes['required'] = 'required';
         $attributes['aria-required'] = 'true';
     }
-    
+
     // Add pattern validation for specific fields
     if (strpos($field_name, 'email') !== false) {
         $attributes['pattern'] = '[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$';
@@ -526,6 +543,6 @@ function mcqhome_add_validation_attributes($field_name, $required = false) {
         $attributes['pattern'] = 'https?://.+';
         $attributes['title'] = __('Please enter a valid URL starting with http:// or https://', 'mcqhome');
     }
-    
+
     return $attributes;
 }
