@@ -329,7 +329,7 @@ function mcqhome_semantic_breadcrumbs()
 
     if (count($breadcrumbs) > 1) {
     ?>
-        <nav class="container breadcrumbs mb-4 px-4" role="navigation" aria-label="<?php esc_attr_e('Breadcrumb Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <nav class="container breadcrumbs my-4 px-4" role="navigation" aria-label="<?php esc_attr_e('Breadcrumb Navigation', 'mcqhome'); ?>" itemscope itemtype="https://schema.org/BreadcrumbList">
             <ol class="flex items-center space-x-2 text-sm text-gray-600">
                 <?php foreach ($breadcrumbs as $index => $breadcrumb) : ?>
                     <?php if ($index > 0) : ?>
