@@ -325,9 +325,9 @@ function mcqhome_registration_form($atts)
 
 
     <script>
-            // Global function for onclick handlers
-            function selectRole(role) {
-                alert('Selected role: ' + role);
+            // Global function for onclick handlers - defined at top level
+            window.selectRole = function(role) {
+                console.log('Global selectRole called with:', role);
                 const selectedRoleInput = document.getElementById('selected-role');
                 const stepRoleSelection = document.getElementById('step-role-selection');
                 const stepRegistrationForm = document.getElementById('step-registration-form');
@@ -367,7 +367,7 @@ function mcqhome_registration_form($atts)
                             break;
                     }
                 }
-            }
+            };
 
             document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('mcqhome-register-form');
