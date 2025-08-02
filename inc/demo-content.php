@@ -31,6 +31,7 @@ class MCQHome_Demo_Content {
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('wp_ajax_mcqhome_generate_demo_content', [$this, 'ajax_generate_demo_content']);
         add_action('wp_ajax_mcqhome_cleanup_demo_content', [$this, 'ajax_cleanup_demo_content']);
+        add_action('wp_ajax_mcqhome_test_demo_step', [$this, 'ajax_test_demo_step']);
     }
     
     /**
@@ -79,6 +80,15 @@ class MCQHome_Demo_Content {
                             <?php _e('Generate Demo Content', 'mcqhome'); ?>
                         </button>
                         <span class="spinner"></span>
+                    </p>
+                    
+                    <p>
+                        <a href="<?php echo get_template_directory_uri(); ?>/debug-demo-content.php" target="_blank" class="button button-secondary">
+                            <?php _e('Debug Demo Content System', 'mcqhome'); ?>
+                        </a>
+                        <a href="<?php echo get_template_directory_uri(); ?>/test-demo-simple.php" target="_blank" class="button button-secondary">
+                            <?php _e('Simple Test', 'mcqhome'); ?>
+                        </a>
                     </p>
                 </div>
             <?php else: ?>
@@ -206,11 +216,66 @@ class MCQHome_Demo_Content {
             wp_die(__('Security check failed', 'mcqhome'));
         }
         
+        // Enable error reporting for debugging
+        $old_error_reporting = error_reporting(E_ALL);
+        $old_display_errors = ini_get('display_errors');
+        ini_set('display_errors', 1);
+        
         try {
             $this->generate_all_demo_content();
+            
+            // Restore error reporting
+            error_reporting($old_error_reporting);
+            ini_set('display_errors', $old_display_errors);
+            
             wp_send_json_success(__('Demo content generated successfully!', 'mcqhome'));
         } catch (Exception $e) {
-            wp_send_json_error($e->getMessage());
+            // Restore error reporting
+            error_reporting($old_error_reporting);
+            ini_set('display_errors', $old_display_errors);
+            
+            error_log('MCQHome Demo Content Generation Failed: ' . $e->getMessage());
+            wp_send_json_error('Demo content generation failed: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * AJAX handler for testing individual demo content steps
+     */
+    public function ajax_test_demo_step() {
+        if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_demo_nonce') || !current_user_can('manage_options')) {
+            wp_die(__('Security check failed', 'mcqhome'));
+        }
+        
+        $step = sanitize_text_field($_POST['step']);
+        
+        try {
+            switch ($step) {
+                case 'dependencies':
+                    $result = $this->check_dependencies();
+                    wp_send_json_success(['message' => $result ? 'All dependencies OK' : 'Missing dependencies', 'result' => $result]);
+                    break;
+                    
+                case 'mcq_academy':
+                    $this->create_mcq_academy_institution();
+                    wp_send_json_success(['message' => 'MCQ Academy created successfully']);
+                    break;
+                    
+                case 'subjects':
+                    $this->create_demo_subjects_and_topics();
+                    wp_send_json_success(['message' => 'Subjects and topics created successfully']);
+                    break;
+                    
+                case 'institutions':
+                    $this->create_demo_institutions();
+                    wp_send_json_success(['message' => 'Demo institutions created successfully']);
+                    break;
+                    
+                default:
+                    wp_send_json_error('Unknown step: ' . $step);
+            }
+        } catch (Exception $e) {
+            wp_send_json_error('Step failed: ' . $e->getMessage());
         }
     }
     
@@ -237,65 +302,141 @@ class MCQHome_Demo_Content {
         // Set time limit for large operations
         set_time_limit(300);
         
-        // Create MCQ Academy default institution first
-        $this->create_mcq_academy_institution();
+        // Check dependencies first
+        if (!$this->check_dependencies()) {
+            throw new Exception('Required post types or taxonomies are not registered. Please ensure the theme is properly activated.');
+        }
         
-        // Generate demo content in order
-        $this->create_demo_subjects_and_topics();
-        $this->create_demo_institutions();
-        $this->create_demo_teachers();
-        $this->create_demo_students();
-        $this->create_demo_mcqs();
-        $this->create_demo_mcq_sets();
-        $this->create_demo_follow_relationships();
-        $this->create_demo_enrollments();
+        try {
+            // Create MCQ Academy default institution first
+            $this->create_mcq_academy_institution();
+            
+            // Generate demo content in order
+            $this->create_demo_subjects_and_topics();
+            $this->create_demo_institutions();
+            $this->create_demo_teachers();
+            $this->create_demo_students();
+            $this->create_demo_mcqs();
+            $this->create_demo_mcq_sets();
+            $this->create_demo_follow_relationships();
+            $this->create_demo_enrollments();
+            
+            // Mark demo content as generated
+            update_option('mcqhome_demo_content_generated', true);
+            update_option('mcqhome_demo_content_timestamp', current_time('mysql'));
+            
+        } catch (Exception $e) {
+            error_log('MCQHome Demo Content Error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+    
+    /**
+     * Check if all required dependencies are available
+     */
+    private function check_dependencies() {
+        // Check if required post types are registered
+        $required_post_types = ['mcq', 'mcq_set', 'institution'];
+        foreach ($required_post_types as $post_type) {
+            if (!post_type_exists($post_type)) {
+                error_log("MCQHome: Post type '{$post_type}' is not registered");
+                return false;
+            }
+        }
         
-        // Mark demo content as generated
-        update_option('mcqhome_demo_content_generated', true);
-        update_option('mcqhome_demo_content_timestamp', current_time('mysql'));
+        // Check if required taxonomies are registered
+        $required_taxonomies = ['mcq_subject', 'mcq_topic', 'mcq_difficulty'];
+        foreach ($required_taxonomies as $taxonomy) {
+            if (!taxonomy_exists($taxonomy)) {
+                error_log("MCQHome: Taxonomy '{$taxonomy}' is not registered");
+                return false;
+            }
+        }
+        
+        // Check if required user roles exist
+        $required_roles = ['student', 'teacher', 'institution'];
+        foreach ($required_roles as $role) {
+            if (!get_role($role)) {
+                error_log("MCQHome: User role '{$role}' is not registered");
+                return false;
+            }
+        }
+        
+        // Check if database tables exist
+        global $wpdb;
+        $required_tables = ['mcq_attempts', 'mcq_user_follows', 'mcq_user_enrollments'];
+        foreach ($required_tables as $table) {
+            $full_table_name = $wpdb->prefix . $table;
+            if ($wpdb->get_var("SHOW TABLES LIKE '$full_table_name'") !== $full_table_name) {
+                error_log("MCQHome: Database table '{$full_table_name}' does not exist");
+                return false;
+            }
+        }
+        
+        // Check if required functions exist
+        $required_functions = ['mcqhome_add_user_follow', 'mcqhome_enroll_user', 'mcqhome_record_mcq_attempt'];
+        foreach ($required_functions as $function) {
+            if (!function_exists($function)) {
+                error_log("MCQHome: Required function '{$function}' does not exist");
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
      * Create MCQ Academy default institution
      */
     private function create_mcq_academy_institution() {
-        // Check if MCQ Academy already exists
-        $existing = get_posts([
-            'post_type' => 'institution',
-            'meta_key' => '_is_default_institution',
-            'meta_value' => '1',
-            'post_status' => 'any',
-            'numberposts' => 1
-        ]);
-        
-        if (!empty($existing)) {
-            return $existing[0]->ID;
-        }
-        
-        $mcq_academy_id = wp_insert_post([
-            'post_title' => 'MCQ Academy',
-            'post_content' => 'MCQ Academy is the default institution for independent teachers and educators who want to share their knowledge and create quality multiple choice questions for students worldwide.',
-            'post_status' => 'publish',
-            'post_type' => 'institution',
-            'post_author' => 1
-        ]);
-        
-        if ($mcq_academy_id && !is_wp_error($mcq_academy_id)) {
-            // Mark as default institution
-            update_post_meta($mcq_academy_id, '_is_default_institution', '1');
-            update_post_meta($mcq_academy_id, '_institution_type', 'default');
-            update_post_meta($mcq_academy_id, '_institution_website', 'https://mcqhome.com');
-            update_post_meta($mcq_academy_id, '_institution_description', 'The home for independent educators and quality MCQ content.');
-            update_post_meta($mcq_academy_id, '_institution_established', '2024');
-            update_post_meta($mcq_academy_id, '_institution_location', 'Global');
+        try {
+            // Check if MCQ Academy already exists
+            $existing = get_posts([
+                'post_type' => 'institution',
+                'meta_key' => '_is_default_institution',
+                'meta_value' => '1',
+                'post_status' => 'any',
+                'numberposts' => 1
+            ]);
             
-            // Store for later use
-            $this->demo_institutions['mcq_academy'] = $mcq_academy_id;
+            if (!empty($existing)) {
+                $this->demo_institutions['mcq_academy'] = $existing[0]->ID;
+                return $existing[0]->ID;
+            }
             
-            return $mcq_academy_id;
+            $mcq_academy_id = wp_insert_post([
+                'post_title' => 'MCQ Academy',
+                'post_content' => 'MCQ Academy is the default institution for independent teachers and educators who want to share their knowledge and create quality multiple choice questions for students worldwide.',
+                'post_status' => 'publish',
+                'post_type' => 'institution',
+                'post_author' => 1
+            ]);
+            
+            if (is_wp_error($mcq_academy_id)) {
+                throw new Exception('Failed to create MCQ Academy institution: ' . $mcq_academy_id->get_error_message());
+            }
+            
+            if ($mcq_academy_id) {
+                // Mark as default institution
+                update_post_meta($mcq_academy_id, '_is_default_institution', '1');
+                update_post_meta($mcq_academy_id, '_institution_type', 'default');
+                update_post_meta($mcq_academy_id, '_institution_website', home_url());
+                update_post_meta($mcq_academy_id, '_institution_description', 'The home for independent educators and quality MCQ content.');
+                update_post_meta($mcq_academy_id, '_institution_established', '2024');
+                update_post_meta($mcq_academy_id, '_institution_location', 'Global');
+                
+                // Store for later use
+                $this->demo_institutions['mcq_academy'] = $mcq_academy_id;
+                
+                return $mcq_academy_id;
+            }
+            
+            throw new Exception('Failed to create MCQ Academy institution - unknown error');
+            
+        } catch (Exception $e) {
+            error_log('MCQHome: Error creating MCQ Academy institution - ' . $e->getMessage());
+            throw $e;
         }
-        
-        throw new Exception('Failed to create MCQ Academy institution');
     }    
     
 /**
@@ -330,25 +471,48 @@ class MCQHome_Demo_Content {
         ];
         
         foreach ($subjects_data as $subject_name => $subject_info) {
-            // Create subject
-            $subject_term = wp_insert_term($subject_name, 'mcq_subject', [
-                'description' => $subject_info['description']
-            ]);
-            
-            if (!is_wp_error($subject_term)) {
-                $this->demo_subjects[$subject_name] = $subject_term['term_id'];
+            try {
+                // Check if subject already exists
+                $existing_subject = get_term_by('name', $subject_name, 'mcq_subject');
+                if ($existing_subject) {
+                    $this->demo_subjects[$subject_name] = $existing_subject->term_id;
+                } else {
+                    // Create subject
+                    $subject_term = wp_insert_term($subject_name, 'mcq_subject', [
+                        'description' => $subject_info['description']
+                    ]);
+                    
+                    if (is_wp_error($subject_term)) {
+                        error_log('MCQHome: Failed to create subject ' . $subject_name . ': ' . $subject_term->get_error_message());
+                        continue;
+                    }
+                    
+                    $this->demo_subjects[$subject_name] = $subject_term['term_id'];
+                }
                 
                 // Create topics for this subject
                 foreach ($subject_info['topics'] as $topic_name) {
-                    $topic_term = wp_insert_term($topic_name, 'mcq_topic', [
-                        'description' => sprintf('Topics related to %s in %s', $topic_name, $subject_name),
-                        'parent' => 0
-                    ]);
-                    
-                    if (!is_wp_error($topic_term)) {
+                    // Check if topic already exists
+                    $existing_topic = get_term_by('name', $topic_name, 'mcq_topic');
+                    if ($existing_topic) {
+                        $this->demo_topics[$topic_name] = $existing_topic->term_id;
+                    } else {
+                        $topic_term = wp_insert_term($topic_name, 'mcq_topic', [
+                            'description' => sprintf('Topics related to %s in %s', $topic_name, $subject_name),
+                            'parent' => 0
+                        ]);
+                        
+                        if (is_wp_error($topic_term)) {
+                            error_log('MCQHome: Failed to create topic ' . $topic_name . ': ' . $topic_term->get_error_message());
+                            continue;
+                        }
+                        
                         $this->demo_topics[$topic_name] = $topic_term['term_id'];
                     }
                 }
+            } catch (Exception $e) {
+                error_log('MCQHome: Error creating subject/topics for ' . $subject_name . ': ' . $e->getMessage());
+                continue;
             }
         }
     }
@@ -507,37 +671,56 @@ class MCQHome_Demo_Content {
         ];
         
         foreach ($teachers_data as $teacher_data) {
-            // Create user account
-            $user_id = wp_create_user(
-                $teacher_data['username'],
-                wp_generate_password(12, false),
-                $teacher_data['email']
-            );
-            
-            if ($user_id && !is_wp_error($user_id)) {
-                // Set user role
-                $user = new WP_User($user_id);
-                $user->set_role('teacher');
-                
-                // Update user meta
-                wp_update_user([
-                    'ID' => $user_id,
-                    'first_name' => $teacher_data['first_name'],
-                    'last_name' => $teacher_data['last_name'],
-                    'display_name' => $teacher_data['display_name']
-                ]);
-                
-                // Add custom meta
-                update_user_meta($user_id, 'bio', $teacher_data['bio']);
-                update_user_meta($user_id, 'specialization', $teacher_data['specialization']);
-                
-                // Associate with institution
-                if (isset($this->demo_institutions[$teacher_data['institution']])) {
-                    update_user_meta($user_id, 'institution_id', $this->demo_institutions[$teacher_data['institution']]);
+            try {
+                // Check if user already exists
+                if (username_exists($teacher_data['username']) || email_exists($teacher_data['email'])) {
+                    $existing_user = get_user_by('login', $teacher_data['username']);
+                    if ($existing_user) {
+                        $this->demo_teachers[$teacher_data['username']] = $existing_user->ID;
+                    }
+                    continue;
                 }
                 
-                // Store for later use
-                $this->demo_teachers[$teacher_data['username']] = $user_id;
+                // Create user account
+                $user_id = wp_create_user(
+                    $teacher_data['username'],
+                    wp_generate_password(12, false),
+                    $teacher_data['email']
+                );
+                
+                if (is_wp_error($user_id)) {
+                    error_log('MCQHome: Failed to create teacher ' . $teacher_data['username'] . ': ' . $user_id->get_error_message());
+                    continue;
+                }
+                
+                if ($user_id) {
+                    // Set user role
+                    $user = new WP_User($user_id);
+                    $user->set_role('teacher');
+                    
+                    // Update user meta
+                    wp_update_user([
+                        'ID' => $user_id,
+                        'first_name' => $teacher_data['first_name'],
+                        'last_name' => $teacher_data['last_name'],
+                        'display_name' => $teacher_data['display_name']
+                    ]);
+                    
+                    // Add custom meta
+                    update_user_meta($user_id, 'bio', $teacher_data['bio']);
+                    update_user_meta($user_id, 'specialization', $teacher_data['specialization']);
+                    
+                    // Associate with institution
+                    if (isset($this->demo_institutions[$teacher_data['institution']])) {
+                        update_user_meta($user_id, 'institution_id', $this->demo_institutions[$teacher_data['institution']]);
+                    }
+                    
+                    // Store for later use
+                    $this->demo_teachers[$teacher_data['username']] = $user_id;
+                }
+            } catch (Exception $e) {
+                error_log('MCQHome: Error creating teacher ' . $teacher_data['username'] . ': ' . $e->getMessage());
+                continue;
             }
         }
     }
@@ -598,31 +781,50 @@ class MCQHome_Demo_Content {
         ];
         
         foreach ($students_data as $student_data) {
-            // Create user account
-            $user_id = wp_create_user(
-                $student_data['username'],
-                wp_generate_password(12, false),
-                $student_data['email']
-            );
-            
-            if ($user_id && !is_wp_error($user_id)) {
-                // Set user role
-                $user = new WP_User($user_id);
-                $user->set_role('student');
+            try {
+                // Check if user already exists
+                if (username_exists($student_data['username']) || email_exists($student_data['email'])) {
+                    $existing_user = get_user_by('login', $student_data['username']);
+                    if ($existing_user) {
+                        $this->demo_students[$student_data['username']] = $existing_user->ID;
+                    }
+                    continue;
+                }
                 
-                // Update user meta
-                wp_update_user([
-                    'ID' => $user_id,
-                    'first_name' => $student_data['first_name'],
-                    'last_name' => $student_data['last_name'],
-                    'display_name' => $student_data['display_name']
-                ]);
+                // Create user account
+                $user_id = wp_create_user(
+                    $student_data['username'],
+                    wp_generate_password(12, false),
+                    $student_data['email']
+                );
                 
-                // Add custom meta
-                update_user_meta($user_id, 'bio', $student_data['bio']);
+                if (is_wp_error($user_id)) {
+                    error_log('MCQHome: Failed to create student ' . $student_data['username'] . ': ' . $user_id->get_error_message());
+                    continue;
+                }
                 
-                // Store for later use
-                $this->demo_students[$student_data['username']] = $user_id;
+                if ($user_id) {
+                    // Set user role
+                    $user = new WP_User($user_id);
+                    $user->set_role('student');
+                    
+                    // Update user meta
+                    wp_update_user([
+                        'ID' => $user_id,
+                        'first_name' => $student_data['first_name'],
+                        'last_name' => $student_data['last_name'],
+                        'display_name' => $student_data['display_name']
+                    ]);
+                    
+                    // Add custom meta
+                    update_user_meta($user_id, 'bio', $student_data['bio']);
+                    
+                    // Store for later use
+                    $this->demo_students[$student_data['username']] = $user_id;
+                }
+            } catch (Exception $e) {
+                error_log('MCQHome: Error creating student ' . $student_data['username'] . ': ' . $e->getMessage());
+                continue;
             }
         }
     }  
@@ -1273,17 +1475,28 @@ class MCQHome_Demo_Content {
             ['student_frank', 'mcq_academy', 'institution']
         ];
         
+        // Check if the function exists before using it
+        if (!function_exists('mcqhome_add_user_follow')) {
+            error_log('MCQHome: mcqhome_add_user_follow function not available, skipping follow relationships');
+            return;
+        }
+        
         foreach ($follow_relationships as $relationship) {
-            $follower_id = isset($this->demo_students[$relationship[0]]) ? $this->demo_students[$relationship[0]] : null;
-            
-            if ($relationship[2] === 'user') {
-                $followed_id = isset($this->demo_teachers[$relationship[1]]) ? $this->demo_teachers[$relationship[1]] : null;
-            } else {
-                $followed_id = isset($this->demo_institutions[$relationship[1]]) ? $this->demo_institutions[$relationship[1]] : null;
-            }
-            
-            if ($follower_id && $followed_id) {
-                mcqhome_add_user_follow($follower_id, $followed_id, $relationship[2]);
+            try {
+                $follower_id = isset($this->demo_students[$relationship[0]]) ? $this->demo_students[$relationship[0]] : null;
+                
+                if ($relationship[2] === 'user') {
+                    $followed_id = isset($this->demo_teachers[$relationship[1]]) ? $this->demo_teachers[$relationship[1]] : null;
+                } else {
+                    $followed_id = isset($this->demo_institutions[$relationship[1]]) ? $this->demo_institutions[$relationship[1]] : null;
+                }
+                
+                if ($follower_id && $followed_id) {
+                    mcqhome_add_user_follow($follower_id, $followed_id, $relationship[2]);
+                }
+            } catch (Exception $e) {
+                error_log('MCQHome: Error creating follow relationship: ' . $e->getMessage());
+                continue;
             }
         }
     }
@@ -1305,15 +1518,26 @@ class MCQHome_Demo_Content {
             ['student_frank', 1], // Mathematics Basics
         ];
         
+        // Check if the function exists before using it
+        if (!function_exists('mcqhome_enroll_user')) {
+            error_log('MCQHome: mcqhome_enroll_user function not available, skipping enrollments');
+            return;
+        }
+        
         foreach ($enrollments as $enrollment) {
-            $student_id = isset($this->demo_students[$enrollment[0]]) ? $this->demo_students[$enrollment[0]] : null;
-            $set_id = isset($this->demo_mcq_sets[$enrollment[1]]) ? $this->demo_mcq_sets[$enrollment[1]] : null;
-            
-            if ($student_id && $set_id) {
-                mcqhome_enroll_user($student_id, $set_id, 'free');
+            try {
+                $student_id = isset($this->demo_students[$enrollment[0]]) ? $this->demo_students[$enrollment[0]] : null;
+                $set_id = isset($this->demo_mcq_sets[$enrollment[1]]) ? $this->demo_mcq_sets[$enrollment[1]] : null;
                 
-                // Create some progress data for enrolled students
-                $this->create_demo_progress($student_id, $set_id);
+                if ($student_id && $set_id) {
+                    mcqhome_enroll_user($student_id, $set_id, 'free');
+                    
+                    // Create some progress data for enrolled students
+                    $this->create_demo_progress($student_id, $set_id);
+                }
+            } catch (Exception $e) {
+                error_log('MCQHome: Error creating enrollment: ' . $e->getMessage());
+                continue;
             }
         }
     }
@@ -1322,6 +1546,12 @@ class MCQHome_Demo_Content {
      * Create demo progress data
      */
     private function create_demo_progress($user_id, $mcq_set_id) {
+        // Check if required functions exist
+        if (!function_exists('mcqhome_record_mcq_attempt') || !function_exists('mcqhome_update_user_progress')) {
+            error_log('MCQHome: Progress tracking functions not available, skipping progress creation');
+            return;
+        }
+        
         // Get MCQs in this set
         $mcq_ids = get_post_meta($mcq_set_id, '_mcq_set_questions', true);
         if (empty($mcq_ids)) {
@@ -1348,15 +1578,19 @@ class MCQHome_Demo_Content {
             $completed_list[] = $mcq_id;
             
             // Record individual MCQ attempt
-            mcqhome_record_mcq_attempt(
-                $user_id,
-                $mcq_id,
-                $mcq_set_id,
-                $selected_answer,
-                $correct_answer,
-                $is_correct ? 1 : 0,
-                $is_correct ? 0 : 0.25
-            );
+            try {
+                mcqhome_record_mcq_attempt(
+                    $user_id,
+                    $mcq_id,
+                    $mcq_set_id,
+                    $selected_answer,
+                    $correct_answer,
+                    $is_correct ? 1 : 0,
+                    $is_correct ? 0 : 0.25
+                );
+            } catch (Exception $e) {
+                error_log('MCQHome: Error recording MCQ attempt: ' . $e->getMessage());
+            }
         }
         
         // Update user progress
@@ -1500,8 +1734,14 @@ class MCQHome_Demo_Content {
     }
 }
 
-// Initialize demo content system
-new MCQHome_Demo_Content();
+// Initialize demo content system only after all dependencies are loaded
+function mcqhome_init_demo_content() {
+    // Only initialize if we're in admin and all dependencies are available
+    if (is_admin()) {
+        new MCQHome_Demo_Content();
+    }
+}
+add_action('admin_init', 'mcqhome_init_demo_content', 20);
 
 /**
  * Auto-generate demo content on theme activation if option is set
