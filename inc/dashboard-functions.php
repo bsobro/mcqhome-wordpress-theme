@@ -1108,43 +1108,61 @@ function mcqhome_render_teacher_dashboard($user_id) {
 function mcqhome_get_teacher_stats($user_id) {
     global $wpdb;
     
-    // Get created MCQs count
-    $created_mcqs = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_author = %d AND post_type = 'mcq' AND post_status = 'publish'",
-        $user_id
-    ));
-    
-    // Get MCQ sets count
-    $mcq_sets = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_author = %d AND post_type = 'mcq_set' AND post_status = 'publish'",
-        $user_id
-    ));
-    
-    // Get total students enrolled in teacher's content
-    $total_students = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(DISTINCT ue.user_id) 
-         FROM {$wpdb->prefix}mcq_user_enrollments ue
-         JOIN {$wpdb->posts} p ON ue.mcq_set_id = p.ID
-         WHERE p.post_author = %d AND ue.status = 'active'",
-        $user_id
-    ));
-    
-    // Get institution name
-    $institution_id = get_user_meta($user_id, 'institution_id', true);
-    $institution_name = __('Independent', 'mcqhome');
-    if ($institution_id) {
-        $institution = get_post($institution_id);
-        if ($institution) {
-            $institution_name = $institution->post_title;
+    try {
+        // Get created MCQs count
+        $created_mcqs = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_author = %d AND post_type = 'mcq' AND post_status = 'publish'",
+            $user_id
+        ));
+        
+        // Get MCQ sets count
+        $mcq_sets = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_author = %d AND post_type = 'mcq_set' AND post_status = 'publish'",
+            $user_id
+        ));
+        
+        // Check if database tables exist before querying
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_enrollments'");
+        
+        $total_students = 0;
+        if ($table_exists) {
+            // Get total students enrolled in teacher's content
+            $total_students = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(DISTINCT ue.user_id) 
+                 FROM {$wpdb->prefix}mcq_user_enrollments ue
+                 JOIN {$wpdb->posts} p ON ue.mcq_set_id = p.ID
+                 WHERE p.post_author = %d AND ue.status = 'active'",
+                $user_id
+            ));
         }
-    }
     
-    return [
-        'created_mcqs' => intval($created_mcqs ?: 0),
-        'mcq_sets' => intval($mcq_sets ?: 0),
-        'total_students' => intval($total_students ?: 0),
-        'institution_name' => $institution_name
-    ];
+        // Get institution name
+        $institution_id = get_user_meta($user_id, 'institution_id', true);
+        $institution_name = __('Independent', 'mcqhome');
+        if ($institution_id) {
+            $institution = get_post($institution_id);
+            if ($institution) {
+                $institution_name = $institution->post_title;
+            }
+        }
+        
+        return [
+            'created_mcqs' => intval($created_mcqs ?: 0),
+            'mcq_sets' => intval($mcq_sets ?: 0),
+            'total_students' => intval($total_students ?: 0),
+            'institution_name' => $institution_name
+        ];
+        
+    } catch (Exception $e) {
+        // Log error and return default stats
+        error_log('MCQHome: Teacher stats error - ' . $e->getMessage());
+        return [
+            'created_mcqs' => 0,
+            'mcq_sets' => 0,
+            'total_students' => 0,
+            'institution_name' => __('Independent', 'mcqhome')
+        ];
+    }
 }
 
 /**
@@ -1842,32 +1860,57 @@ function mcqhome_render_institution_dashboard($user_id) {
 function mcqhome_get_institution_stats($user_id) {
     global $wpdb;
     
-    // Get institution ID
-    $institution_id = get_user_meta($user_id, 'institution_id', true);
-    if (!$institution_id) {
-        return [
-            'total_teachers' => 0,
-            'total_students' => 0,
-            'total_content' => 0,
-            'avg_performance' => 0
-        ];
-    }
+    // Default stats to return if there are any errors
+    $default_stats = [
+        'total_teachers' => 0,
+        'total_students' => 0,
+        'total_content' => 0,
+        'avg_performance' => 0,
+        'teachers' => 0,
+        'students' => 0,
+        'mcq_sets' => 0,
+        'performance' => 0
+    ];
     
-    // Get total teachers
-    $total_teachers = get_users([
-        'meta_key' => 'institution_id',
-        'meta_value' => $institution_id,
-        'role' => 'teacher',
-        'count_total' => true
-    ]);
-    
-    // Get total students enrolled in institution content
-    $total_students = $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(DISTINCT ue.user_id)
-         FROM {$wpdb->prefix}mcq_user_enrollments ue
-         JOIN {$wpdb->posts} p ON ue.mcq_set_id = p.ID
-         JOIN {$wpdb->users} u ON p.post_author = u.ID
-         JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
+    try {
+        // Get institution ID
+        $institution_id = get_user_meta($user_id, 'institution_id', true);
+        if (!$institution_id) {
+            return $default_stats;
+        }
+        
+        // Get total teachers
+        $total_teachers = get_users([
+            'meta_key' => 'institution_id',
+            'meta_value' => $institution_id,
+            'role' => 'teacher',
+            'count_total' => true
+        ]);
+        
+        // Check if database tables exist before querying
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_user_enrollments'");
+        
+        if (!$table_exists) {
+            // Return basic stats without database queries
+            return [
+                'total_teachers' => $total_teachers,
+                'total_students' => 0,
+                'total_content' => 0,
+                'avg_performance' => 0,
+                'teachers' => $total_teachers,
+                'students' => 0,
+                'mcq_sets' => 0,
+                'performance' => 0
+            ];
+        }
+        
+        // Get total students enrolled in institution content
+        $total_students = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT ue.user_id)
+             FROM {$wpdb->prefix}mcq_user_enrollments ue
+             JOIN {$wpdb->posts} p ON ue.mcq_set_id = p.ID
+             JOIN {$wpdb->users} u ON p.post_author = u.ID
+             JOIN {$wpdb->usermeta} um ON u.ID = um.user_id
          WHERE um.meta_key = 'institution_id' AND um.meta_value = %s AND ue.status = 'active'",
         $institution_id
     ));
