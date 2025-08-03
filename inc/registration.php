@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 function mcqhome_init_registration()
 {
     // Add custom registration form shortcodes
-    add_shortcode('mcqhome_registration', 'mcqhome_registration_form');
+    // add_shortcode('mcqhome_registration', 'mcqhome_registration_form'); // Disabled - using clean version from functions.php
     add_shortcode('mcqhome_registration_student', 'mcqhome_registration_form_student');
     add_shortcode('mcqhome_registration_teacher', 'mcqhome_registration_form_teacher');
     add_shortcode('mcqhome_registration_institution', 'mcqhome_registration_form_institution');
@@ -42,7 +42,7 @@ function mcqhome_init_registration()
 /**
  * Registration form shortcode
  */
-function mcqhome_registration_form($atts)
+function mcqhome_registration_form_old_broken($atts)
 {
     $atts = shortcode_atts([
         'redirect' => '',
@@ -686,7 +686,9 @@ function mcqhome_registration_form($atts)
                 
             })();
         </script>
-                    const registrationForm = document.getElementById('step-registration-form');
+    <?php
+    return ob_get_clean();
+}
 
                     if (step === 'role-selection') {
                         if (roleSelection) roleSelection.style.display = 'block';
