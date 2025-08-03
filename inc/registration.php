@@ -225,7 +225,7 @@ function mcqhome_registration_form($atts)
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8" id="role-selection-container">
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" style="user-select: none; position: relative; z-index: 10;">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-lg transition-all active:scale-95" data-role="student" onclick="selectRoleInline('student')" style="user-select: none; position: relative; z-index: 10;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,7 +237,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" style="user-select: none; position: relative; z-index: 10;">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:shadow-lg transition-all active:scale-95" data-role="teacher" onclick="selectRoleInline('teacher')" style="user-select: none; position: relative; z-index: 10;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,7 +249,7 @@ function mcqhome_registration_form($atts)
                     </div>
                 </div>
 
-                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" style="user-select: none; position: relative; z-index: 10;">
+                <div class="role-card cursor-pointer p-6 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-lg transition-all active:scale-95" data-role="institution" onclick="selectRoleInline('institution')" style="user-select: none; position: relative; z-index: 10;">
                     <div class="text-center">
                         <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -500,22 +500,102 @@ function mcqhome_registration_form($atts)
         ?>
 
         <script>
+            // Global variables and functions
+            let selectedRole = null;
+            
+            // Inline function as backup
+            function selectRoleInline(role) {
+                console.log('Inline role selection:', role);
+                if (typeof selectRole === 'function') {
+                    selectRole(role);
+                } else {
+                    // Fallback implementation
+                    selectedRole = role;
+                    
+                    // Update visual selection
+                    document.querySelectorAll('.role-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    
+                    const selectedCard = document.querySelector('[data-role="' + role + '"]');
+                    if (selectedCard) {
+                        selectedCard.classList.add('selected');
+                    }
+                    
+                    // Set hidden input
+                    const roleInput = document.getElementById('selected-role');
+                    if (roleInput) {
+                        roleInput.value = role;
+                    }
+                    
+                    // Show/hide role-specific fields
+                    document.querySelectorAll('.role-fields').forEach(field => {
+                        field.style.display = 'none';
+                    });
+                    
+                    const roleFields = document.getElementById(role + '-fields');
+                    if (roleFields) {
+                        roleFields.style.display = 'block';
+                    }
+                    
+                    const roleSpecificContainer = document.getElementById('role-specific-fields');
+                    if (roleSpecificContainer) {
+                        roleSpecificContainer.style.display = 'block';
+                    }
+                    
+                    // Update form titles
+                    const titles = {
+                        'student': {
+                            title: 'Student Registration',
+                            subtitle: 'Start your learning journey with MCQHome'
+                        },
+                        'teacher': {
+                            title: 'Teacher Registration',
+                            subtitle: 'Join as a teacher and create amazing MCQs'
+                        },
+                        'institution': {
+                            title: 'Institution Registration',
+                            subtitle: 'Register your institution and manage your team'
+                        }
+                    };
+                    
+                    const titleEl = document.getElementById('form-title');
+                    const subtitleEl = document.getElementById('form-subtitle');
+                    
+                    if (titles[role] && titleEl && subtitleEl) {
+                        titleEl.textContent = titles[role].title;
+                        subtitleEl.textContent = titles[role].subtitle;
+                    }
+                    
+                    // Show registration form
+                    const roleSelection = document.getElementById('step-role-selection');
+                    const registrationForm = document.getElementById('step-registration-form');
+                    
+                    if (roleSelection) roleSelection.style.display = 'none';
+                    if (registrationForm) registrationForm.style.display = 'block';
+                }
+            }
+            
             document.addEventListener('DOMContentLoaded', function() {
                 console.log('Registration script loaded');
-
-                // Simple registration controller
-                let selectedRole = null;
+                
+                // Test if elements exist
+                const roleSelection = document.getElementById('step-role-selection');
+                const registrationForm = document.getElementById('step-registration-form');
+                console.log('Role selection element:', roleSelection);
+                console.log('Registration form element:', registrationForm);
 
                 function showStep(step) {
+                    console.log('Showing step:', step);
                     const roleSelection = document.getElementById('step-role-selection');
                     const registrationForm = document.getElementById('step-registration-form');
 
                     if (step === 'role-selection') {
-                        roleSelection.style.display = 'block';
-                        registrationForm.style.display = 'none';
+                        if (roleSelection) roleSelection.style.display = 'block';
+                        if (registrationForm) registrationForm.style.display = 'none';
                     } else if (step === 'registration-form') {
-                        roleSelection.style.display = 'none';
-                        registrationForm.style.display = 'block';
+                        if (roleSelection) roleSelection.style.display = 'none';
+                        if (registrationForm) registrationForm.style.display = 'block';
                     }
                 }
 
@@ -531,6 +611,9 @@ function mcqhome_registration_form($atts)
                     const selectedCard = document.querySelector('[data-role="' + role + '"]');
                     if (selectedCard) {
                         selectedCard.classList.add('selected');
+                        console.log('Added selected class to card');
+                    } else {
+                        console.log('Could not find card for role:', role);
                     }
 
                     // Set hidden input
@@ -592,9 +675,15 @@ function mcqhome_registration_form($atts)
                 }
 
                 // Bind role card clicks
-                document.querySelectorAll('.role-card').forEach(function(card) {
+                console.log('Binding role card clicks...');
+                const roleCards = document.querySelectorAll('.role-card');
+                console.log('Found role cards:', roleCards.length);
+                
+                roleCards.forEach(function(card, index) {
+                    console.log('Binding click for card', index, 'with role:', card.getAttribute('data-role'));
                     card.addEventListener('click', function(e) {
                         e.preventDefault();
+                        e.stopPropagation();
                         const role = this.getAttribute('data-role');
                         console.log('Clicked role:', role);
                         selectRole(role);
