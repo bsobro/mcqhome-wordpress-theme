@@ -88,3 +88,17 @@ build/Release/
 
 # Optional eslint cache
 .eslintcache
+
+# Development and testing files (MCQHome specific)
+registration-demo/
+registration-fix.php
+inc/registration-working.php
+test-*.php
+debug-*.php
+test-role-fix.php
+debug-functions.php
+debug-demo-content.php
+test-demo-simple.php
+
+# Kiro IDE files
+.kiro/
