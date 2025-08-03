@@ -202,7 +202,11 @@ function mcqhome_activation() {
     }
     
     // Create default pages if they don't exist
-    mcqhome_create_default_pages();
+    try {
+        mcqhome_create_default_pages();
+    } catch (Exception $e) {
+        error_log('MCQHome: Page creation failed - ' . $e->getMessage());
+    }
     
     // Initialize database tables safely
     if (function_exists('mcqhome_init_database')) {
@@ -215,8 +219,12 @@ function mcqhome_activation() {
     }
     
     // Schedule any necessary cron jobs
-    if (!wp_next_scheduled('mcqhome_daily_cleanup')) {
-        wp_schedule_event(time(), 'daily', 'mcqhome_daily_cleanup');
+    try {
+        if (!wp_next_scheduled('mcqhome_daily_cleanup')) {
+            wp_schedule_event(time(), 'daily', 'mcqhome_daily_cleanup');
+        }
+    } catch (Exception $e) {
+        error_log('MCQHome: Cron scheduling failed - ' . $e->getMessage());
     }
 }
 
@@ -297,6 +305,16 @@ function mcqhome_create_default_pages() {
  */
 add_action('after_switch_theme', 'mcqhome_activation');
 add_action('switch_theme', 'mcqhome_deactivation');
+
+/**
+ * Prevent fatal errors during activation
+ */
+function mcqhome_handle_activation_errors() {
+    if (error_get_last() && error_get_last()['type'] === E_ERROR) {
+        error_log('MCQHome: Fatal error during activation - ' . print_r(error_get_last(), true));
+    }
+}
+register_shutdown_function('mcqhome_handle_activation_errors');
 
 /**
  * Enqueue admin scripts and styles
@@ -392,52 +410,45 @@ require_once MCQHOME_THEME_DIR . '/inc/template-functions.php';
 require_once MCQHOME_THEME_DIR . '/inc/customizer.php';
 
 // Include custom post types and user roles (will be created in later tasks)
-if (file_exists(MCQHOME_THEME_DIR . '/inc/post-types.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/post-types.php';
+$include_files = [
+    '/inc/post-types.php',
+    '/inc/user-roles.php', 
+    '/inc/registration.php',
+    '/inc/ajax-handlers.php',
+    '/inc/database-setup.php'
+];
+
+foreach ($include_files as $file) {
+    $file_path = MCQHOME_THEME_DIR . $file;
+    if (file_exists($file_path)) {
+        try {
+            require_once $file_path;
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to include ' . $file . ' - ' . $e->getMessage());
+        }
+    }
 }
 
-if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/user-roles.php';
-}
+// Include optional files
+$optional_files = [
+    '/inc/dashboard-functions.php',
+    '/inc/assessment-functions.php',
+    '/inc/role-settings.php',
+    '/inc/seo-functions.php',
+    '/inc/performance-optimization.php',
+    '/inc/asset-minification.php',
+    '/inc/semantic-html.php'
+];
 
-if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/registration.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/ajax-handlers.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/ajax-handlers.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/database-setup.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/database-setup.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/assessment-functions.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/role-settings.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/role-settings.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/seo-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/seo-functions.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/performance-optimization.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/performance-optimization.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/asset-minification.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/asset-minification.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/semantic-html.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/semantic-html.php';
+foreach ($optional_files as $file) {
+    $file_path = MCQHOME_THEME_DIR . $file;
+    if (file_exists($file_path)) {
+        try {
+            require_once $file_path;
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to include optional file ' . $file . ' - ' . $e->getMessage());
+        }
+    }
 }
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/demo-content-safe.php')) {
@@ -500,6 +511,15 @@ function mcqhome_safe_init() {
             mcqhome_init_database();
         } catch (Exception $e) {
             error_log('MCQHome: Database check failed - ' . $e->getMessage());
+        }
+    }
+    
+    // Initialize user roles safely
+    if (function_exists('mcqhome_safe_init_user_roles')) {
+        try {
+            mcqhome_safe_init_user_roles();
+        } catch (Exception $e) {
+            error_log('MCQHome: User roles initialization failed - ' . $e->getMessage());
         }
     }
 }
