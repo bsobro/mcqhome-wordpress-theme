@@ -7,7 +7,16 @@
     "dev": "tailwindcss -i ./src/css/main.css -o ./assets/css/main.css --watch",
     "build": "tailwindcss -i ./src/css/main.css -o ./assets/css/main.css --minify",
     "build-js": "webpack --mode=production",
-    "dev-js": "webpack --mode=development --watch"
+    "dev-js": "webpack --mode=development --watch",
+    "test": "npm run test:php && npm run test:js",
+    "test:php": "vendor/bin/phpunit --configuration phpunit.xml",
+    "test:js": "jest --config jest.config.js",
+    "test:integration": "wp-cli eval-file tests/integration/run-integration-tests.php",
+    "test:e2e": "node tests/e2e/run-e2e-tests.js",
+    "test:accessibility": "node tests/accessibility/run-accessibility-tests.js",
+    "test:performance": "node tests/performance/run-performance-tests.js",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "wordpress",
@@ -23,7 +32,17 @@
     "@tailwindcss/typography": "^0.5.10",
     "tailwindcss": "^3.4.0",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "phpunit/phpunit": "^9.6",
+    "brain/monkey": "^2.6",
+    "mockery/mockery": "^1.5",
+    "wp-cli/wp-cli-bundle": "^2.8",
+    "jest": "^29.7.0",
+    "@testing-library/jest-dom": "^6.1.4",
+    "jsdom": "^22.1.0",
+    "puppeteer": "^21.5.0",
+    "lighthouse": "^11.3.0",
+    "axe-core": "^4.8.2"
   },
   "dependencies": {
     "alpinejs": "^3.13.3"
