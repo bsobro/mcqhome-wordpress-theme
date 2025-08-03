@@ -1280,14 +1280,23 @@ function mcqhome_handle_mcq_attempt_tracking() {
     // Track the attempt
     global $wpdb;
     
+    // Check if table exists
+    $table_name = $wpdb->prefix . 'mcq_attempts';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+        // Table doesn't exist, just track views and return success
+        mcqhome_track_post_views($mcq_id);
+        wp_send_json_success(['tracked' => true, 'note' => 'Database not initialized']);
+        return;
+    }
+    
     $attempt_data = [
         'user_id' => $user_id ?: 0, // 0 for anonymous users
         'mcq_id' => $mcq_id,
         'selected_answer' => $selected_answer,
         'correct_answer' => $correct_answer,
         'is_correct' => ($selected_answer === $correct_answer) ? 1 : 0,
-        'attempted_at' => current_time('mysql'),
-        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? ''
+        'completed_at' => current_time('mysql'),
+        'status' => 'completed'
     ];
     
     $wpdb->insert(

@@ -495,15 +495,13 @@ add_action('admin_notices', 'mcqhome_admin_notices');
  */
 function mcqhome_safe_init() {
     // Initialize database tables if they don't exist
-    if (function_exists('mcqhome_check_database_version')) {
+    if (function_exists('mcqhome_init_database')) {
         try {
-            mcqhome_check_database_version();
+            mcqhome_init_database();
         } catch (Exception $e) {
             error_log('MCQHome: Database check failed - ' . $e->getMessage());
         }
     }
-    
-
 }
 add_action('init', 'mcqhome_safe_init', 5);
 
@@ -519,8 +517,9 @@ function mcqhome_get_post_views($post_id) {
  * Track post views
  */
 function mcqhome_track_post_views($post_id) {
-    if (is_single() && !is_user_logged_in() || current_user_can('edit_posts')) {
-        return; // Don't track views for logged-in users who can edit posts
+    // Don't track views for logged-in users who can edit posts
+    if (is_user_logged_in() && current_user_can('edit_posts')) {
+        return;
     }
     
     $views = mcqhome_get_post_views($post_id);
@@ -532,6 +531,12 @@ function mcqhome_track_post_views($post_id) {
  */
 function mcqhome_get_mcq_success_rate($mcq_id) {
     global $wpdb;
+    
+    // Check if table exists
+    $table_name = $wpdb->prefix . 'mcq_attempts';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+        return 0; // Table doesn't exist yet
+    }
     
     $total_attempts = $wpdb->get_var($wpdb->prepare(
         "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts WHERE mcq_id = %d",
