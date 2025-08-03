@@ -506,3 +506,113 @@ function mcqhome_safe_init() {
 
 }
 add_action('init', 'mcqhome_safe_init', 5);
+
+/**
+ * Get post views count
+ */
+function mcqhome_get_post_views($post_id) {
+    $views = get_post_meta($post_id, '_post_views', true);
+    return $views ? intval($views) : 0;
+}
+
+/**
+ * Track post views
+ */
+function mcqhome_track_post_views($post_id) {
+    if (is_single() && !is_user_logged_in() || current_user_can('edit_posts')) {
+        return; // Don't track views for logged-in users who can edit posts
+    }
+    
+    $views = mcqhome_get_post_views($post_id);
+    update_post_meta($post_id, '_post_views', $views + 1);
+}
+
+/**
+ * Get MCQ success rate
+ */
+function mcqhome_get_mcq_success_rate($mcq_id) {
+    global $wpdb;
+    
+    $total_attempts = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts WHERE mcq_id = %d",
+        $mcq_id
+    ));
+    
+    if (!$total_attempts) {
+        return 0;
+    }
+    
+    $correct_attempts = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->prefix}mcq_attempts WHERE mcq_id = %d AND is_correct = 1",
+        $mcq_id
+    ));
+    
+    return round(($correct_attempts / $total_attempts) * 100);
+}
+
+/**
+ * Get related MCQs
+ */
+function mcqhome_get_related_mcqs($mcq_id, $limit = 4) {
+    // Get current MCQ's subjects and topics
+    $subjects = wp_get_post_terms($mcq_id, 'mcq_subject', ['fields' => 'ids']);
+    $topics = wp_get_post_terms($mcq_id, 'mcq_topic', ['fields' => 'ids']);
+    
+    $args = [
+        'post_type' => 'mcq',
+        'posts_per_page' => $limit,
+        'post__not_in' => [$mcq_id],
+        'post_status' => 'publish'
+    ];
+    
+    // Add tax query if we have subjects or topics
+    if (!empty($subjects) || !empty($topics)) {
+        $tax_query = ['relation' => 'OR'];
+        
+        if (!empty($subjects)) {
+            $tax_query[] = [
+                'taxonomy' => 'mcq_subject',
+                'field' => 'term_id',
+                'terms' => $subjects
+            ];
+        }
+        
+        if (!empty($topics)) {
+            $tax_query[] = [
+                'taxonomy' => 'mcq_topic',
+                'field' => 'term_id',
+                'terms' => $topics
+            ];
+        }
+        
+        $args['tax_query'] = $tax_query;
+    }
+    
+    return new WP_Query($args);
+}
+
+/**
+ * Get MCQ set question count
+ */
+function mcqhome_get_mcq_set_question_count($set_id) {
+    $mcq_ids = get_post_meta($set_id, '_mcq_set_questions', true);
+    return is_array($mcq_ids) ? count($mcq_ids) : 0;
+}
+
+/**
+ * Get MCQ set rating
+ */
+function mcqhome_get_mcq_set_rating($set_id) {
+    $rating = get_post_meta($set_id, '_average_rating', true);
+    return $rating ? floatval($rating) : 0;
+}
+
+/**
+ * Track post views on single post pages
+ */
+function mcqhome_track_single_post_views() {
+    if (is_single() && (get_post_type() === 'mcq' || get_post_type() === 'mcq_set')) {
+        mcqhome_track_post_views(get_the_ID());
+    }
+}
+add_action('wp_head', 'mcqhome_track_single_post_views');

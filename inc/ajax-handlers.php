@@ -1262,3 +1262,88 @@ function mcqhome_ajax_get_browse_stats() {
 }
 add_action('wp_ajax_mcqhome_get_browse_stats', 'mcqhome_ajax_get_browse_stats');
 add_action('wp_ajax_nopriv_mcqhome_get_browse_stats', 'mcqhome_ajax_get_browse_stats');
+/**
+ *
+ Handle MCQ attempt tracking
+ */
+function mcqhome_handle_mcq_attempt_tracking() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_die(__('Security check failed', 'mcqhome'));
+    }
+    
+    $mcq_id = intval($_POST['mcq_id']);
+    $selected_answer = sanitize_text_field($_POST['selected_answer']);
+    $correct_answer = sanitize_text_field($_POST['correct_answer']);
+    $user_id = get_current_user_id();
+    
+    // Track the attempt
+    global $wpdb;
+    
+    $attempt_data = [
+        'user_id' => $user_id ?: 0, // 0 for anonymous users
+        'mcq_id' => $mcq_id,
+        'selected_answer' => $selected_answer,
+        'correct_answer' => $correct_answer,
+        'is_correct' => ($selected_answer === $correct_answer) ? 1 : 0,
+        'attempted_at' => current_time('mysql'),
+        'ip_address' => $_SERVER['REMOTE_ADDR'] ?? ''
+    ];
+    
+    $wpdb->insert(
+        $wpdb->prefix . 'mcq_attempts',
+        $attempt_data,
+        ['%d', '%d', '%s', '%s', '%d', '%s', '%s']
+    );
+    
+    // Update post views
+    mcqhome_track_post_views($mcq_id);
+    
+    wp_send_json_success(['tracked' => true]);
+}
+add_action('wp_ajax_mcqhome_track_mcq_attempt', 'mcqhome_handle_mcq_attempt_tracking');
+add_action('wp_ajax_nopriv_mcqhome_track_mcq_attempt', 'mcqhome_handle_mcq_attempt_tracking');
+
+/**
+ * Handle bookmark toggle
+ */
+function mcqhome_handle_bookmark_toggle() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_die(__('Security check failed', 'mcqhome'));
+    }
+    
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['message' => __('You must be logged in to bookmark.', 'mcqhome')]);
+        return;
+    }
+    
+    $mcq_id = intval($_POST['mcq_id']);
+    $user_id = get_current_user_id();
+    
+    // Check if already bookmarked
+    $bookmarks = get_user_meta($user_id, 'mcq_bookmarks', true);
+    if (!is_array($bookmarks)) {
+        $bookmarks = [];
+    }
+    
+    $is_bookmarked = in_array($mcq_id, $bookmarks);
+    
+    if ($is_bookmarked) {
+        // Remove bookmark
+        $bookmarks = array_diff($bookmarks, [$mcq_id]);
+        $message = __('Bookmark removed', 'mcqhome');
+    } else {
+        // Add bookmark
+        $bookmarks[] = $mcq_id;
+        $message = __('Bookmark added', 'mcqhome');
+    }
+    
+    update_user_meta($user_id, 'mcq_bookmarks', $bookmarks);
+    
+    wp_send_json_success([
+        'message' => $message,
+        'bookmarked' => !$is_bookmarked
+    ]);
+}
+add_action('wp_ajax_mcqhome_toggle_bookmark', 'mcqhome_handle_bookmark_toggle');

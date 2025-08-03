@@ -734,13 +734,28 @@ get_header(); ?>
 
                         <!-- Card Content -->
                         <div class="card-content p-4">
-                            <p class="text-gray-600 text-sm mb-4 line-clamp-3">
-                                <?php echo wp_trim_words(get_the_excerpt(), 20); ?>
-                            </p>
+                            <?php if (get_post_type() === 'mcq') : ?>
+                                <?php
+                                $question_text = get_post_meta(get_the_ID(), '_mcq_question_text', true);
+                                if ($question_text) :
+                                ?>
+                                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                                        <?php echo wp_trim_words(strip_tags($question_text), 20); ?>
+                                    </p>
+                                <?php else : ?>
+                                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                                        <?php echo wp_trim_words(get_the_excerpt(), 20); ?>
+                                    </p>
+                                <?php endif; ?>
+                            <?php else : ?>
+                                <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                                    <?php echo wp_trim_words(get_the_excerpt(), 20); ?>
+                                </p>
+                            <?php endif; ?>
 
                             <!-- Content Stats -->
-                            <?php if (get_post_type() === 'mcq_set') : ?>
-                                <div class="content-stats flex justify-between items-center mb-4 text-sm">
+                            <div class="content-stats flex justify-between items-center mb-4 text-sm">
+                                <?php if (get_post_type() === 'mcq_set') : ?>
                                     <span class="text-gray-600">
                                         <i class="fas fa-question-circle mr-1"></i>
                                         <?php echo mcqhome_get_mcq_set_question_count(get_the_ID()); ?> <?php _e('questions', 'mcqhome'); ?>
@@ -759,8 +774,21 @@ get_header(); ?>
                                             <span class="text-gray-600"><?php echo number_format($rating, 1); ?></span>
                                         </div>
                                     <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
+                                <?php else : // Individual MCQ ?>
+                                    <span class="text-gray-600">
+                                        <i class="fas fa-eye mr-1"></i>
+                                        <?php echo mcqhome_get_post_views(get_the_ID()); ?> <?php _e('views', 'mcqhome'); ?>
+                                    </span>
+                                    
+                                    <?php
+                                    $marks = get_post_meta(get_the_ID(), '_mcq_marks', true) ?: 1;
+                                    ?>
+                                    <span class="text-gray-600">
+                                        <i class="fas fa-award mr-1"></i>
+                                        <?php echo $marks; ?> <?php _e('marks', 'mcqhome'); ?>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
 
                             <!-- Tags -->
                             <div class="content-tags mb-4">
