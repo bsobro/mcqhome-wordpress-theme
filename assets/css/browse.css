@@ -417,13 +417,7 @@
   gap: 1rem;
 }
 
-@media (min-width: 768px) {
-  .teachers-grid,
-  .institutions-grid,
-  .mcq-sets-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+/* Removed conflicting grid-template-columns rule - using Tailwind's responsive grid classes instead */
 
 .teacher-card,
 .institution-card-small,
