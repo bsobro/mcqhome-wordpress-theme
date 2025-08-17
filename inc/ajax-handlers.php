@@ -147,7 +147,6 @@ function mcqhome_ajax_follow_teacher() {
     if (!in_array($teacher_id, $following_teachers)) {
         $following_teachers[] = $teacher_id;
         update_user_meta($user_id, 'following_teachers', $following_teachers);
-        
         // Also add to database table
         mcqhome_add_user_follow($user_id, $teacher_id, 'user');
         
@@ -665,6 +664,50 @@ function mcqhome_ajax_autosave_mcq_set() {
 add_action('wp_ajax_mcqhome_autosave_mcq_set', 'mcqhome_ajax_autosave_mcq_set');
 
 /**
+ * Handle get question content AJAX request for Next-Next format
+ */
+function mcqhome_ajax_get_question_content() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_assessment_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(__('You must be logged in to access questions.', 'mcqhome'));
+    }
+    
+    $user_id = get_current_user_id();
+    $mcq_set_id = intval($_POST['set_id']);
+    $question_index = intval($_POST['question_index']);
+    
+    // Use assessment controller to get question content
+    $controller = mcqhome_get_assessment_controller();
+    $assessment_data = $controller->start_assessment($mcq_set_id, $user_id);
+    
+    if (is_wp_error($assessment_data)) {
+        wp_send_json_error($assessment_data->get_error_message());
+    }
+    
+    $config = $assessment_data['config'];
+    $progress = $assessment_data['progress'];
+    
+    // Update progress to current question
+    $progress['current_question'] = $question_index;
+    
+    // Generate question HTML
+    ob_start();
+    echo $controller->render_current_question($config, $progress);
+    $html = ob_get_clean();
+    
+    wp_send_json_success([
+        'html' => $html,
+        'question_index' => $question_index
+    ]);
+}
+add_action('wp_ajax_mcqhome_get_question_content', 'mcqhome_ajax_get_question_content');
+
+/**
  * Handle dashboard shortcode
  */
 function mcqhome_dashboard_shortcode($atts) {
@@ -707,25 +750,21 @@ function mcqhome_ajax_save_assessment_progress() {
     $answers = $_POST['answers'] ?? [];
     $time_taken = intval($_POST['time_taken']);
     
-    // Verify MCQ set exists
-    $mcq_set = get_post($mcq_set_id);
-    if (!$mcq_set || $mcq_set->post_type !== 'mcq_set') {
-        wp_send_json_error(__('MCQ set not found.', 'mcqhome'));
+    // Use assessment controller for validation
+    $controller = mcqhome_get_assessment_controller();
+    $validation = $controller->validate_session($mcq_set_id, $user_id);
+    
+    if (is_wp_error($validation)) {
+        wp_send_json_error($validation->get_error_message());
     }
     
-    // Check if user is enrolled
-    $enrollment = mcqhome_check_user_enrollment($user_id, $mcq_set_id);
-    if (!$enrollment) {
-        wp_send_json_error(__('You are not enrolled in this MCQ set.', 'mcqhome'));
+    // Get assessment config to calculate progress
+    $config = $controller->get_assessment_config($mcq_set_id);
+    if (is_wp_error($config)) {
+        wp_send_json_error($config->get_error_message());
     }
     
-    // Get MCQ set questions
-    $mcq_ids = get_post_meta($mcq_set_id, '_mcq_set_questions', true);
-    if (empty($mcq_ids)) {
-        wp_send_json_error(__('No questions found in this MCQ set.', 'mcqhome'));
-    }
-    
-    $total_questions = count($mcq_ids);
+    $total_questions = $config['total_questions'];
     $answered_count = count($answers);
     $progress_percentage = ($answered_count / $total_questions) * 100;
     
@@ -774,45 +813,31 @@ function mcqhome_ajax_submit_assessment() {
     $time_taken = intval($_POST['time_taken']);
     $auto_submit = isset($_POST['auto_submit']) && $_POST['auto_submit'];
     
-    // Verify MCQ set exists
-    $mcq_set = get_post($mcq_set_id);
-    if (!$mcq_set || $mcq_set->post_type !== 'mcq_set') {
-        wp_send_json_error(__('MCQ set not found.', 'mcqhome'));
-    }
-    
-    // Check if user is enrolled
-    $enrollment = mcqhome_check_user_enrollment($user_id, $mcq_set_id);
-    if (!$enrollment) {
-        wp_send_json_error(__('You are not enrolled in this MCQ set.', 'mcqhome'));
-    }
-    
-    // Validate assessment submission
-    $validation = mcqhome_validate_assessment_submission($user_id, $mcq_set_id, $answers);
-    if (is_wp_error($validation)) {
-        wp_send_json_error($validation->get_error_message());
-    }
-    
-    // Use the new scoring engine to save assessment attempt
-    $result = mcqhome_save_assessment_attempt($user_id, $mcq_set_id, $answers, $time_taken);
+    // Use assessment controller for submission
+    $controller = mcqhome_get_assessment_controller();
+    $result = $controller->submit_assessment($mcq_set_id, $user_id, $answers, $time_taken);
     
     if (is_wp_error($result)) {
         wp_send_json_error($result->get_error_message());
     }
-    
-    // Log assessment activity
-    mcqhome_log_assessment_activity($user_id, $mcq_set_id, 'assessment_submitted', [
-        'total_score' => $result['total_score'],
-        'score_percentage' => $result['score_percentage'],
-        'is_passed' => $result['is_passed'],
-        'time_taken' => $time_taken,
-        'auto_submit' => $auto_submit
-    ]);
     
     // Create results URL
     $results_url = add_query_arg([
         'set_id' => $mcq_set_id,
         'attempt_id' => $result['attempt_id']
     ], home_url('/assessment-results/'));
+    
+    wp_send_json_success([
+        'message' => __('Assessment submitted successfully.', 'mcqhome'),
+        'results_url' => $results_url,
+        'score_data' => [
+            'total_score' => $result['total_score'],
+            'max_score' => $result['max_score'],
+            'score_percentage' => $result['score_percentage'],
+            'is_passed' => $result['is_passed']
+        ]
+    ]);
+}ults/'));
     
     wp_send_json_success([
         'message' => __('Assessment submitted successfully.', 'mcqhome'),
@@ -1261,4 +1286,616 @@ function mcqhome_ajax_get_browse_stats() {
     wp_send_json_success($stats);
 }
 add_action('wp_ajax_mcqhome_get_browse_stats', 'mcqhome_ajax_get_browse_stats');
-add_action('wp_ajax_nopriv_mcqhome_get_browse_stats', 'mcqhome_ajax_get_browse_stats');
+add_action('wp_ajax_nopriv_mcqhome_get_browse_stats', 'mcqhome_ajax_get_browse_stats');/**
+
+ * Handle inline MCQ creation for MCQ Set builder
+ */
+function mcqhome_ajax_create_mcq_inline() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check user permissions
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error(__('You do not have permission to create questions.', 'mcqhome'));
+    }
+    
+    // Sanitize input data - allow rich content for question, options, and explanation
+    $question_text = wp_kses_post($_POST['question_text']);
+    $option_a = wp_kses_post($_POST['option_a']);
+    $option_b = wp_kses_post($_POST['option_b']);
+    $option_c = wp_kses_post($_POST['option_c']);
+    $option_d = wp_kses_post($_POST['option_d']);
+    $correct_answer = sanitize_text_field($_POST['correct_answer']);
+    $explanation = wp_kses_post($_POST['explanation']);
+    $section_id = sanitize_text_field($_POST['section_id']);
+    
+    // Validate required fields - check for content after stripping HTML
+    $question_clean = trim(wp_strip_all_tags($question_text));
+    $option_a_clean = trim(wp_strip_all_tags($option_a));
+    $option_b_clean = trim(wp_strip_all_tags($option_b));
+    $option_c_clean = trim(wp_strip_all_tags($option_c));
+    $option_d_clean = trim(wp_strip_all_tags($option_d));
+    $explanation_clean = trim(wp_strip_all_tags($explanation));
+    
+    if (empty($question_clean)) {
+        wp_send_json_error(__('Question text is required.', 'mcqhome'));
+    }
+    
+    if (empty($option_a_clean) || empty($option_b_clean) || empty($option_c_clean) || empty($option_d_clean)) {
+        wp_send_json_error(__('All answer options are required.', 'mcqhome'));
+    }
+    
+    if (empty($correct_answer)) {
+        wp_send_json_error(__('Please select the correct answer.', 'mcqhome'));
+    }
+    
+    if (empty($explanation_clean)) {
+        wp_send_json_error(__('Answer explanation is required.', 'mcqhome'));
+    }
+    
+    // Validate correct answer
+    if (!in_array($correct_answer, ['A', 'B', 'C', 'D'])) {
+        wp_send_json_error(__('Invalid correct answer selection.', 'mcqhome'));
+    }
+    
+    // Generate title from question text
+    $title = mcqhome_generate_mcq_title($question_text);
+    
+    // Create MCQ post
+    $mcq_data = [
+        'post_title' => $title,
+        'post_content' => '', // We'll use meta fields for content
+        'post_status' => 'publish',
+        'post_type' => 'mcq',
+        'post_author' => get_current_user_id()
+    ];
+    
+    $mcq_id = wp_insert_post($mcq_data);
+    
+    if (is_wp_error($mcq_id)) {
+        wp_send_json_error(__('Failed to create question.', 'mcqhome'));
+    }
+    
+    // Save MCQ meta data with rich content
+    update_post_meta($mcq_id, '_mcq_question_text', $question_text);
+    update_post_meta($mcq_id, '_mcq_option_a', $option_a);
+    update_post_meta($mcq_id, '_mcq_option_b', $option_b);
+    update_post_meta($mcq_id, '_mcq_option_c', $option_c);
+    update_post_meta($mcq_id, '_mcq_option_d', $option_d);
+    update_post_meta($mcq_id, '_mcq_correct_answer', $correct_answer);
+    update_post_meta($mcq_id, '_mcq_explanation', $explanation);
+    
+    // Log activity
+    mcqhome_log_activity(get_current_user_id(), 'created', 'mcq', $mcq_id, [
+        'question_title' => $title,
+        'section_id' => $section_id
+    ]);
+    
+    // Prepare response data
+    $response_data = [
+        'id' => $mcq_id,
+        'title' => $title,
+        'excerpt' => wp_trim_words($question_clean, 15, '...'),
+        'section_id' => $section_id,
+        'question_text' => $question_text,
+        'options' => [
+            'A' => $option_a,
+            'B' => $option_b,
+            'C' => $option_c,
+            'D' => $option_d
+        ],
+        'correct_answer' => $correct_answer,
+        'explanation' => $explanation
+    ];
+    
+    wp_send_json_success($response_data);
+}
+add_action('wp_ajax_mcqhome_create_mcq_inline', 'mcqhome_ajax_create_mcq_inline');
+
+/**
+ * Get available MCQs for MCQ Set builder
+ */
+function mcqhome_ajax_get_available_mcqs() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check user permissions
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error(__('You do not have permission to view questions.', 'mcqhome'));
+    }
+    
+    // Get search parameters
+    $search = isset($_POST['search']) ? sanitize_text_field($_POST['search']) : '';
+    $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+    $per_page = 20;
+    
+    // Query arguments
+    $args = [
+        'post_type' => 'mcq',
+        'post_status' => 'publish',
+        'posts_per_page' => $per_page,
+        'paged' => $page,
+        'orderby' => 'date',
+        'order' => 'DESC',
+        'author' => get_current_user_id() // Only show user's own MCQs
+    ];
+    
+    // Add search if provided
+    if (!empty($search)) {
+        $args['s'] = $search;
+    }
+    
+    $mcqs = get_posts($args);
+    $mcq_data = [];
+    
+    foreach ($mcqs as $mcq) {
+        $question_text = get_post_meta($mcq->ID, '_mcq_question_text', true);
+        $mcq_data[] = [
+            'id' => $mcq->ID,
+            'title' => $mcq->post_title,
+            'excerpt' => wp_trim_words(wp_strip_all_tags($question_text), 15, '...'),
+            'date' => get_the_date('M j, Y', $mcq->ID)
+        ];
+    }
+    
+    // Get total count for pagination
+    $total_query = new WP_Query(array_merge($args, ['posts_per_page' => -1, 'fields' => 'ids']));
+    $total = $total_query->found_posts;
+    
+    wp_send_json_success([
+        'mcqs' => $mcq_data,
+        'total' => $total,
+        'pages' => ceil($total / $per_page),
+        'current_page' => $page
+    ]);
+}
+add_action('wp_ajax_mcqhome_get_available_mcqs', 'mcqhome_ajax_get_available_mcqs');
+
+
+
+
+/*
+*
+ * Handle get MCQ for editing AJAX request
+ */
+function mcqhome_ajax_get_mcq_for_editing() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(__('You must be logged in to edit MCQs.', 'mcqhome'));
+    }
+    
+    $question_id = intval($_POST['question_id']);
+    
+    // Check if user can edit this MCQ
+    if (!current_user_can('edit_post', $question_id)) {
+        wp_send_json_error(__('You do not have permission to edit this MCQ.', 'mcqhome'));
+    }
+    
+    // Verify post type
+    if (get_post_type($question_id) !== 'mcq') {
+        wp_send_json_error(__('Invalid post type.', 'mcqhome'));
+    }
+    
+    // Get MCQ data
+    $mcq_data = [
+        'id' => $question_id,
+        'question_text' => get_post_meta($question_id, '_mcq_question_text', true),
+        'options' => [
+            'A' => get_post_meta($question_id, '_mcq_option_a', true),
+            'B' => get_post_meta($question_id, '_mcq_option_b', true),
+            'C' => get_post_meta($question_id, '_mcq_option_c', true),
+            'D' => get_post_meta($question_id, '_mcq_option_d', true),
+        ],
+        'correct_answer' => get_post_meta($question_id, '_mcq_correct_answer', true),
+        'explanation' => get_post_meta($question_id, '_mcq_explanation', true),
+        'section_id' => get_post_meta($question_id, '_mcq_section_id', true),
+    ];
+    
+    wp_send_json_success($mcq_data);
+}
+add_action('wp_ajax_mcqhome_get_mcq_for_editing', 'mcqhome_ajax_get_mcq_for_editing');
+
+/**
+ * Handle update MCQ inline AJAX request
+ */
+function mcqhome_ajax_update_mcq_inline() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(__('You must be logged in to update MCQs.', 'mcqhome'));
+    }
+    
+    $question_id = intval($_POST['question_id']);
+    
+    // Check if user can edit this MCQ
+    if (!current_user_can('edit_post', $question_id)) {
+        wp_send_json_error(__('You do not have permission to edit this MCQ.', 'mcqhome'));
+    }
+    
+    // Verify post type
+    if (get_post_type($question_id) !== 'mcq') {
+        wp_send_json_error(__('Invalid post type.', 'mcqhome'));
+    }
+    
+    // Validate required fields
+    $question_text = wp_kses_post($_POST['question_text']);
+    $option_a = sanitize_text_field($_POST['option_a']);
+    $option_b = sanitize_text_field($_POST['option_b']);
+    $option_c = sanitize_text_field($_POST['option_c']);
+    $option_d = sanitize_text_field($_POST['option_d']);
+    $correct_answer = sanitize_text_field($_POST['correct_answer']);
+    $explanation = wp_kses_post($_POST['explanation']);
+    $section_id = sanitize_text_field($_POST['section_id']);
+    
+    if (empty(trim(strip_tags($question_text)))) {
+        wp_send_json_error(__('Question text is required.', 'mcqhome'));
+    }
+    
+    if (empty(trim($option_a)) || empty(trim($option_b)) || empty(trim($option_c)) || empty(trim($option_d))) {
+        wp_send_json_error(__('All answer options are required.', 'mcqhome'));
+    }
+    
+    if (!in_array($correct_answer, ['A', 'B', 'C', 'D'])) {
+        wp_send_json_error(__('Please select a correct answer.', 'mcqhome'));
+    }
+    
+    if (empty(trim(strip_tags($explanation)))) {
+        wp_send_json_error(__('Explanation is required.', 'mcqhome'));
+    }
+    
+    // Update MCQ data
+    $updated = true;
+    $updated = $updated && update_post_meta($question_id, '_mcq_question_text', $question_text);
+    $updated = $updated && update_post_meta($question_id, '_mcq_option_a', $option_a);
+    $updated = $updated && update_post_meta($question_id, '_mcq_option_b', $option_b);
+    $updated = $updated && update_post_meta($question_id, '_mcq_option_c', $option_c);
+    $updated = $updated && update_post_meta($question_id, '_mcq_option_d', $option_d);
+    $updated = $updated && update_post_meta($question_id, '_mcq_correct_answer', $correct_answer);
+    $updated = $updated && update_post_meta($question_id, '_mcq_explanation', $explanation);
+    $updated = $updated && update_post_meta($question_id, '_mcq_section_id', $section_id);
+    
+    // Generate new title from question text
+    $new_title = wp_trim_words(strip_tags($question_text), 10, '...');
+    wp_update_post([
+        'ID' => $question_id,
+        'post_title' => $new_title,
+        'post_modified' => current_time('mysql'),
+        'post_modified_gmt' => current_time('mysql', 1)
+    ]);
+    
+    if (!$updated) {
+        wp_send_json_error(__('Failed to update MCQ.', 'mcqhome'));
+    }
+    
+    // Return updated data for display
+    $response_data = [
+        'id' => $question_id,
+        'title' => $new_title,
+        'excerpt' => wp_trim_words(strip_tags($question_text), 15, '...'),
+        'section_id' => $section_id,
+    ];
+    
+    wp_send_json_success($response_data);
+}
+add_action('wp_ajax_mcqhome_update_mcq_inline', 'mcqhome_ajax_update_mcq_inline');
+
+/**
+ * Handle delete MCQ inline AJAX request
+ */
+function mcqhome_ajax_delete_mcq_inline() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(__('You must be logged in to delete MCQs.', 'mcqhome'));
+    }
+    
+    $question_id = intval($_POST['question_id']);
+    
+    // Check if user can delete this MCQ
+    if (!current_user_can('delete_post', $question_id)) {
+        wp_send_json_error(__('You do not have permission to delete this MCQ.', 'mcqhome'));
+    }
+    
+    // Verify post type
+    if (get_post_type($question_id) !== 'mcq') {
+        wp_send_json_error(__('Invalid post type.', 'mcqhome'));
+    }
+    
+    // Check if MCQ is used in any MCQ sets
+    global $wpdb;
+    $mcq_sets_using = $wpdb->get_results($wpdb->prepare(
+        "SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE meta_key = '_mcq_set_questions' 
+         AND meta_value LIKE %s",
+        '%' . $wpdb->esc_like('"' . $question_id . '"') . '%'
+    ));
+    
+    if (!empty($mcq_sets_using)) {
+        wp_send_json_error(__('This MCQ is currently used in one or more MCQ sets and cannot be deleted.', 'mcqhome'));
+    }
+    
+    // Delete the MCQ
+    $deleted = wp_delete_post($question_id, true);
+    
+    if (!$deleted) {
+        wp_send_json_error(__('Failed to delete MCQ.', 'mcqhome'));
+    }
+    
+    wp_send_json_success(__('MCQ deleted successfully.', 'mcqhome'));
+}
+add_action('wp_ajax_mcqhome_delete_mcq_inline', 'mcqhome_ajax_delete_mcq_inline');
+
+/**
+ * Handle update question order AJAX request
+ */
+function mcqhome_ajax_update_question_order() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(__('You must be logged in to reorder questions.', 'mcqhome'));
+    }
+    
+    $mcq_set_id = intval($_POST['mcq_set_id']);
+    $question_order = $_POST['question_order']; // Array of question IDs in new order
+    
+    // Check if user can edit this MCQ set
+    if (!current_user_can('edit_post', $mcq_set_id)) {
+        wp_send_json_error(__('You do not have permission to edit this MCQ set.', 'mcqhome'));
+    }
+    
+    // Verify post type
+    if (get_post_type($mcq_set_id) !== 'mcq_set') {
+        wp_send_json_error(__('Invalid post type.', 'mcqhome'));
+    }
+    
+    // Validate question order array
+    if (!is_array($question_order)) {
+        wp_send_json_error(__('Invalid question order data.', 'mcqhome'));
+    }
+    
+    // Get current questions order
+    $current_order = json_decode(get_post_meta($mcq_set_id, '_mcq_set_questions_order', true), true);
+    if (!$current_order) {
+        $current_order = ['questions' => []];
+    }
+    
+    // Update the order
+    $new_questions = [];
+    foreach ($question_order as $index => $question_data) {
+        $mcq_id = intval($question_data['mcq_id']);
+        $section_id = sanitize_text_field($question_data['section_id']);
+        
+        $new_questions[] = [
+            'mcq_id' => $mcq_id,
+            'section_id' => $section_id,
+            'order' => $index + 1
+        ];
+    }
+    
+    $current_order['questions'] = $new_questions;
+    
+    // Save updated order
+    $updated = update_post_meta($mcq_set_id, '_mcq_set_questions_order', json_encode($current_order));
+    
+    if (!$updated) {
+        wp_send_json_error(__('Failed to update question order.', 'mcqhome'));
+    }
+    
+    wp_send_json_success(__('Question order updated successfully.', 'mcqhome'));
+}
+add_action('wp_ajax_mcqhome_update_question_order', 'mcqhome_ajax_update_question_order');
+
+/**
+ * Handle bulk question operations AJAX request
+ */
+function mcqhome_ajax_bulk_question_operations() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_nonce')) {
+        wp_send_json_error(__('Security check failed', 'mcqhome'));
+    }
+    
+    // Check if user is logged in
+    if (!is_user_logged_in()) {
+        wp_send_json_error(__('You must be logged in to perform bulk operations.', 'mcqhome'));
+    }
+    
+    $mcq_set_id = intval($_POST['mcq_set_id']);
+    $action = sanitize_text_field($_POST['bulk_action']);
+    $question_ids = array_map('intval', $_POST['question_ids']);
+    $section_id = sanitize_text_field($_POST['section_id'] ?? '');
+    
+    // Check if user can edit this MCQ set
+    if (!current_user_can('edit_post', $mcq_set_id)) {
+        wp_send_json_error(__('You do not have permission to edit this MCQ set.', 'mcqhome'));
+    }
+    
+    // Verify post type
+    if (get_post_type($mcq_set_id) !== 'mcq_set') {
+        wp_send_json_error(__('Invalid post type.', 'mcqhome'));
+    }
+    
+    if (empty($question_ids)) {
+        wp_send_json_error(__('No questions selected.', 'mcqhome'));
+    }
+    
+    switch ($action) {
+        case 'assign_section':
+            $result = mcqhome_bulk_assign_questions_to_section($mcq_set_id, $question_ids, $section_id);
+            break;
+            
+        case 'remove_section':
+            $result = mcqhome_bulk_remove_questions_from_section($mcq_set_id, $question_ids);
+            break;
+            
+        case 'delete':
+            $result = mcqhome_bulk_delete_questions($mcq_set_id, $question_ids);
+            break;
+            
+        default:
+            wp_send_json_error(__('Invalid bulk action.', 'mcqhome'));
+    }
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+    
+    wp_send_json_success($result);
+}
+add_action('wp_ajax_mcqhome_bulk_question_operations', 'mcqhome_ajax_bulk_question_operations');
+/**
+ * 
+Enhanced Assessment Security AJAX Handlers
+ */
+
+/**
+ * Handle secure assessment session validation
+ */
+function mcqhome_ajax_validate_assessment_session() {
+    $security_manager = mcqhome_get_assessment_security();
+    if ($security_manager && method_exists($security_manager, 'ajax_validate_session')) {
+        $security_manager->ajax_validate_session();
+    } else {
+        wp_send_json_error(__('Security system not available.', 'mcqhome'));
+    }
+}
+add_action('wp_ajax_mcqhome_validate_session', 'mcqhome_ajax_validate_assessment_session');
+
+/**
+ * Handle secure progress saving with section awareness
+ */
+function mcqhome_ajax_save_assessment_progress() {
+    $security_manager = mcqhome_get_assessment_security();
+    if ($security_manager && method_exists($security_manager, 'ajax_save_secure_progress')) {
+        $security_manager->ajax_save_secure_progress();
+    } else {
+        wp_send_json_error(__('Security system not available.', 'mcqhome'));
+    }
+}
+add_action('wp_ajax_mcqhome_save_secure_progress', 'mcqhome_ajax_save_assessment_progress');
+
+/**
+ * Handle secure assessment submission
+ */
+function mcqhome_ajax_submit_secure_assessment() {
+    $security_manager = mcqhome_get_assessment_security();
+    if ($security_manager && method_exists($security_manager, 'ajax_submit_assessment')) {
+        $security_manager->ajax_submit_assessment();
+    } else {
+        wp_send_json_error(__('Security system not available.', 'mcqhome'));
+    }
+}
+add_action('wp_ajax_mcqhome_submit_assessment', 'mcqhome_ajax_submit_secure_assessment');
+
+/**
+ * Handle activity logging for security monitoring
+ */
+function mcqhome_ajax_log_assessment_activity() {
+    $security_manager = mcqhome_get_assessment_security();
+    if ($security_manager && method_exists($security_manager, 'ajax_log_activity')) {
+        $security_manager->ajax_log_activity();
+    } else {
+        wp_send_json_error(__('Security system not available.', 'mcqhome'));
+    }
+}
+add_action('wp_ajax_mcqhome_log_activity', 'mcqhome_ajax_log_assessment_activity');
+
+/**
+ * Handle progress restoration for sectioned assessments
+ */
+function mcqhome_ajax_restore_assessment_progress() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_assessment_nonce')) {
+        wp_send_json_error(__('Security check failed.', 'mcqhome'));
+    }
+
+    $mcq_set_id = intval($_POST['mcq_set_id']);
+    $user_id = get_current_user_id();
+
+    if (!$user_id) {
+        wp_send_json_error(__('User not logged in.', 'mcqhome'));
+    }
+
+    $security_manager = mcqhome_get_assessment_security();
+    if (!$security_manager) {
+        wp_send_json_error(__('Security system not available.', 'mcqhome'));
+    }
+
+    $progress_data = $security_manager->restore_sectioned_progress($user_id, $mcq_set_id);
+    
+    if (is_wp_error($progress_data)) {
+        wp_send_json_error($progress_data->get_error_message());
+    }
+
+    wp_send_json_success([
+        'message' => __('Progress restored successfully.', 'mcqhome'),
+        'progress' => $progress_data
+    ]);
+}
+add_action('wp_ajax_mcqhome_restore_progress', 'mcqhome_ajax_restore_assessment_progress');
+
+/**
+ * Handle section transition validation
+ */
+function mcqhome_ajax_validate_section_transition() {
+    // Verify nonce
+    if (!wp_verify_nonce($_POST['nonce'], 'mcqhome_assessment_nonce')) {
+        wp_send_json_error(__('Security check failed.', 'mcqhome'));
+    }
+
+    $mcq_set_id = intval($_POST['mcq_set_id']);
+    $user_id = get_current_user_id();
+    $from_section = sanitize_text_field($_POST['from_section'] ?? '');
+    $to_section = sanitize_text_field($_POST['to_section'] ?? '');
+
+    if (!$user_id) {
+        wp_send_json_error(__('User not logged in.', 'mcqhome'));
+    }
+
+    $security_manager = mcqhome_get_assessment_security();
+    if (!$security_manager) {
+        wp_send_json_error(__('Security system not available.', 'mcqhome'));
+    }
+
+    // Validate section transition
+    $validation = $security_manager->validate_sectioned_session($mcq_set_id, $user_id, $to_section);
+    
+    if (is_wp_error($validation)) {
+        wp_send_json_error($validation->get_error_message());
+    }
+
+    // Log section transition
+    if (function_exists('mcqhome_log_assessment_activity')) {
+        mcqhome_log_assessment_activity($user_id, $mcq_set_id, 'section_transition', [
+            'from_section' => $from_section,
+            'to_section' => $to_section,
+            'timestamp' => current_time('mysql')
+        ]);
+    }
+
+    wp_send_json_success([
+        'message' => __('Section transition validated.', 'mcqhome'),
+        'to_section' => $to_section
+    ]);
+}
+add_action('wp_ajax_mcqhome_validate_section_transition', 'mcqhome_ajax_validate_section_transition');

@@ -103,6 +103,16 @@ function mcqhome_scripts() {
     // Enqueue assessment CSS on assessment page
     if (is_page('take-assessment') && file_exists(MCQHOME_THEME_DIR . '/assets/css/assessment.css')) {
         wp_enqueue_style('mcqhome-assessment', MCQHOME_THEME_URL . '/assets/css/assessment.css', ['mcqhome-main'], MCQHOME_VERSION);
+        
+        // Enqueue Question Navigation Panel CSS
+        if (file_exists(MCQHOME_THEME_DIR . '/assets/css/question-navigation-panel.css')) {
+            wp_enqueue_style('mcqhome-question-navigation-panel', MCQHOME_THEME_URL . '/assets/css/question-navigation-panel.css', ['mcqhome-assessment'], MCQHOME_VERSION);
+        }
+        
+        // Enqueue Mobile Assessment Enhancements CSS
+        if (file_exists(MCQHOME_THEME_DIR . '/assets/css/mobile-assessment-enhancements.css')) {
+            wp_enqueue_style('mcqhome-mobile-assessment', MCQHOME_THEME_URL . '/assets/css/mobile-assessment-enhancements.css', ['mcqhome-assessment', 'mcqhome-question-navigation-panel'], MCQHOME_VERSION);
+        }
     }
     
     // Enqueue browse CSS on browse pages
@@ -122,7 +132,31 @@ function mcqhome_scripts() {
     
     // Enqueue assessment JavaScript on assessment page
     if (is_page('take-assessment') && file_exists(MCQHOME_THEME_DIR . '/assets/js/assessment.js')) {
-        wp_enqueue_script('mcqhome-assessment', MCQHOME_THEME_URL . '/assets/js/assessment.js', ['jquery'], MCQHOME_VERSION, true);
+        // Enqueue Question Navigation Panel JavaScript first
+        if (file_exists(MCQHOME_THEME_DIR . '/assets/js/question-navigation-panel.js')) {
+            wp_enqueue_script('mcqhome-question-navigation-panel', MCQHOME_THEME_URL . '/assets/js/question-navigation-panel.js', ['jquery'], MCQHOME_VERSION, true);
+            
+            // Localize script for navigation panel
+            wp_localize_script('mcqhome-question-navigation-panel', 'mcqhome_l10n', [
+                'question_navigation' => __('Questions', 'mcqhome'),
+                'attempted' => __('Attempted', 'mcqhome'),
+                'skipped' => __('Skipped', 'mcqhome'),
+                'remaining' => __('Remaining', 'mcqhome'),
+                'current' => __('Current', 'mcqhome'),
+                'answered' => __('Answered', 'mcqhome'),
+                'unanswered' => __('Not Answered', 'mcqhome'),
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('mcqhome_assessment_nonce')
+            ]);
+        }
+        
+        wp_enqueue_script('mcqhome-assessment-security', MCQHOME_THEME_URL . '/assets/js/assessment-security.js', ['jquery'], MCQHOME_VERSION, true);
+        wp_enqueue_script('mcqhome-assessment', MCQHOME_THEME_URL . '/assets/js/assessment.js', ['jquery', 'mcqhome-question-navigation-panel', 'mcqhome-assessment-security'], MCQHOME_VERSION, true);
+        
+        // Enqueue Mobile Assessment Enhancements JavaScript
+        if (file_exists(MCQHOME_THEME_DIR . '/assets/js/mobile-assessment-enhancements.js')) {
+            wp_enqueue_script('mcqhome-mobile-assessment', MCQHOME_THEME_URL . '/assets/js/mobile-assessment-enhancements.js', ['jquery', 'mcqhome-assessment'], MCQHOME_VERSION, true);
+        }
     }
     
     // Enqueue browse JavaScript on browse pages
@@ -363,23 +397,75 @@ function mcqhome_admin_scripts($hook) {
         wp_enqueue_style('mcqhome-mcq-set-builder', MCQHOME_THEME_URL . '/assets/css/mcq-set-builder.css', [], MCQHOME_VERSION);
         
         // Enqueue MCQ Set builder JavaScript
-        wp_enqueue_script('mcqhome-mcq-set-builder', MCQHOME_THEME_URL . '/assets/js/mcq-set-builder.js', ['jquery'], MCQHOME_VERSION, true);
+        wp_enqueue_script('mcqhome-mcq-set-builder', MCQHOME_THEME_URL . '/assets/js/mcq-set-builder.js', ['jquery', 'jquery-ui-sortable'], MCQHOME_VERSION, true);
+        
+        // Enqueue media uploader
+        wp_enqueue_media();
         
         // Localize script for MCQ Set builder
         wp_localize_script('mcqhome-mcq-set-builder', 'mcqSetBuilderL10n', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('mcqhome_nonce'),
-            'selectedCount' => __('Selected: %d questions', 'mcqhome'),
-            'selectQuestionsFirst' => __('Select questions above to configure individual marks.', 'mcqhome'),
-            'question' => __('Question', 'mcqhome'),
-            'marks' => __('Marks', 'mcqhome'),
-            'autoSaveSuccess' => __('MCQ Set auto-saved successfully.', 'mcqhome'),
-            'autoSaveError' => __('Failed to auto-save MCQ Set.', 'mcqhome'),
+            'selectMedia' => __('Select Media', 'mcqhome'),
+            'useMedia' => __('Use this media', 'mcqhome'),
+            'thumbnailPreview' => __('Thumbnail Preview', 'mcqhome'),
+            'uploadThumbnail' => __('Upload Thumbnail', 'mcqhome'),
+            'remove' => __('Remove', 'mcqhome'),
+            'sectionName' => __('Section Name', 'mcqhome'),
+            'sectionDescription' => __('Section Description (optional)', 'mcqhome'),
+            'section' => __('Section', 'mcqhome'),
+            'edit' => __('Edit', 'mcqhome'),
+            'questionAdded' => __('Question added successfully!', 'mcqhome'),
+            'questionsAdded' => __('%d questions added successfully!', 'mcqhome'),
+            'noQuestions' => __('No questions added yet. Create your first question above.', 'mcqhome'),
+            'noExistingQuestions' => __('No existing questions available.', 'mcqhome'),
+            'createFirstQuestion' => __('Create your first question using the form above.', 'mcqhome'),
+            'errorLoadingQuestions' => __('Error loading existing questions.', 'mcqhome'),
+            'loadingQuestions' => __('Loading available questions...', 'mcqhome'),
+            'addSelectedQuestions' => __('Add Selected Questions', 'mcqhome'),
+            'selectQuestionsFirst' => __('Please select questions to add.', 'mcqhome'),
+            'questionsAlreadyAdded' => __('Selected questions are already in this set.', 'mcqhome'),
+            'errorNoQuestion' => __('Please enter a question text.', 'mcqhome'),
+            'errorEmptyOptions' => __('Please fill in all answer options.', 'mcqhome'),
+            'errorNoCorrectAnswer' => __('Please select the correct answer.', 'mcqhome'),
+            'errorNoExplanation' => __('Please provide an explanation for the correct answer.', 'mcqhome'),
+            'errorGeneric' => __('An error occurred. Please try again.', 'mcqhome'),
             'unsavedChanges' => __('You have unsaved changes. Are you sure you want to leave?', 'mcqhome'),
-            'errorNoQuestions' => __('Please select at least one question for this MCQ set.', 'mcqhome'),
-            'errorNoMarks' => __('Total marks must be greater than 0.', 'mcqhome'),
-            'errorPassingMarksHigh' => __('Passing marks cannot be greater than total marks.', 'mcqhome'),
-            'errorInvalidPrice' => __('Please enter a valid price for paid MCQ sets.', 'mcqhome'),
+            'addAnotherPrompt' => __('You can now add another question.', 'mcqhome'),
+            'oneQuestion' => __('1 question', 'mcqhome'),
+            'multipleQuestions' => __('%d questions', 'mcqhome'),
+            'searchQuestions' => __('Search questions...', 'mcqhome'),
+            'search' => __('Search', 'mcqhome'),
+            'selectAll' => __('Select All', 'mcqhome'),
+            'deselectAll' => __('Deselect All', 'mcqhome'),
+            'retry' => __('Retry', 'mcqhome'),
+            // Question management strings
+            'editingQuestion' => __('Editing Question', 'mcqhome'),
+            'cancel' => __('Cancel', 'mcqhome'),
+            'questionText' => __('Question Text', 'mcqhome'),
+            'explanation' => __('Explanation', 'mcqhome'),
+            'noSection' => __('No Section', 'mcqhome'),
+            'saveChanges' => __('Save Changes', 'mcqhome'),
+            'questionUpdated' => __('Question updated successfully!', 'mcqhome'),
+            'errorLoadingQuestion' => __('Error loading question for editing.', 'mcqhome'),
+            'errorUpdatingQuestion' => __('Error updating question.', 'mcqhome'),
+            'confirmDeleteQuestion' => __('Are you sure you want to delete "%s"?', 'mcqhome'),
+            'questionDeleted' => __('Question deleted successfully!', 'mcqhome'),
+            'errorDeletingQuestion' => __('Error deleting question.', 'mcqhome'),
+            'questionsReordered' => __('Questions reordered successfully!', 'mcqhome'),
+            // Bulk operations strings
+            'bulkActions' => __('Bulk Actions', 'mcqhome'),
+            'assignToSection' => __('Assign to Section', 'mcqhome'),
+            'removeFromSection' => __('Remove from Section', 'mcqhome'),
+            'deleteSelected' => __('Delete Selected', 'mcqhome'),
+            'selectSection' => __('Select Section', 'mcqhome'),
+            'apply' => __('Apply', 'mcqhome'),
+            'selectActionFirst' => __('Please select an action first.', 'mcqhome'),
+            'selectSectionFirst' => __('Please select a section first.', 'mcqhome'),
+            'confirmBulkDelete' => __('Are you sure you want to delete %d selected questions?', 'mcqhome'),
+            'questionsAssignedToSection' => __('Questions assigned to "%s" successfully!', 'mcqhome'),
+            'questionsRemovedFromSections' => __('Questions removed from sections successfully!', 'mcqhome'),
+            'questionsDeleted' => __('%d questions deleted successfully!', 'mcqhome'),
         ]);
     }
 }
@@ -404,6 +490,19 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/registration.php';
 }
 
+// Include test files for development
+if (defined('WP_DEBUG') && WP_DEBUG && file_exists(MCQHOME_THEME_DIR . '/test-inline-mcq-builder.php')) {
+    require_once MCQHOME_THEME_DIR . '/test-inline-mcq-builder.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/test-legacy-redirect-system.php')) {
+    require_once MCQHOME_THEME_DIR . '/test-legacy-redirect-system.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/test-browse-search-updates.php')) {
+    require_once MCQHOME_THEME_DIR . '/test-browse-search-updates.php';
+}
+
 if (file_exists(MCQHOME_THEME_DIR . '/inc/ajax-handlers.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/ajax-handlers.php';
 }
@@ -412,12 +511,24 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/database-setup.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/database-setup.php';
 }
 
+if (file_exists(MCQHOME_THEME_DIR . '/inc/database-migration.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/database-migration.php';
+}
+
 if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
 }
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/assessment-functions.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-controller.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/assessment-controller.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-security.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/assessment-security.php';
 }
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/role-settings.php')) {
@@ -440,12 +551,24 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/semantic-html.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/semantic-html.php';
 }
 
+if (file_exists(MCQHOME_THEME_DIR . '/inc/legacy-redirect-system.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/legacy-redirect-system.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/redirect-admin.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/redirect-admin.php';
+}
+
 if (file_exists(MCQHOME_THEME_DIR . '/inc/demo-content-safe.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/demo-content-safe.php';
 }
 
 if (file_exists(MCQHOME_THEME_DIR . '/inc/default-institution.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/default-institution.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/browse-search-functions.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/browse-search-functions.php';
 }
 
 // Registration system is now properly handled by inc/registration.php
@@ -506,3 +629,171 @@ function mcqhome_safe_init() {
 
 }
 add_action('init', 'mcqhome_safe_init', 5);
+/**
+ 
+* Bulk assign questions to section
+ */
+function mcqhome_bulk_assign_questions_to_section($mcq_set_id, $question_ids, $section_id) {
+    // Get current questions order
+    $current_order = json_decode(get_post_meta($mcq_set_id, '_mcq_set_questions_order', true), true);
+    if (!$current_order) {
+        $current_order = ['questions' => []];
+    }
+    
+    $updated_count = 0;
+    
+    // Update section assignment for each question
+    foreach ($current_order['questions'] as &$question) {
+        if (in_array($question['mcq_id'], $question_ids)) {
+            $question['section_id'] = $section_id;
+            
+            // Also update the individual MCQ meta
+            update_post_meta($question['mcq_id'], '_mcq_section_id', $section_id);
+            $updated_count++;
+        }
+    }
+    
+    // Save updated order
+    update_post_meta($mcq_set_id, '_mcq_set_questions_order', json_encode($current_order));
+    
+    return [
+        'message' => sprintf(__('%d questions assigned to section successfully.', 'mcqhome'), $updated_count),
+        'updated_count' => $updated_count
+    ];
+}
+
+/**
+ * Bulk remove questions from sections
+ */
+function mcqhome_bulk_remove_questions_from_section($mcq_set_id, $question_ids) {
+    // Get current questions order
+    $current_order = json_decode(get_post_meta($mcq_set_id, '_mcq_set_questions_order', true), true);
+    if (!$current_order) {
+        $current_order = ['questions' => []];
+    }
+    
+    $updated_count = 0;
+    
+    // Remove section assignment for each question
+    foreach ($current_order['questions'] as &$question) {
+        if (in_array($question['mcq_id'], $question_ids)) {
+            $question['section_id'] = '';
+            
+            // Also update the individual MCQ meta
+            delete_post_meta($question['mcq_id'], '_mcq_section_id');
+            $updated_count++;
+        }
+    }
+    
+    // Save updated order
+    update_post_meta($mcq_set_id, '_mcq_set_questions_order', json_encode($current_order));
+    
+    return [
+        'message' => sprintf(__('%d questions removed from sections successfully.', 'mcqhome'), $updated_count),
+        'updated_count' => $updated_count
+    ];
+}
+
+/**
+ * Bulk delete questions
+ */
+function mcqhome_bulk_delete_questions($mcq_set_id, $question_ids) {
+    // Get current questions order
+    $current_order = json_decode(get_post_meta($mcq_set_id, '_mcq_set_questions_order', true), true);
+    if (!$current_order) {
+        $current_order = ['questions' => []];
+    }
+    
+    $deleted_count = 0;
+    $failed_deletions = [];
+    
+    // Check if questions can be deleted (not used in other MCQ sets)
+    global $wpdb;
+    foreach ($question_ids as $question_id) {
+        $mcq_sets_using = $wpdb->get_results($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta} 
+             WHERE meta_key = '_mcq_set_questions_order' 
+             AND meta_value LIKE %s
+             AND post_id != %d",
+            '%"mcq_id":' . $question_id . '%',
+            $mcq_set_id
+        ));
+        
+        if (!empty($mcq_sets_using)) {
+            $failed_deletions[] = $question_id;
+            continue;
+        }
+        
+        // Delete the MCQ
+        $deleted = wp_delete_post($question_id, true);
+        if ($deleted) {
+            $deleted_count++;
+        } else {
+            $failed_deletions[] = $question_id;
+        }
+    }
+    
+    // Remove deleted questions from the MCQ set order
+    $current_order['questions'] = array_filter($current_order['questions'], function($question) use ($question_ids, $failed_deletions) {
+        return !in_array($question['mcq_id'], $question_ids) || in_array($question['mcq_id'], $failed_deletions);
+    });
+    
+    // Reindex the array and update order numbers
+    $current_order['questions'] = array_values($current_order['questions']);
+    foreach ($current_order['questions'] as $index => &$question) {
+        $question['order'] = $index + 1;
+    }
+    
+    // Save updated order
+    update_post_meta($mcq_set_id, '_mcq_set_questions_order', json_encode($current_order));
+    
+    $message = sprintf(__('%d questions deleted successfully.', 'mcqhome'), $deleted_count);
+    if (!empty($failed_deletions)) {
+        $message .= ' ' . sprintf(__('%d questions could not be deleted (used in other MCQ sets).', 'mcqhome'), count($failed_deletions));
+    }
+    
+    return [
+        'message' => $message,
+        'deleted_count' => $deleted_count,
+        'failed_count' => count($failed_deletions),
+        'failed_ids' => $failed_deletions
+    ];
+}/
+**
+ * AJAX Handlers for Assessment Progress Tracking
+ */
+
+// Initialize assessment controller for AJAX
+function mcqhome_init_assessment_ajax() {
+    if (class_exists('MCQHome_Assessment_Controller')) {
+        $assessment_controller = new MCQHome_Assessment_Controller();
+        
+        // Save progress AJAX handler
+        add_action('wp_ajax_mcqhome_save_progress', [$assessment_controller, 'ajax_save_progress']);
+        add_action('wp_ajax_nopriv_mcqhome_save_progress', [$assessment_controller, 'ajax_save_progress']);
+        
+        // Navigate to question AJAX handler
+        add_action('wp_ajax_mcqhome_navigate_question', [$assessment_controller, 'ajax_navigate_to_question']);
+        add_action('wp_ajax_nopriv_mcqhome_navigate_question', [$assessment_controller, 'ajax_navigate_to_question']);
+    }
+}
+add_action('init', 'mcqhome_init_assessment_ajax');
+
+/**
+ * Enqueue scripts for visual progress tracking
+ */
+function mcqhome_enqueue_progress_tracking_scripts() {
+    if (is_page_template('page-take-assessment.php') || is_singular('mcq_set')) {
+        // Localize script for AJAX
+        wp_localize_script('mcqhome-assessment', 'mcqhome_ajax', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('mcqhome_assessment_nonce'),
+            'strings' => [
+                'progress_saved' => __('Progress saved', 'mcqhome'),
+                'progress_save_failed' => __('Failed to save progress', 'mcqhome'),
+                'navigation_failed' => __('Navigation failed', 'mcqhome'),
+            ]
+        ]);
+    }
+}
+add_action('wp_enqueue_scripts', 'mcqhome_enqueue_progress_tracking_scripts', 20);

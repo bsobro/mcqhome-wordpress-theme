@@ -988,3 +988,585 @@ function mcqhome_generate_assessment_report($mcq_set_id, $date_from = null, $dat
         'pass_rate' => $stats->total_attempts > 0 ? ($stats->passed_count / $stats->total_attempts) * 100 : 0
     ];
 }
+
+/**
+ * Get section-based performance analytics for an MCQ set
+ */
+function mcqhome_get_section_performance_analytics($mcq_set_id, $user_id = null, $date_from = null, $date_to = null) {
+    global $wpdb;
+    
+    // Get MCQ set sections
+    $sections = get_post_meta($mcq_set_id, '_mcq_set_sections', true);
+    $sections = $sections ? json_decode($sections, true) : [];
+    
+    // Get questions organization
+    $questions_order = get_post_meta($mcq_set_id, '_mcq_set_questions_order', true);
+    $questions_order = $questions_order ? json_decode($questions_order, true) : ['questions' => []];
+    
+    if (empty($sections) || empty($questions_order['questions'])) {
+        return [
+            'has_sections' => false,
+            'sections' => [],
+            'overall_performance' => []
+        ];
+    }
+    
+    // Build section-to-questions mapping
+    $section_questions = [];
+    foreach ($questions_order['questions'] as $question_data) {
+        $section_id = $question_data['section_id'] ?? 'default';
+        if (!isset($section_questions[$section_id])) {
+            $section_questions[$section_id] = [];
+        }
+        $section_questions[$section_id][] = $question_data['mcq_id'];
+    }
+    
+    $section_performance = [];
+    
+    foreach ($sections as $section) {
+        $section_id = $section['id'];
+        $section_mcq_ids = $section_questions[$section_id] ?? [];
+        
+        if (empty($section_mcq_ids)) {
+            continue;
+        }
+        
+        // Build query conditions
+        $where_conditions = ["ma.mcq_set_id = %d", "ma.mcq_id IN (" . implode(',', array_fill(0, count($section_mcq_ids), '%d')) . ")"];
+        $params = array_merge([$mcq_set_id], $section_mcq_ids);
+        
+        if ($user_id) {
+            $where_conditions[] = "ma.user_id = %d";
+            $params[] = $user_id;
+        }
+        
+        if ($date_from) {
+            $where_conditions[] = "ma.completed_at >= %s";
+            $params[] = $date_from;
+        }
+        
+        if ($date_to) {
+            $where_conditions[] = "ma.completed_at <= %s";
+            $params[] = $date_to;
+        }
+        
+        $where_clause = "WHERE " . implode(' AND ', $where_conditions);
+        
+        // Get section statistics
+        $section_stats = $wpdb->get_row($wpdb->prepare(
+            "SELECT 
+                COUNT(*) as total_attempts,
+                COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) as correct_attempts,
+                COUNT(CASE WHEN ma.selected_answer != '' THEN 1 END) as answered_attempts,
+                AVG(CASE WHEN ma.is_correct = 1 THEN 1 ELSE 0 END) * 100 as accuracy_percentage,
+                AVG(ma.score_points) as avg_score_points,
+                SUM(ma.score_points) as total_score_points
+             FROM {$wpdb->prefix}mcq_attempts ma
+             $where_clause",
+            $params
+        ));
+        
+        // Get user-specific performance if user_id provided
+        $user_performance = null;
+        if ($user_id) {
+            $user_performance = $wpdb->get_row($wpdb->prepare(
+                "SELECT 
+                    COUNT(*) as total_questions,
+                    COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) as correct_answers,
+                    COUNT(CASE WHEN ma.selected_answer != '' THEN 1 END) as answered_questions,
+                    AVG(CASE WHEN ma.is_correct = 1 THEN 1 ELSE 0 END) * 100 as accuracy,
+                    SUM(ma.score_points) as section_score
+                 FROM {$wpdb->prefix}mcq_attempts ma
+                 WHERE ma.mcq_set_id = %d AND ma.user_id = %d 
+                 AND ma.mcq_id IN (" . implode(',', array_fill(0, count($section_mcq_ids), '%d')) . ")",
+                array_merge([$mcq_set_id, $user_id], $section_mcq_ids)
+            ));
+        }
+        
+        $section_performance[$section_id] = [
+            'section_info' => $section,
+            'question_count' => count($section_mcq_ids),
+            'overall_stats' => $section_stats,
+            'user_performance' => $user_performance
+        ];
+    }
+    
+    return [
+        'has_sections' => true,
+        'sections' => $section_performance,
+        'section_count' => count($sections)
+    ];
+}
+
+/**
+ * Get detailed assessment results with section breakdown
+ */
+function mcqhome_get_detailed_assessment_results($user_id, $mcq_set_id, $attempt_id = null) {
+    // Get basic results
+    $results = mcqhome_get_assessment_results($user_id, $mcq_set_id, $attempt_id);
+    
+    if (is_wp_error($results)) {
+        return $results;
+    }
+    
+    // Get section performance for this specific attempt
+    $section_performance = mcqhome_get_section_performance_analytics($mcq_set_id, $user_id);
+    
+    // Organize question results by section
+    $questions_by_section = [];
+    $sections = get_post_meta($mcq_set_id, '_mcq_set_sections', true);
+    $sections = $sections ? json_decode($sections, true) : [];
+    $questions_order = get_post_meta($mcq_set_id, '_mcq_set_questions_order', true);
+    $questions_order = $questions_order ? json_decode($questions_order, true) : ['questions' => []];
+    
+    if (!empty($sections) && !empty($questions_order['questions'])) {
+        // Build section mapping
+        $question_to_section = [];
+        foreach ($questions_order['questions'] as $question_data) {
+            $question_to_section[$question_data['mcq_id']] = $question_data['section_id'] ?? 'default';
+        }
+        
+        // Organize results by section
+        foreach ($results['question_results'] as $question_result) {
+            $section_id = $question_to_section[$question_result->mcq_id] ?? 'default';
+            if (!isset($questions_by_section[$section_id])) {
+                $questions_by_section[$section_id] = [];
+            }
+            $questions_by_section[$section_id][] = $question_result;
+        }
+        
+        // Calculate section scores
+        $section_scores = [];
+        foreach ($questions_by_section as $section_id => $section_questions) {
+            $section_total = 0;
+            $section_correct = 0;
+            $section_answered = 0;
+            $section_score_points = 0;
+            
+            foreach ($section_questions as $question) {
+                $section_total++;
+                if ($question->selected_answer) {
+                    $section_answered++;
+                }
+                if ($question->is_correct) {
+                    $section_correct++;
+                }
+                $section_score_points += $question->score_points;
+            }
+            
+            $section_info = null;
+            foreach ($sections as $section) {
+                if ($section['id'] === $section_id) {
+                    $section_info = $section;
+                    break;
+                }
+            }
+            
+            $section_scores[$section_id] = [
+                'section_info' => $section_info,
+                'total_questions' => $section_total,
+                'answered_questions' => $section_answered,
+                'correct_answers' => $section_correct,
+                'accuracy_percentage' => $section_total > 0 ? ($section_correct / $section_total) * 100 : 0,
+                'score_points' => $section_score_points,
+                'questions' => $section_questions
+            ];
+        }
+        
+        $results['section_breakdown'] = $section_scores;
+        $results['has_sections'] = true;
+    } else {
+        $results['section_breakdown'] = [];
+        $results['has_sections'] = false;
+    }
+    
+    return $results;
+}
+
+/**
+ * Generate comprehensive section-based analytics dashboard data
+ */
+function mcqhome_generate_section_analytics_dashboard($mcq_set_id, $date_from = null, $date_to = null) {
+    global $wpdb;
+    
+    // Get basic MCQ set info
+    $mcq_set = get_post($mcq_set_id);
+    if (!$mcq_set || $mcq_set->post_type !== 'mcq_set') {
+        return new WP_Error('invalid_mcq_set', __('Invalid MCQ set.', 'mcqhome'));
+    }
+    
+    // Get overall statistics
+    $overall_report = mcqhome_generate_assessment_report($mcq_set_id, $date_from, $date_to);
+    
+    // Get section performance
+    $section_analytics = mcqhome_get_section_performance_analytics($mcq_set_id, null, $date_from, $date_to);
+    
+    // Get top performers by section
+    $top_performers = [];
+    if ($section_analytics['has_sections']) {
+        foreach ($section_analytics['sections'] as $section_id => $section_data) {
+            $section_questions = [];
+            $questions_order = get_post_meta($mcq_set_id, '_mcq_set_questions_order', true);
+            $questions_order = $questions_order ? json_decode($questions_order, true) : ['questions' => []];
+            
+            foreach ($questions_order['questions'] as $question_data) {
+                if (($question_data['section_id'] ?? 'default') === $section_id) {
+                    $section_questions[] = $question_data['mcq_id'];
+                }
+            }
+            
+            if (!empty($section_questions)) {
+                $date_condition = '';
+                $params = [$mcq_set_id];
+                $params = array_merge($params, $section_questions);
+                
+                if ($date_from) {
+                    $date_condition .= ' AND sa.completed_at >= %s';
+                    $params[] = $date_from;
+                }
+                
+                if ($date_to) {
+                    $date_condition .= ' AND sa.completed_at <= %s';
+                    $params[] = $date_to;
+                }
+                
+                $section_top_performers = $wpdb->get_results($wpdb->prepare(
+                    "SELECT 
+                        u.ID as user_id,
+                        u.display_name,
+                        COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) as correct_answers,
+                        COUNT(*) as total_questions,
+                        (COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) / COUNT(*)) * 100 as accuracy,
+                        SUM(ma.score_points) as section_score,
+                        sa.completed_at
+                     FROM {$wpdb->prefix}mcq_attempts ma
+                     JOIN {$wpdb->prefix}mcq_set_attempts sa ON ma.user_id = sa.user_id AND ma.mcq_set_id = sa.mcq_set_id
+                     JOIN {$wpdb->users} u ON ma.user_id = u.ID
+                     WHERE ma.mcq_set_id = %d 
+                     AND ma.mcq_id IN (" . implode(',', array_fill(0, count($section_questions), '%d')) . ")
+                     AND sa.status = 'completed' $date_condition
+                     GROUP BY ma.user_id, sa.id
+                     ORDER BY accuracy DESC, section_score DESC
+                     LIMIT 10",
+                    $params
+                ));
+                
+                $top_performers[$section_id] = $section_top_performers;
+            }
+        }
+    }
+    
+    // Get difficulty analysis by section
+    $difficulty_analysis = [];
+    if ($section_analytics['has_sections']) {
+        foreach ($section_analytics['sections'] as $section_id => $section_data) {
+            $section_questions = [];
+            $questions_order = get_post_meta($mcq_set_id, '_mcq_set_questions_order', true);
+            $questions_order = $questions_order ? json_decode($questions_order, true) : ['questions' => []];
+            
+            foreach ($questions_order['questions'] as $question_data) {
+                if (($question_data['section_id'] ?? 'default') === $section_id) {
+                    $section_questions[] = $question_data['mcq_id'];
+                }
+            }
+            
+            if (!empty($section_questions)) {
+                $question_difficulty = $wpdb->get_results($wpdb->prepare(
+                    "SELECT 
+                        ma.mcq_id,
+                        COUNT(*) as total_attempts,
+                        COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) as correct_attempts,
+                        (COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) / COUNT(*)) * 100 as success_rate
+                     FROM {$wpdb->prefix}mcq_attempts ma
+                     WHERE ma.mcq_set_id = %d 
+                     AND ma.mcq_id IN (" . implode(',', array_fill(0, count($section_questions), '%d')) . ")
+                     GROUP BY ma.mcq_id
+                     ORDER BY success_rate ASC",
+                    array_merge([$mcq_set_id], $section_questions)
+                ));
+                
+                $difficulty_analysis[$section_id] = $question_difficulty;
+            }
+        }
+    }
+    
+    return [
+        'mcq_set' => $mcq_set,
+        'overall_report' => $overall_report,
+        'section_analytics' => $section_analytics,
+        'top_performers' => $top_performers,
+        'difficulty_analysis' => $difficulty_analysis,
+        'date_range' => [
+            'from' => $date_from,
+            'to' => $date_to
+        ]
+    ];
+}
+
+
+
+/**
+ * Get section-wise performance comparison across users
+ */
+function mcqhome_get_section_performance_comparison($mcq_set_id, $section_id, $date_from = null, $date_to = null) {
+    global $wpdb;
+    
+    // Get section questions
+    $questions_order = get_post_meta($mcq_set_id, '_mcq_set_questions_order', true);
+    $questions_order = $questions_order ? json_decode($questions_order, true) : ['questions' => []];
+    
+    $section_questions = [];
+    foreach ($questions_order['questions'] as $question_data) {
+        if (($question_data['section_id'] ?? 'default') === $section_id) {
+            $section_questions[] = $question_data['mcq_id'];
+        }
+    }
+    
+    if (empty($section_questions)) {
+        return new WP_Error('no_questions', __('No questions found for this section.', 'mcqhome'));
+    }
+    
+    // Build date conditions
+    $date_condition = '';
+    $params = [$mcq_set_id];
+    $params = array_merge($params, $section_questions);
+    
+    if ($date_from) {
+        $date_condition .= ' AND sa.completed_at >= %s';
+        $params[] = $date_from;
+    }
+    
+    if ($date_to) {
+        $date_condition .= ' AND sa.completed_at <= %s';
+        $params[] = $date_to;
+    }
+    
+    // Get user performance in this section
+    $user_performance = $wpdb->get_results($wpdb->prepare(
+        "SELECT 
+            u.ID as user_id,
+            u.display_name,
+            COUNT(*) as total_questions,
+            COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) as correct_answers,
+            (COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) / COUNT(*)) * 100 as accuracy,
+            SUM(ma.score_points) as section_score,
+            sa.completed_at
+         FROM {$wpdb->prefix}mcq_attempts ma
+         JOIN {$wpdb->prefix}mcq_set_attempts sa ON ma.user_id = sa.user_id AND ma.mcq_set_id = sa.mcq_set_id
+         JOIN {$wpdb->users} u ON ma.user_id = u.ID
+         WHERE ma.mcq_set_id = %d 
+         AND ma.mcq_id IN (" . implode(',', array_fill(0, count($section_questions), '%d')) . ")
+         AND sa.status = 'completed' $date_condition
+         GROUP BY ma.user_id, sa.id
+         ORDER BY accuracy DESC, section_score DESC",
+        $params
+    ));
+    
+    // Calculate section statistics
+    $section_stats = [
+        'total_users' => count($user_performance),
+        'avg_accuracy' => 0,
+        'avg_score' => 0,
+        'max_accuracy' => 0,
+        'min_accuracy' => 100,
+        'max_score' => 0,
+        'min_score' => 0
+    ];
+    
+    if (!empty($user_performance)) {
+        $accuracies = array_column($user_performance, 'accuracy');
+        $scores = array_column($user_performance, 'section_score');
+        
+        $section_stats['avg_accuracy'] = array_sum($accuracies) / count($accuracies);
+        $section_stats['avg_score'] = array_sum($scores) / count($scores);
+        $section_stats['max_accuracy'] = max($accuracies);
+        $section_stats['min_accuracy'] = min($accuracies);
+        $section_stats['max_score'] = max($scores);
+        $section_stats['min_score'] = min($scores);
+    }
+    
+    return [
+        'section_stats' => $section_stats,
+        'user_performance' => $user_performance,
+        'question_count' => count($section_questions)
+    ];
+}
+
+/**
+ * Generate section-wise improvement recommendations
+ */
+function mcqhome_generate_section_improvement_recommendations($mcq_set_id, $user_id = null) {
+    global $wpdb;
+    
+    // Get section performance analytics
+    $section_analytics = mcqhome_get_section_performance_analytics($mcq_set_id, $user_id);
+    
+    if (!$section_analytics['has_sections']) {
+        return [];
+    }
+    
+    $recommendations = [];
+    
+    foreach ($section_analytics['sections'] as $section_id => $section_data) {
+        $section_info = $section_data['section_info'];
+        $overall_stats = $section_data['overall_stats'];
+        $user_performance = $section_data['user_performance'];
+        
+        $recommendation = [
+            'section_id' => $section_id,
+            'section_name' => $section_info['name'],
+            'priority' => 'medium',
+            'recommendations' => []
+        ];
+        
+        // Analyze overall section performance
+        if ($overall_stats && $overall_stats->accuracy_percentage < 60) {
+            $recommendation['priority'] = 'high';
+            $recommendation['recommendations'][] = sprintf(
+                __('This section has low overall accuracy (%s%%). Consider reviewing the content or providing additional practice materials.', 'mcqhome'),
+                number_format($overall_stats->accuracy_percentage, 1)
+            );
+        }
+        
+        // Analyze user-specific performance
+        if ($user_performance) {
+            if ($user_performance->accuracy < 70) {
+                $recommendation['priority'] = 'high';
+                $recommendation['recommendations'][] = sprintf(
+                    __('Your accuracy in this section is %s%%. Focus on understanding the core concepts and practice more questions.', 'mcqhome'),
+                    number_format($user_performance->accuracy, 1)
+                );
+            } elseif ($user_performance->accuracy < 85) {
+                $recommendation['priority'] = 'medium';
+                $recommendation['recommendations'][] = sprintf(
+                    __('Good progress! Your accuracy is %s%%. Review incorrect answers to improve further.', 'mcqhome'),
+                    number_format($user_performance->accuracy, 1)
+                );
+            } else {
+                $recommendation['priority'] = 'low';
+                $recommendation['recommendations'][] = sprintf(
+                    __('Excellent work! You have %s%% accuracy in this section. Keep practicing to maintain this level.', 'mcqhome'),
+                    number_format($user_performance->accuracy, 1)
+                );
+            }
+            
+            // Check if user answered all questions
+            if ($user_performance->answered_questions < $user_performance->total_questions) {
+                $unanswered = $user_performance->total_questions - $user_performance->answered_questions;
+                $recommendation['recommendations'][] = sprintf(
+                    __('You left %d question(s) unanswered in this section. Make sure to attempt all questions.', 'mcqhome'),
+                    $unanswered
+                );
+            }
+        }
+        
+        // Get difficult questions in this section
+        $questions_order = get_post_meta($mcq_set_id, '_mcq_set_questions_order', true);
+        $questions_order = $questions_order ? json_decode($questions_order, true) : ['questions' => []];
+        
+        $section_questions = [];
+        foreach ($questions_order['questions'] as $question_data) {
+            if (($question_data['section_id'] ?? 'default') === $section_id) {
+                $section_questions[] = $question_data['mcq_id'];
+            }
+        }
+        
+        if (!empty($section_questions)) {
+            $difficult_questions = $wpdb->get_results($wpdb->prepare(
+                "SELECT 
+                    ma.mcq_id,
+                    COUNT(*) as total_attempts,
+                    COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) as correct_attempts,
+                    (COUNT(CASE WHEN ma.is_correct = 1 THEN 1 END) / COUNT(*)) * 100 as success_rate
+                 FROM {$wpdb->prefix}mcq_attempts ma
+                 WHERE ma.mcq_set_id = %d 
+                 AND ma.mcq_id IN (" . implode(',', array_fill(0, count($section_questions), '%d')) . ")
+                 GROUP BY ma.mcq_id
+                 HAVING success_rate < 50 AND total_attempts >= 3
+                 ORDER BY success_rate ASC
+                 LIMIT 3",
+                array_merge([$mcq_set_id], $section_questions)
+            ));
+            
+            if (!empty($difficult_questions)) {
+                $recommendation['recommendations'][] = sprintf(
+                    __('This section has %d challenging question(s) with low success rates. Consider providing additional explanations or examples.', 'mcqhome'),
+                    count($difficult_questions)
+                );
+            }
+        }
+        
+        if (!empty($recommendation['recommendations'])) {
+            $recommendations[] = $recommendation;
+        }
+    }
+    
+    // Sort by priority
+    usort($recommendations, function($a, $b) {
+        $priority_order = ['high' => 1, 'medium' => 2, 'low' => 3];
+        return $priority_order[$a['priority']] - $priority_order[$b['priority']];
+    });
+    
+    return $recommendations;
+}
+
+/**
+ * Export section analytics data to CSV
+ */
+function mcqhome_export_section_analytics_csv($mcq_set_id, $date_from = null, $date_to = null) {
+    // Get analytics data
+    $analytics_data = mcqhome_generate_section_analytics_dashboard($mcq_set_id, $date_from, $date_to);
+    
+    if (is_wp_error($analytics_data)) {
+        return $analytics_data;
+    }
+    
+    $mcq_set = $analytics_data['mcq_set'];
+    $section_analytics = $analytics_data['section_analytics'];
+    
+    // Prepare CSV data
+    $csv_data = [];
+    
+    // Header row
+    $csv_data[] = [
+        'Section Name',
+        'Question Count',
+        'Total Attempts',
+        'Correct Attempts',
+        'Accuracy %',
+        'Average Score Points',
+        'Total Score Points'
+    ];
+    
+    // Section data rows
+    if ($section_analytics['has_sections']) {
+        foreach ($section_analytics['sections'] as $section_id => $section_data) {
+            $section_info = $section_data['section_info'];
+            $stats = $section_data['overall_stats'];
+            
+            $csv_data[] = [
+                $section_info['name'],
+                $section_data['question_count'],
+                $stats->total_attempts ?? 0,
+                $stats->correct_attempts ?? 0,
+                number_format($stats->accuracy_percentage ?? 0, 2),
+                number_format($stats->avg_score_points ?? 0, 2),
+                number_format($stats->total_score_points ?? 0, 2)
+            ];
+        }
+    }
+    
+    // Generate CSV content
+    $csv_content = '';
+    foreach ($csv_data as $row) {
+        $csv_content .= implode(',', array_map(function($field) {
+            return '"' . str_replace('"', '""', $field) . '"';
+        }, $row)) . "\n";
+    }
+    
+    return [
+        'filename' => sanitize_file_name($mcq_set->post_title . '_section_analytics_' . date('Y-m-d') . '.csv'),
+        'content' => $csv_content,
+        'mime_type' => 'text/csv'
+    ];
+}

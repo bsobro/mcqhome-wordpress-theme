@@ -1,10 +1,26 @@
 <?php
 /**
  * Template for displaying single MCQ posts
+ * 
+ * Note: This template should rarely be used as MCQs are redirected
+ * to their parent MCQ sets by the Legacy Redirect System.
  *
  * @package MCQHome
  * @since 1.0.0
  */
+
+// The redirect system should handle this before we get here,
+// but if we do reach this template, we'll show a message and redirect
+if (class_exists('MCQHome_Legacy_Redirect_System')) {
+    $mcq_id = get_the_ID();
+    $mcq_set_id = MCQHome_Legacy_Redirect_System::find_mcq_set_for_question($mcq_id);
+    
+    if ($mcq_set_id) {
+        $redirect_url = MCQHome_Legacy_Redirect_System::build_redirect_url($mcq_set_id, $mcq_id);
+        wp_redirect($redirect_url, 301);
+        exit;
+    }
+}
 
 get_header();
 

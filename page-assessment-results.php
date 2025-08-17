@@ -39,8 +39,8 @@ if (!$mcq_set || $mcq_set->post_type !== 'mcq_set') {
 $current_user = wp_get_current_user();
 $user_id = $current_user->ID;
 
-// Get detailed assessment results using the new scoring engine
-$results_data = mcqhome_get_assessment_results($user_id, $mcq_set_id, $attempt_id);
+// Get detailed assessment results with section breakdown
+$results_data = mcqhome_get_detailed_assessment_results($user_id, $mcq_set_id, $attempt_id);
 
 if (is_wp_error($results_data)) {
     wp_redirect(home_url());
@@ -138,6 +138,61 @@ $negative_marking = get_post_meta($mcq_set_id, '_mcq_set_negative_marking', true
                     <div class="text-sm text-gray-600"><?php _e('Unanswered', 'mcqhome'); ?></div>
                 </div>
             </div>
+            
+            <?php if ($results_data['has_sections'] && !empty($results_data['section_breakdown'])): ?>
+            <!-- Section-wise Performance -->
+            <div class="section-performance mt-8">
+                <h3 class="text-lg font-medium text-gray-700 mb-4"><?php _e('Section-wise Performance', 'mcqhome'); ?></h3>
+                
+                <div class="space-y-4">
+                    <?php foreach ($results_data['section_breakdown'] as $section_id => $section_data): ?>
+                    <div class="section-summary bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-semibold text-gray-800">
+                                <?php echo esc_html($section_data['section_info']['name'] ?? __('Section', 'mcqhome')); ?>
+                            </h4>
+                            <div class="text-sm text-gray-600">
+                                <?php printf(__('%d questions', 'mcqhome'), $section_data['total_questions']); ?>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-green-600"><?php echo $section_data['correct_answers']; ?></div>
+                                <div class="text-xs text-gray-600"><?php _e('Correct', 'mcqhome'); ?></div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-red-600"><?php echo $section_data['answered_questions'] - $section_data['correct_answers']; ?></div>
+                                <div class="text-xs text-gray-600"><?php _e('Incorrect', 'mcqhome'); ?></div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-blue-600"><?php echo number_format($section_data['accuracy_percentage'], 1); ?>%</div>
+                                <div class="text-xs text-gray-600"><?php _e('Accuracy', 'mcqhome'); ?></div>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="text-lg font-bold text-purple-600"><?php echo number_format($section_data['score_points'], 1); ?></div>
+                                <div class="text-xs text-gray-600"><?php _e('Points', 'mcqhome'); ?></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress bar for section -->
+                        <div class="mt-3">
+                            <div class="flex justify-between text-xs text-gray-600 mb-1">
+                                <span><?php _e('Progress', 'mcqhome'); ?></span>
+                                <span><?php echo $section_data['answered_questions']; ?>/<?php echo $section_data['total_questions']; ?></span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: <?php echo $section_data['total_questions'] > 0 ? ($section_data['answered_questions'] / $section_data['total_questions']) * 100 : 0; ?>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <div class="additional-stats mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="stat-item text-center p-3 border rounded-lg">
@@ -262,13 +317,47 @@ $negative_marking = get_post_meta($mcq_set_id, '_mcq_set_negative_marking', true
         
         <!-- Detailed Results Section -->
         <div id="detailed-results-section" class="detailed-results hidden">
-            <?php foreach ($question_results as $index => $result): 
-                $is_correct = $result->is_correct;
-                $selected_answer = $result->selected_answer;
-                $correct_answer = $result->correct_answer;
-                $question_number = $index + 1;
-            ?>
-            <div class="question-result bg-white rounded-lg shadow-md p-6 mb-4 <?php echo $is_correct ? 'border-l-4 border-green-500' : ($selected_answer ? 'border-l-4 border-red-500' : 'border-l-4 border-gray-400'); ?>">
+            <?php if ($results_data['has_sections'] && !empty($results_data['section_breakdown'])): ?>
+                <!-- Section-organized detailed results -->
+                <?php 
+                $global_question_number = 1;
+                foreach ($results_data['section_breakdown'] as $section_id => $section_data): 
+                ?>
+                <div class="section-detailed-results mb-8">
+                    <div class="section-header bg-gray-100 rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <?php echo esc_html($section_data['section_info']['name'] ?? __('Section', 'mcqhome')); ?>
+                        </h3>
+                        <?php if (!empty($section_data['section_info']['description'])): ?>
+                        <p class="text-gray-600 mt-1"><?php echo esc_html($section_data['section_info']['description']); ?></p>
+                        <?php endif; ?>
+                        <div class="section-stats mt-2 text-sm text-gray-600">
+                            <?php printf(__('Accuracy: %s%% | Score: %s points | Questions: %d/%d answered', 'mcqhome'), 
+                                number_format($section_data['accuracy_percentage'], 1),
+                                number_format($section_data['score_points'], 1),
+                                $section_data['answered_questions'],
+                                $section_data['total_questions']
+                            ); ?>
+                        </div>
+                    </div>
+                    
+                    <?php foreach ($section_data['questions'] as $result): 
+                        $is_correct = $result->is_correct;
+                        $selected_answer = $result->selected_answer;
+                        $correct_answer = $result->correct_answer;
+                        $question_number = $global_question_number++;
+                    ?>
+                    <div class="question-result bg-white rounded-lg shadow-md p-6 mb-4 <?php echo $is_correct ? 'border-l-4 border-green-500' : ($selected_answer ? 'border-l-4 border-red-500' : 'border-l-4 border-gray-400'); ?>">
+            <?php else: ?>
+                <!-- Non-sectioned detailed results -->
+                <?php foreach ($question_results as $index => $result): 
+                    $is_correct = $result->is_correct;
+                    $selected_answer = $result->selected_answer;
+                    $correct_answer = $result->correct_answer;
+                    $question_number = $index + 1;
+                ?>
+                <div class="question-result bg-white rounded-lg shadow-md p-6 mb-4 <?php echo $is_correct ? 'border-l-4 border-green-500' : ($selected_answer ? 'border-l-4 border-red-500' : 'border-l-4 border-gray-400'); ?>">
+            <?php endif; ?>
                 <div class="question-header flex justify-between items-start mb-4">
                     <div class="question-info">
                         <h3 class="text-lg font-semibold text-gray-800">
@@ -372,7 +461,17 @@ $negative_marking = get_post_meta($mcq_set_id, '_mcq_set_negative_marking', true
                 </div>
                 <?php endif; ?>
             </div>
-            <?php endforeach; ?>
+            <?php 
+                endforeach; // End question loop
+                if ($results_data['has_sections']): 
+            ?>
+                </div> <!-- End section-detailed-results -->
+                <?php 
+                    endforeach; // End section loop
+                else:
+                    endforeach; // End non-sectioned question loop
+                endif; 
+            ?>
         </div>
         <?php endif; ?>
         

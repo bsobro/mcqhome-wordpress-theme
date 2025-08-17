@@ -86,9 +86,6 @@ class MCQHome_Demo_Content {
                     </p>
                     
                     <p>
-                        <a href="<?php echo get_template_directory_uri(); ?>/debug-demo-content.php" target="_blank" class="button button-secondary">
-                            <?php _e('Debug Demo Content System', 'mcqhome'); ?>
-                        </a>
                         <a href="<?php echo get_template_directory_uri(); ?>/test-demo-simple.php" target="_blank" class="button button-secondary">
                             <?php _e('Simple Test', 'mcqhome'); ?>
                         </a>

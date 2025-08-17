@@ -156,9 +156,9 @@ $term = get_queried_object();
                     <select id="content_type" 
                             name="content_type" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="" <?php selected(get_query_var('content_type'), ''); ?>><?php _e('All Types', 'mcqhome'); ?></option>
-                        <option value="mcq_set" <?php selected(get_query_var('content_type'), 'mcq_set'); ?>><?php _e('MCQ Sets', 'mcqhome'); ?></option>
-                        <option value="mcq" <?php selected(get_query_var('content_type'), 'mcq'); ?>><?php _e('Individual MCQs', 'mcqhome'); ?></option>
+                        <option value="mcq_set" <?php selected(get_query_var('content_type', 'mcq_set'), 'mcq_set'); ?>><?php _e('MCQ Sets', 'mcqhome'); ?></option>
+                        <option value="institution" <?php selected(get_query_var('content_type'), 'institution'); ?>><?php _e('Institutions', 'mcqhome'); ?></option>
+                        <option value="all" <?php selected(get_query_var('content_type'), 'all'); ?>><?php _e('All Content', 'mcqhome'); ?></option>
                     </select>
                 </div>
                 
@@ -333,8 +333,17 @@ $term = get_queried_object();
         $min_rating = get_query_var('min_rating');
         $sort = get_query_var('sort', 'date');
         
+        // Default to MCQ sets if no content type specified or if mcq is specified
+        if (empty($content_type) || $content_type === 'mcq') {
+            $post_types = ['mcq_set'];
+        } elseif ($content_type === 'all') {
+            $post_types = ['mcq_set', 'institution'];
+        } else {
+            $post_types = [$content_type];
+        }
+        
         $args = [
-            'post_type' => $content_type ?: ['mcq', 'mcq_set'],
+            'post_type' => $post_types,
             'posts_per_page' => 12,
             'paged' => $paged,
             'post_status' => 'publish',

@@ -82,9 +82,6 @@ function mcqhome_demo_content_page() {
         <div class="card">
             <h2><?php _e('Debug Tools', 'mcqhome'); ?></h2>
             <p>
-                <a href="<?php echo get_template_directory_uri(); ?>/debug-demo-content.php" target="_blank" class="button button-secondary">
-                    <?php _e('Debug Demo Content System', 'mcqhome'); ?>
-                </a>
                 <a href="<?php echo get_template_directory_uri(); ?>/test-demo-simple.php" target="_blank" class="button button-secondary">
                     <?php _e('Simple Test', 'mcqhome'); ?>
                 </a>

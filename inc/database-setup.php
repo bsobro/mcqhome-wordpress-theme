@@ -676,3 +676,60 @@ function mcqhome_get_unread_notifications_count($user_id) {
         $user_id
     ));
 }
+
+/**
+ * Get analytics URL for MCQ set
+ */
+function mcqhome_get_analytics_url($mcq_set_id, $date_from = null, $date_to = null) {
+    $url = home_url('/analytics-dashboard/');
+    $params = ['set_id' => $mcq_set_id];
+    
+    if ($date_from) {
+        $params['date_from'] = $date_from;
+    }
+    
+    if ($date_to) {
+        $params['date_to'] = $date_to;
+    }
+    
+    return add_query_arg($params, $url);
+}
+
+/**
+ * Check if user can view analytics for MCQ set
+ */
+function mcqhome_can_user_view_analytics($user_id, $mcq_set_id) {
+    if (!$user_id || !$mcq_set_id) {
+        return false;
+    }
+    
+    $mcq_set = get_post($mcq_set_id);
+    if (!$mcq_set || $mcq_set->post_type !== 'mcq_set') {
+        return false;
+    }
+    
+    // Admin can view all analytics
+    if (user_can($user_id, 'manage_options')) {
+        return true;
+    }
+    
+    // Author can view their own MCQ set analytics
+    if ($mcq_set->post_author == $user_id) {
+        return true;
+    }
+    
+    // Users who can edit the post can view analytics
+    if (user_can($user_id, 'edit_post', $mcq_set_id)) {
+        return true;
+    }
+    
+    // Users from the same institution can view analytics
+    $user_institution = get_user_meta($user_id, 'institution_id', true);
+    $author_institution = get_user_meta($mcq_set->post_author, 'institution_id', true);
+    
+    if ($user_institution && $author_institution && $user_institution == $author_institution) {
+        return true;
+    }
+    
+    return false;
+}
