@@ -592,4 +592,6 @@ class MCQHome_Registration {
 }
 
 // Initialize the registration system
-new MCQHome_Registration();
+add_action('after_setup_theme', function() {
+    new MCQHome_Registration();
+});
