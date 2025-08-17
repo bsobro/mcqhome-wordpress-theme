@@ -758,8 +758,9 @@ function mcqhome_bulk_delete_questions($mcq_set_id, $question_ids) {
         'failed_count' => count($failed_deletions),
         'failed_ids' => $failed_deletions
     ];
-}/
-**
+}
+
+/**
  * AJAX Handlers for Assessment Progress Tracking
  */
 
