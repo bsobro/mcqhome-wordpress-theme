@@ -798,3 +798,23 @@ function mcqhome_enqueue_progress_tracking_scripts() {
     }
 }
 add_action('wp_enqueue_scripts', 'mcqhome_enqueue_progress_tracking_scripts', 20);
+
+/**
+ * Get user's primary role
+ */
+function mcqhome_get_user_primary_role($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
+    }
+    
+    if (!$user_id) {
+        return false;
+    }
+    
+    $user = get_userdata($user_id);
+    if (!$user || empty($user->roles)) {
+        return false;
+    }
+    
+    return $user->roles[0];
+}
