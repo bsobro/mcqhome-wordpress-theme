@@ -64,6 +64,36 @@ jQuery(document).ready(function ($) {
     $messagesDiv.html("");
   }
 
+  function resetFormCompletely() {
+    // Reset form data
+    $registrationForm[0].reset();
+    selectedRole = null;
+    $selectedRoleInput.val("");
+
+    // Clear validation states
+    $registrationForm.find("input").each(function () {
+      this.setCustomValidity("");
+    });
+
+    // Hide role-specific fields
+    $(".role-fields").removeClass("active").hide();
+    $roleSpecificFields.hide();
+
+    // Reset role cards
+    $roleCards.removeClass("selected");
+    $roleCards.css("transform", "translateY(0)");
+
+    // Reset form titles
+    $formTitle.text("Create Your Account");
+    $formSubtitle.text("Join MCQHome and start your journey");
+
+    // Clear messages
+    clearMessages();
+
+    // Show role selection step
+    showStep("role-selection");
+  }
+
   function showStep(step) {
     console.log("Showing step:", step);
 
@@ -178,10 +208,16 @@ jQuery(document).ready(function ($) {
       return;
     }
 
+    // Clear any previous messages
+    clearMessages();
+
     // Show loading state
     const $submitButton = $registrationForm.find('button[type="submit"]');
     const originalText = $submitButton.text();
     $submitButton.text(mcqhome_ajax.messages.processing).prop("disabled", true);
+
+    // Add visual loading indicator
+    $submitButton.addClass("opacity-75 cursor-not-allowed");
 
     // Prepare form data
     const formData = $registrationForm.serialize();
@@ -199,21 +235,9 @@ jQuery(document).ready(function ($) {
         if (response.success) {
           showMessage(response.message, "success");
 
-          // Reset form
-          $registrationForm[0].reset();
-          selectedRole = null;
-          $selectedRoleInput.val("");
-
-          // Hide role-specific fields
-          $(".role-fields").removeClass("active").hide();
-          $roleSpecificFields.hide();
-
-          // Reset role cards
-          $roleCards.removeClass("selected");
-
-          // Go back to role selection after delay
+          // Reset everything after showing success message
           setTimeout(function () {
-            showStep("role-selection");
+            resetFormCompletely();
           }, 3000);
         } else {
           showMessage(response.message || mcqhome_ajax.messages.error, "error");
@@ -221,11 +245,26 @@ jQuery(document).ready(function ($) {
       },
       error: function (xhr, status, error) {
         console.error("AJAX Error:", error);
-        showMessage(mcqhome_ajax.messages.error, "error");
+        console.error("Response:", xhr.responseText);
+
+        let errorMessage = mcqhome_ajax.messages.error;
+
+        // Try to parse error response for more specific error
+        try {
+          const errorResponse = JSON.parse(xhr.responseText);
+          if (errorResponse.message) {
+            errorMessage = errorResponse.message;
+          }
+        } catch (e) {
+          // Use default error message
+        }
+
+        showMessage(errorMessage, "error");
       },
       complete: function () {
-        // Reset button
+        // Always reset button state regardless of success or failure
         $submitButton.text(originalText).prop("disabled", false);
+        $submitButton.removeClass("opacity-75 cursor-not-allowed");
       },
     });
   }
@@ -256,6 +295,15 @@ jQuery(document).ready(function ($) {
   $backToRolesBtn.on("click", function (e) {
     e.preventDefault();
     console.log("Back to roles clicked");
+
+    // Reset form but keep the selected role for better UX
+    $registrationForm[0].reset();
+
+    // Clear validation states
+    $registrationForm.find("input").each(function () {
+      this.setCustomValidity("");
+    });
+
     clearMessages();
     showStep("role-selection");
   });
