@@ -220,37 +220,45 @@ add_action('widgets_init', 'mcqhome_widgets_init');
  * Theme activation hook
  */
 function mcqhome_activation() {
-    // Flush rewrite rules
-    flush_rewrite_rules();
-    
-    // Set default options
-    $default_options = [
-        'mcqhome_setup_complete' => false,
-        'mcqhome_demo_content' => false,
-    ];
-    
-    foreach ($default_options as $option => $value) {
-        if (get_option($option) === false) {
-            add_option($option, $value);
+    try {
+        // Flush rewrite rules
+        flush_rewrite_rules();
+        
+        // Set default options
+        $default_options = [
+            'mcqhome_setup_complete' => false,
+            'mcqhome_demo_content' => false,
+        ];
+        
+        foreach ($default_options as $option => $value) {
+            if (get_option($option) === false) {
+                add_option($option, $value);
+            }
         }
-    }
-    
-    // Create default pages if they don't exist
-    mcqhome_create_default_pages();
-    
-    // Initialize database tables safely
-    if (function_exists('mcqhome_init_database')) {
-        try {
-            mcqhome_init_database();
-        } catch (Exception $e) {
-            // Log error but don't break the site
-            error_log('MCQHome: Database initialization failed - ' . $e->getMessage());
+        
+        // Create default pages if they don't exist
+        if (function_exists('mcqhome_create_default_pages')) {
+            mcqhome_create_default_pages();
         }
-    }
-    
-    // Schedule any necessary cron jobs
-    if (!wp_next_scheduled('mcqhome_daily_cleanup')) {
-        wp_schedule_event(time(), 'daily', 'mcqhome_daily_cleanup');
+        
+        // Initialize database tables safely
+        if (function_exists('mcqhome_init_database')) {
+            try {
+                mcqhome_init_database();
+            } catch (Exception $e) {
+                // Log error but don't break the site
+                error_log('MCQHome: Database initialization failed - ' . $e->getMessage());
+            }
+        }
+        
+        // Schedule any necessary cron jobs
+        if (!wp_next_scheduled('mcqhome_daily_cleanup')) {
+            wp_schedule_event(time(), 'daily', 'mcqhome_daily_cleanup');
+        }
+        
+    } catch (Exception $e) {
+        // Log any activation errors but don't break the site
+        error_log('MCQHome: Theme activation error - ' . $e->getMessage());
     }
 }
 
@@ -272,27 +280,22 @@ function mcqhome_create_default_pages() {
     $default_pages = [
         'dashboard' => [
             'title' => 'Dashboard',
-            'content' => '<!-- wp:shortcode -->[mcqhome_dashboard]<!-- /wp:shortcode -->',
+            'content' => '<!-- Dashboard content will be loaded by the template -->',
             'template' => 'page-dashboard.php'
         ],
         'browse' => [
             'title' => 'Browse MCQs',
-            'content' => '<!-- wp:shortcode -->[mcqhome_browse]<!-- /wp:shortcode -->',
+            'content' => '<!-- Browse content will be loaded by the template -->',
             'template' => 'page-browse.php'
         ],
         'institutions' => [
             'title' => 'Institutions',
-            'content' => '<!-- wp:shortcode -->[mcqhome_institutions]<!-- /wp:shortcode -->',
+            'content' => '<!-- Institutions content will be loaded by the template -->',
             'template' => 'page-institutions.php'
-        ],
-        'teachers' => [
-            'title' => 'Teachers',
-            'content' => '<!-- wp:shortcode -->[mcqhome_teachers]<!-- /wp:shortcode -->',
-            'template' => 'page-teachers.php'
         ],
         'register' => [
             'title' => 'Register',
-            'content' => '<!-- wp:shortcode -->[mcqhome_registration]<!-- /wp:shortcode -->',
+            'content' => '[mcqhome_registration]',
             'template' => 'page-register.php'
         ],
         'take-assessment' => [
@@ -308,20 +311,25 @@ function mcqhome_create_default_pages() {
     ];
 
     foreach ($default_pages as $slug => $page_data) {
-        $existing_page = get_page_by_path($slug);
-        
-        if (!$existing_page) {
-            $page_id = wp_insert_post([
-                'post_title' => $page_data['title'],
-                'post_content' => $page_data['content'],
-                'post_status' => 'publish',
-                'post_type' => 'page',
-                'post_name' => $slug,
-            ]);
+        try {
+            $existing_page = get_page_by_path($slug);
             
-            if ($page_id && !is_wp_error($page_id)) {
-                update_post_meta($page_id, '_wp_page_template', $page_data['template']);
+            if (!$existing_page) {
+                $page_id = wp_insert_post([
+                    'post_title' => $page_data['title'],
+                    'post_content' => $page_data['content'],
+                    'post_status' => 'publish',
+                    'post_type' => 'page',
+                    'post_name' => $slug,
+                ]);
+                
+                if ($page_id && !is_wp_error($page_id) && isset($page_data['template'])) {
+                    update_post_meta($page_id, '_wp_page_template', $page_data['template']);
+                }
             }
+        } catch (Exception $e) {
+            // Log error but continue with other pages
+            error_log('MCQHome: Failed to create page ' . $slug . ' - ' . $e->getMessage());
         }
     }
 }
@@ -474,8 +482,13 @@ add_action('admin_enqueue_scripts', 'mcqhome_admin_scripts');
 /**
  * Include additional theme files
  */
-require_once MCQHOME_THEME_DIR . '/inc/template-functions.php';
-require_once MCQHOME_THEME_DIR . '/inc/customizer.php';
+if (file_exists(MCQHOME_THEME_DIR . '/inc/template-functions.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/template-functions.php';
+}
+
+if (file_exists(MCQHOME_THEME_DIR . '/inc/customizer.php')) {
+    require_once MCQHOME_THEME_DIR . '/inc/customizer.php';
+}
 
 // Include custom post types and user roles (will be created in later tasks)
 if (file_exists(MCQHOME_THEME_DIR . '/inc/post-types.php')) {
@@ -576,7 +589,40 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/browse-search-functions.php')) {
 // Registration system is handled by inc/registration.php
 
 /**
+ * Create placeholder shortcodes to prevent errors
+ */
+function mcqhome_create_placeholder_shortcodes() {
+    // Dashboard shortcode
+    if (!shortcode_exists('mcqhome_dashboard')) {
+        add_shortcode('mcqhome_dashboard', function() {
+            return '<p>Dashboard functionality will be available soon.</p>';
+        });
+    }
+    
+    // Browse shortcode
+    if (!shortcode_exists('mcqhome_browse')) {
+        add_shortcode('mcqhome_browse', function() {
+            return '<p>Browse functionality will be available soon.</p>';
+        });
+    }
+    
+    // Institutions shortcode
+    if (!shortcode_exists('mcqhome_institutions')) {
+        add_shortcode('mcqhome_institutions', function() {
+            return '<p>Institutions functionality will be available soon.</p>';
+        });
+    }
+    
+    // Teachers shortcode
+    if (!shortcode_exists('mcqhome_teachers')) {
+        add_shortcode('mcqhome_teachers', function() {
+            return '<p>Teachers functionality will be available soon.</p>';
+        });
+    }
+}
+add_action('init', 'mcqhome_create_placeholder_shortcodes', 5);
 
+/**
  * Admin notice for setup issues
  */
 function mcqhome_admin_notices() {
