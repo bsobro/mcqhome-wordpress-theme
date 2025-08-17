@@ -348,16 +348,24 @@ $negative_marking = get_post_meta($mcq_set_id, '_mcq_set_negative_marking', true
                         $question_number = $global_question_number++;
                     ?>
                     <div class="question-result bg-white rounded-lg shadow-md p-6 mb-4 <?php echo $is_correct ? 'border-l-4 border-green-500' : ($selected_answer ? 'border-l-4 border-red-500' : 'border-l-4 border-gray-400'); ?>">
+                        <!-- Question content will be here -->
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php endforeach; ?>
             <?php else: ?>
-                <!-- Non-sectioned detailed results -->
-                <?php foreach ($question_results as $index => $result): 
-                    $is_correct = $result->is_correct;
-                    $selected_answer = $result->selected_answer;
-                    $correct_answer = $result->correct_answer;
-                    $question_number = $index + 1;
-                ?>
-                <div class="question-result bg-white rounded-lg shadow-md p-6 mb-4 <?php echo $is_correct ? 'border-l-4 border-green-500' : ($selected_answer ? 'border-l-4 border-red-500' : 'border-l-4 border-gray-400'); ?>">
-            <?php endif; ?>
+                    <!-- Non-sectioned detailed results -->
+                    <?php foreach ($question_results as $index => $result): 
+                        $is_correct = $result->is_correct;
+                        $selected_answer = $result->selected_answer;
+                        $correct_answer = $result->correct_answer;
+                        $question_number = $index + 1;
+                    ?>
+                    <div class="question-result bg-white rounded-lg shadow-md p-6 mb-4 <?php echo $is_correct ? 'border-l-4 border-green-500' : ($selected_answer ? 'border-l-4 border-red-500' : 'border-l-4 border-gray-400'); ?>">
+                        <!-- Question content will be here -->
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
                 <div class="question-header flex justify-between items-start mb-4">
                     <div class="question-info">
                         <h3 class="text-lg font-semibold text-gray-800">

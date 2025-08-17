@@ -3003,9 +3003,6 @@ function mcqhome_filter_orphaned_mcqs($where) {
     
     return $where;
 }
-            return false; // Question already exists
-        }
-    }
     
     $questions_order['questions'][] = [
         'mcq_id' => intval($mcq_id),

@@ -706,7 +706,6 @@ class MCQHome_Assessment_Controller {
 
         return new WP_Error('save_failed', __('Failed to save assessment.', 'mcqhome'));
     }
-}
 
     /**
      * AJAX handler for saving progress (legacy - use secure version)
@@ -776,15 +775,9 @@ class MCQHome_Assessment_Controller {
             }
         } else {
             wp_send_json_error(['message' => __('Navigation system not available.', 'mcqhome')]);
-        }tion)) {
-            wp_send_json_error($validation->get_error_message());
         }
-
-        // Get assessment config and progress
-        $config = $this->get_assessment_config($mcq_set_id);
-        $progress = $this->get_current_progress($mcq_set_id, $user_id);
-
-        if (is_wp_error($config) || is_wp_error($progress)) {
+    }
+}
             wp_send_json_error(__('Failed to load assessment data.', 'mcqhome'));
         }
 

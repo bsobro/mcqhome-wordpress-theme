@@ -490,99 +490,42 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/customizer.php')) {
     require_once MCQHOME_THEME_DIR . '/inc/customizer.php';
 }
 
-// Include custom post types and user roles (will be created in later tasks)
-if (file_exists(MCQHOME_THEME_DIR . '/inc/post-types.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/post-types.php';
+// Include only essential files to prevent critical errors during theme activation
+$essential_files = [
+    '/inc/user-roles.php',
+    '/inc/registration.php',
+    '/inc/database-setup.php',
+    '/inc/dashboard-functions.php',
+    '/inc/role-settings.php',
+    '/inc/seo-functions.php',
+    '/inc/performance-optimization.php',
+    '/inc/asset-minification.php',
+    '/inc/semantic-html.php',
+    '/inc/legacy-redirect-system.php',
+    '/inc/redirect-admin.php',
+    '/inc/demo-content-safe.php',
+    '/inc/default-institution.php',
+    '/inc/browse-search-functions.php'
+];
+
+foreach ($essential_files as $file) {
+    $file_path = MCQHOME_THEME_DIR . $file;
+    if (file_exists($file_path)) {
+        try {
+            require_once $file_path;
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to load ' . $file . ' - ' . $e->getMessage());
+        }
+    }
 }
 
-if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/user-roles.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/registration.php';
-}
-
-// Include test files for development
-if (defined('WP_DEBUG') && WP_DEBUG && file_exists(MCQHOME_THEME_DIR . '/test-inline-mcq-builder.php')) {
-    require_once MCQHOME_THEME_DIR . '/test-inline-mcq-builder.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/test-legacy-redirect-system.php')) {
-    require_once MCQHOME_THEME_DIR . '/test-legacy-redirect-system.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/test-browse-search-updates.php')) {
-    require_once MCQHOME_THEME_DIR . '/test-browse-search-updates.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/ajax-handlers.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/ajax-handlers.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/database-setup.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/database-setup.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/database-migration.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/database-migration.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/assessment-functions.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-controller.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/assessment-controller.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-security.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/assessment-security.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/role-settings.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/role-settings.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/seo-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/seo-functions.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/performance-optimization.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/performance-optimization.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/asset-minification.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/asset-minification.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/semantic-html.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/semantic-html.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/legacy-redirect-system.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/legacy-redirect-system.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/redirect-admin.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/redirect-admin.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/demo-content-safe.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/demo-content-safe.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/default-institution.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/default-institution.php';
-}
-
-if (file_exists(MCQHOME_THEME_DIR . '/inc/browse-search-functions.php')) {
-    require_once MCQHOME_THEME_DIR . '/inc/browse-search-functions.php';
-}
+// Temporarily disable problematic files until they can be fixed
+// These files have syntax errors that prevent theme activation:
+// - /inc/post-types.php (unmatched braces)
+// - /inc/ajax-handlers.php (duplicate functions) 
+// - /inc/assessment-controller.php (unmatched braces)
+// - /inc/assessment-security.php (duplicate methods)
+// - /inc/assessment-functions.php (dependencies on broken files)
 
 // Registration system is now properly handled by inc/registration.php
 
@@ -631,6 +574,17 @@ function mcqhome_admin_notices() {
         return;
     }
     
+    // Show notice about temporarily disabled features
+    echo '<div class="notice notice-warning is-dismissible">';
+    echo '<p><strong>MCQHome Theme:</strong> Some advanced features (MCQ creation, assessment system) are temporarily disabled due to code issues. Basic functionality (registration, user management) is available.</p>';
+    echo '<p>The following features will be restored after code fixes:</p>';
+    echo '<ul style="margin-left: 20px;">';
+    echo '<li>• MCQ and MCQ Set creation</li>';
+    echo '<li>• Assessment taking and results</li>';
+    echo '<li>• Advanced AJAX handlers</li>';
+    echo '</ul>';
+    echo '</div>';
+    
     // Check if database tables exist
     global $wpdb;
     $required_tables = ['mcq_attempts', 'mcq_user_follows'];
@@ -644,9 +598,8 @@ function mcqhome_admin_notices() {
     }
     
     if (!empty($missing_tables)) {
-        echo '<div class="notice notice-warning is-dismissible">';
-        echo '<p><strong>MCQHome Theme:</strong> Some database tables are missing. The theme will work with limited functionality. Missing tables: ' . implode(', ', $missing_tables) . '</p>';
-        echo '<p><a href="' . admin_url('themes.php') . '" class="button">Reactivate Theme</a> to create missing tables.</p>';
+        echo '<div class="notice notice-info is-dismissible">';
+        echo '<p><strong>MCQHome Theme:</strong> Some database tables are missing but the theme will work with basic functionality. Missing tables: ' . implode(', ', $missing_tables) . '</p>';
         echo '</div>';
     }
     

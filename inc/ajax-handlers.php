@@ -837,7 +837,9 @@ function mcqhome_ajax_submit_assessment() {
             'is_passed' => $result['is_passed']
         ]
     ]);
-}ults/'));
+    // Redirect to results page
+    wp_redirect(home_url('/assessment-results/'));
+    exit;
     
     wp_send_json_success([
         'message' => __('Assessment submitted successfully.', 'mcqhome'),
@@ -1784,7 +1786,7 @@ add_action('wp_ajax_mcqhome_validate_session', 'mcqhome_ajax_validate_assessment
 /**
  * Handle secure progress saving with section awareness
  */
-function mcqhome_ajax_save_assessment_progress() {
+function mcqhome_ajax_save_secure_assessment_progress() {
     $security_manager = mcqhome_get_assessment_security();
     if ($security_manager && method_exists($security_manager, 'ajax_save_secure_progress')) {
         $security_manager->ajax_save_secure_progress();
@@ -1792,7 +1794,7 @@ function mcqhome_ajax_save_assessment_progress() {
         wp_send_json_error(__('Security system not available.', 'mcqhome'));
     }
 }
-add_action('wp_ajax_mcqhome_save_secure_progress', 'mcqhome_ajax_save_assessment_progress');
+add_action('wp_ajax_mcqhome_save_secure_progress', 'mcqhome_ajax_save_secure_assessment_progress');
 
 /**
  * Handle secure assessment submission

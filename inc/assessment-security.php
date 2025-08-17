@@ -1283,53 +1283,19 @@ class MCQHome_Assessment_Security {
         }
 
         return null;
-    } - $elapsed;
+    }
+
+    /**
+     * Calculate remaining time for assessment
+     */
+    private function calculate_remaining_time($start_time, $time_limit) {
+        $elapsed = time() - $start_time;
+        $remaining = $time_limit - $elapsed;
         
         return max(0, $remaining);
     }
 
-    /**
-     * Enhanced session validation for sectioned assessments
-     */
-    public function validate_sectioned_session($mcq_set_id, $user_id, $current_section = null) {
-        // First run standard validation
-        $validation = $this->validate_session($mcq_set_id, $user_id);
-        if (is_wp_error($validation)) {
-            return $validation;
-        }
 
-        // Get assessment configuration
-        $config = $this->get_assessment_config($mcq_set_id);
-        if (is_wp_error($config)) {
-            return $config;
-        }
-
-        // Additional validation for sectioned assessments
-        if ($config['sections_enabled'] && !empty($config['sections'])) {
-            // Validate current section if provided
-            if ($current_section) {
-                $section_exists = false;
-                foreach ($config['sections'] as $section) {
-                    if ($section['id'] === $current_section) {
-                        $section_exists = true;
-                        break;
-                    }
-                }
-
-                if (!$section_exists) {
-                    return new WP_Error('invalid_section', __('Invalid section specified.', 'mcqhome'));
-                }
-            }
-
-            // Check section-specific time limits if implemented
-            $section_time_validation = $this->validate_section_time_limits($user_id, $mcq_set_id, $config);
-            if (is_wp_error($section_time_validation)) {
-                return $section_time_validation;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Validate section-specific time limits
