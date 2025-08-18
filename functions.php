@@ -65,34 +65,61 @@ function mcqhome_scripts() {
 add_action('wp_enqueue_scripts', 'mcqhome_scripts');
 
 /**
- * Step 1: Add User Registration System
+ * Step 1: Add User Registration System ✅
  */
 if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
     try {
         require_once MCQHOME_THEME_DIR . '/inc/registration.php';
-        
-        // Add success notice for registration system
-        add_action('admin_notices', function() {
-            if (current_user_can('manage_options')) {
-                echo '<div class="notice notice-success is-dismissible">';
-                echo '<p><strong>MCQHome Step 1:</strong> User registration system loaded successfully!</p>';
-                echo '</div>';
-            }
-        });
-        
+        $step1_success = true;
     } catch (Exception $e) {
         error_log('MCQHome: Failed to load registration system - ' . $e->getMessage());
-        
-        // Add error notice
-        add_action('admin_notices', function() use ($e) {
-            if (current_user_can('manage_options')) {
-                echo '<div class="notice notice-error is-dismissible">';
-                echo '<p><strong>MCQHome Error:</strong> Registration system failed to load - ' . esc_html($e->getMessage()) . '</p>';
-                echo '</div>';
-            }
-        });
+        $step1_success = false;
     }
+} else {
+    $step1_success = false;
 }
+
+/**
+ * Step 2: Add User Roles System
+ */
+if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/user-roles.php';
+        $step2_success = true;
+    } catch (Exception $e) {
+        error_log('MCQHome: Failed to load user roles system - ' . $e->getMessage());
+        $step2_success = false;
+    }
+} else {
+    $step2_success = false;
+}
+
+/**
+ * Progress Dashboard - Shows current status
+ */
+add_action('admin_notices', function() use ($step1_success, $step2_success) {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    
+    echo '<div class="notice notice-info">';
+    echo '<h3>🚀 MCQHome Theme Restoration Progress</h3>';
+    echo '<ul style="margin-left: 20px;">';
+    echo '<li>' . ($step1_success ? '✅' : '❌') . ' <strong>Step 1:</strong> User Registration System</li>';
+    echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles System (Student, Teacher, Institution)</li>';
+    echo '<li>⏳ <strong>Step 3:</strong> Dashboard Functions (Next)</li>';
+    echo '<li>⏳ <strong>Step 4:</strong> Database Setup (Next)</li>';
+    echo '<li>⏳ <strong>Step 5:</strong> Basic Custom Post Types (Next)</li>';
+    echo '</ul>';
+    
+    if ($step1_success && $step2_success) {
+        echo '<p><strong>🎉 Steps 1-2 Complete!</strong> Registration and user roles are working.</p>';
+    } elseif ($step1_success) {
+        echo '<p><strong>Step 1 Complete!</strong> Now testing Step 2...</p>';
+    }
+    
+    echo '</div>';
+});
 
 /**
  * Create basic pages needed for registration
