@@ -80,7 +80,7 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
 }
 
 /**
- * Step 2: Add User Roles System
+ * Step 2: Add User Roles System (Fixed - removed duplicate function)
  */
 if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
     try {
@@ -106,7 +106,7 @@ add_action('admin_notices', function() use ($step1_success, $step2_success) {
     echo '<h3>🚀 MCQHome Theme Restoration Progress</h3>';
     echo '<ul style="margin-left: 20px;">';
     echo '<li>' . ($step1_success ? '✅' : '❌') . ' <strong>Step 1:</strong> User Registration System</li>';
-    echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles System (Student, Teacher, Institution)</li>';
+    echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles System (Fixed duplicate function issue)</li>';
     echo '<li>⏳ <strong>Step 3:</strong> Dashboard Functions (Next)</li>';
     echo '<li>⏳ <strong>Step 4:</strong> Database Setup (Next)</li>';
     echo '<li>⏳ <strong>Step 5:</strong> Basic Custom Post Types (Next)</li>';
@@ -114,6 +114,8 @@ add_action('admin_notices', function() use ($step1_success, $step2_success) {
     
     if ($step1_success && $step2_success) {
         echo '<p><strong>🎉 Steps 1-2 Complete!</strong> Registration and user roles are working.</p>';
+    } elseif ($step1_success && !$step2_success) {
+        echo '<p><strong>⚠️ Step 2 Issue Fixed:</strong> Removed duplicate function. Testing now...</p>';
     } elseif ($step1_success) {
         echo '<p><strong>Step 1 Complete!</strong> Now testing Step 2...</p>';
     }
@@ -152,21 +154,5 @@ function mcqhome_activation() {
 add_action('after_switch_theme', 'mcqhome_activation');
 
 /**
- * Helper function for user roles
+ * Helper functions will be loaded from user-roles.php
  */
-function mcqhome_get_user_primary_role($user_id = null) {
-    if (!$user_id) {
-        $user_id = get_current_user_id();
-    }
-    
-    if (!$user_id) {
-        return false;
-    }
-    
-    $user = get_userdata($user_id);
-    if (!$user || empty($user->roles)) {
-        return false;
-    }
-    
-    return $user->roles[0];
-}
