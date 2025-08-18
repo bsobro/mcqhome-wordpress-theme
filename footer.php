@@ -9,9 +9,7 @@
 
     </div><!-- .site-content -->
     
-    <?php if (function_exists('mcqhome_semantic_footer')) : ?>
-        <?php mcqhome_semantic_footer(); ?>
-    <?php else : ?>
+
         <footer id="colophon" class="site-footer bg-gray-900 text-white mt-auto">
             <div class="container mx-auto px-4 py-8">
                 <?php if (is_active_sidebar('footer-1')) : ?>
@@ -39,7 +37,7 @@
                             'menu_id'        => 'footer-menu',
                             'container'      => false,
                             'menu_class'     => 'space-y-2',
-                            'fallback_cb'    => function_exists('mcqhome_default_footer_menu') ? 'mcqhome_default_footer_menu' : false,
+                            'fallback_cb'    => false,
                         ]);
                         ?>
                     </div>
@@ -80,7 +78,6 @@
                 </div>
             </div>
         </footer>
-    <?php endif; ?>
     
 </div><!-- #page -->
 

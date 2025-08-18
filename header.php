@@ -7,7 +7,7 @@
  */
 ?>
 <!doctype html>
-<html <?php language_attributes(); ?> <?php echo function_exists('mcqhome_get_html_attributes') ? mcqhome_get_html_attributes() : ''; ?>>
+<html <?php language_attributes(); ?>>
 <head>
     <meta charset="<?php bloginfo('charset'); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -17,7 +17,7 @@
     <?php wp_head(); ?>
 </head>
 
-<body <?php body_class(); ?> <?php echo function_exists('mcqhome_get_body_attributes') ? mcqhome_get_body_attributes() : ''; ?>>
+<body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
 <?php if (function_exists('mcqhome_semantic_skip_links')) mcqhome_semantic_skip_links(); ?>
