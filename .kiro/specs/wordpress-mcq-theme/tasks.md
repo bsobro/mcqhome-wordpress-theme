@@ -48,9 +48,9 @@
     - Set up email verification and account activation
     - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [x] 4. Create role-specific dashboard interfaces
+- [-] 4. Create role-specific dashboard interfaces
 
-  - [x] 4.1 Build Student Dashboard with personalized content
+  - [ ] 4.1 Build Student Dashboard with personalized content
 
     - Create dashboard layout with enrolled courses overview
     - Implement progress tracking widgets and performance analytics
