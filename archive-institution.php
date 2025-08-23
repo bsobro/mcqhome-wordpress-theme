@@ -26,11 +26,11 @@ get_header(); ?>
                     <div class="institution-logo mb-4 text-center">
                         <?php if (has_post_thumbnail()) : ?>
                             <a href="<?php the_permalink(); ?>">
-                                <?php the_post_thumbnail('medium', array('class' => 'w-20 h-20 object-cover rounded-full mx-auto')); ?>
+                                <?php the_post_thumbnail('medium', array('class' => 'institution-archive-logo')); ?>
                             </a>
                         <?php else : ?>
-                            <div class="w-20 h-20 bg-gray-200 rounded-full mx-auto flex items-center justify-center">
-                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="institution-placeholder">
+                                <svg class="icon-medium text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6"></path>
                                 </svg>
                             </div>
@@ -108,7 +108,7 @@ get_header(); ?>
         
         <!-- No Posts Found -->
         <div class="no-institutions text-center py-12">
-            <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="mx-auto h-12 w-12 text-gray-400 mb-4 icon-large" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6"></path>
             </svg>
             <h2 class="text-xl font-medium text-gray-900 mb-2"><?php _e('No Institutions Found', 'mcqhome'); ?></h2>
