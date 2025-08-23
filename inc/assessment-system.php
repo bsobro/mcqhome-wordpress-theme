@@ -75,6 +75,14 @@ function mcqhome_start_assessment($mcq_set_id) {
     
     $attempt_id = $wpdb->insert_id;
     
+    // Debug logging
+    error_log('MCQHome: Created attempt ID: ' . $attempt_id . ' for user: ' . $user_id . ' on MCQ set: ' . $mcq_set_id);
+    
+    if (!$attempt_id) {
+        error_log('MCQHome: Failed to create attempt. DB Error: ' . $wpdb->last_error);
+        wp_die(__('Failed to start assessment. Please try again.', 'mcqhome'));
+    }
+    
     // Redirect to assessment interface
     wp_redirect(add_query_arg(array('action' => 'take', 'attempt' => $attempt_id), get_permalink($mcq_set_id)));
     exit;
@@ -122,8 +130,16 @@ function mcqhome_display_assessment_interface($mcq_set_id, $attempt_id) {
         $attempt_id
     ));
     
-    if (!$attempt || $attempt->user_id != get_current_user_id()) {
-        wp_die(__('Invalid assessment attempt.', 'mcqhome'));
+    // Debug logging
+    error_log('MCQHome: Looking for attempt ID: ' . $attempt_id . ' for user: ' . get_current_user_id());
+    if (!$attempt) {
+        error_log('MCQHome: No attempt found with ID: ' . $attempt_id);
+        wp_die(__('Assessment attempt not found. Please start a new assessment.', 'mcqhome'));
+    }
+    
+    if ($attempt->user_id != get_current_user_id()) {
+        error_log('MCQHome: Attempt user mismatch. Attempt user: ' . $attempt->user_id . ', Current user: ' . get_current_user_id());
+        wp_die(__('This assessment attempt belongs to another user.', 'mcqhome'));
     }
     
     $questions = get_post_meta($mcq_set_id, '_mcq_set_questions', true);

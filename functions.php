@@ -122,11 +122,9 @@ function mcqhome_create_database_tables() {
     $sql1 = "CREATE TABLE $table_name (
         id bigint(20) NOT NULL AUTO_INCREMENT,
         user_id bigint(20) NOT NULL,
-        mcq_id bigint(20) NOT NULL,
-        mcq_set_id bigint(20) DEFAULT NULL,
-        selected_answer varchar(1) DEFAULT NULL,
-        is_correct tinyint(1) DEFAULT 0,
-        score_earned decimal(5,2) DEFAULT 0.00,
+        mcq_set_id bigint(20) NOT NULL,
+        answers longtext DEFAULT NULL,
+        score_earned decimal(8,2) DEFAULT 0.00,
         score_percentage decimal(5,2) DEFAULT 0.00,
         time_taken int(11) DEFAULT 0,
         status varchar(20) DEFAULT 'in_progress',
@@ -134,7 +132,6 @@ function mcqhome_create_database_tables() {
         completed_at datetime DEFAULT NULL,
         PRIMARY KEY (id),
         KEY user_id (user_id),
-        KEY mcq_id (mcq_id),
         KEY mcq_set_id (mcq_set_id),
         KEY status (status)
     ) $charset_collate;";
@@ -212,25 +209,37 @@ function mcqhome_create_database_tables() {
 // Initialize database setup
 $step4_success = false;
 try {
-    // Check if all required tables exist
     global $wpdb;
-    $required_tables = ['mcq_attempts', 'mcq_user_follows', 'mcq_user_enrollments', 'mcq_user_progress'];
-    $tables_exist = 0;
     
-    foreach ($required_tables as $table) {
-        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}{$table}'");
-        if ($table_exists) {
-            $tables_exist++;
-        }
-    }
+    // Check if mcq_attempts table has correct structure
+    $table_name = $wpdb->prefix . 'mcq_attempts';
+    $columns = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'answers'");
     
-    if ($tables_exist < 4) {
-        // Create missing tables
+    if (empty($columns)) {
+        // Table exists but missing answers column - recreate it
+        error_log('MCQHome: Step 4 - Recreating mcq_attempts table with correct structure');
+        $wpdb->query("DROP TABLE IF EXISTS $table_name");
         $step4_success = mcqhome_create_database_tables();
-        error_log('MCQHome: Step 4 - Created database tables. Tables found: ' . $tables_exist . '/4');
     } else {
-        $step4_success = true; // All tables exist
-        error_log('MCQHome: Step 4 - All database tables exist. Success!');
+        // Check if all required tables exist
+        $required_tables = ['mcq_attempts', 'mcq_user_follows', 'mcq_user_enrollments', 'mcq_user_progress'];
+        $tables_exist = 0;
+        
+        foreach ($required_tables as $table) {
+            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}{$table}'");
+            if ($table_exists) {
+                $tables_exist++;
+            }
+        }
+        
+        if ($tables_exist < 4) {
+            // Create missing tables
+            $step4_success = mcqhome_create_database_tables();
+            error_log('MCQHome: Step 4 - Created database tables. Tables found: ' . $tables_exist . '/4');
+        } else {
+            $step4_success = true; // All tables exist
+            error_log('MCQHome: Step 4 - All database tables exist. Success!');
+        }
     }
 } catch (Exception $e) {
     error_log('MCQHome: Step 4 database setup failed - ' . $e->getMessage());
