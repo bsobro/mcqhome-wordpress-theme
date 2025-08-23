@@ -97,9 +97,9 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
  * Step 3: Dashboard System
  */
 $step3_success = false;
-if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard.php')) {
+if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
     try {
-        require_once MCQHOME_THEME_DIR . '/inc/dashboard.php';
+        require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
         $step3_success = true;
         error_log('MCQHome: Step 3 - Dashboard System loaded successfully');
     } catch (Exception $e) {
@@ -111,16 +111,16 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard.php')) {
 }
 
 /**
- * Step 4: Social Features
+ * Step 4: Database Setup and Core Functions
  */
 $step4_success = false;
-if (file_exists(MCQHOME_THEME_DIR . '/inc/social-features.php')) {
+if (file_exists(MCQHOME_THEME_DIR . '/inc/database-setup.php')) {
     try {
-        require_once MCQHOME_THEME_DIR . '/inc/social-features.php';
+        require_once MCQHOME_THEME_DIR . '/inc/database-setup.php';
         $step4_success = true;
-        error_log('MCQHome: Step 4 - Social Features loaded successfully');
+        error_log('MCQHome: Step 4 - Database Setup loaded successfully');
     } catch (Exception $e) {
-        error_log('MCQHome: Step 4 - Social Features failed - ' . $e->getMessage());
+        error_log('MCQHome: Step 4 - Database Setup failed - ' . $e->getMessage());
         $step4_success = false;
     }
 } else {
@@ -161,6 +161,29 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-system.php')) {
     $step6_success = false;
 }
 
+/**
+ * Additional Essential Files (Safe to load)
+ */
+$additional_files = [
+    '/inc/role-settings.php',
+    '/inc/demo-content-safe.php',
+    '/inc/default-institution.php'
+];
+
+$additional_loaded = 0;
+foreach ($additional_files as $file) {
+    $file_path = MCQHOME_THEME_DIR . $file;
+    if (file_exists($file_path)) {
+        try {
+            require_once $file_path;
+            $additional_loaded++;
+            error_log('MCQHome: Additional file loaded - ' . $file);
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to load ' . $file . ' - ' . $e->getMessage());
+        }
+    }
+}
+
 // Step 7: Enhanced Features - DISABLED due to critical error
 // Will be restored carefully one by one after testing each file
 $step7_success = false;
@@ -180,7 +203,7 @@ if ($step6_success) $completed_steps++;
 /**
  * Admin notice showing progress
  */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success) {
+add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success, $additional_loaded) {
     if (!current_user_can('manage_options')) {
         return;
     }
@@ -199,9 +222,10 @@ add_action('admin_notices', function() use ($step1_success, $step2_success, $ste
     echo '<li>' . ($step1_success ? '✅' : '❌') . ' <strong>Step 1:</strong> Registration System</li>';
     echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles & Capabilities</li>';
     echo '<li>' . ($step3_success ? '✅' : '❌') . ' <strong>Step 3:</strong> Dashboard System</li>';
-    echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Social Features</li>';
+    echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
     echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
     echo '<li>' . ($step6_success ? '✅' : '❌') . ' <strong>Step 6:</strong> Assessment System</li>';
+    echo '<li>' . ($additional_loaded > 0 ? '✅' : '❌') . ' <strong>Additional:</strong> Essential Files (' . $additional_loaded . '/3)</li>';
     echo '<li>⏸️ <strong>Step 7:</strong> Enhanced Features (Paused - will restore carefully)</li>';
     echo '</ul>';
     
@@ -235,3 +259,14 @@ function mcqhome_activation() {
     add_option('mcqhome_demo_content', false);
 }
 add_action('after_switch_theme', 'mcqhome_activation');
+
+/**
+ * Include safe additional theme files
+ */
+if (file_exists(MCQHOME_THEME_DIR . '/inc/customizer.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/customizer.php';
+    } catch (Exception $e) {
+        error_log('MCQHome: Failed to load customizer - ' . $e->getMessage());
+    }
+}
