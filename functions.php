@@ -238,9 +238,226 @@ try {
 }
 
 /**
+ * Step 5: Basic Custom Post Types
+ */
+if (file_exists(MCQHOME_THEME_DIR . '/inc/post-types.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/post-types.php';
+        $step5_success = true;
+        error_log('MCQHome: Step 5 - Custom post types loaded successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Failed to load custom post types - ' . $e->getMessage());
+        $step5_success = false;
+    }
+} else {
+    // Create a minimal post-types.php file if it doesn't exist
+    $post_types_content = '<?php
+/**
+ * Custom Post Types for MCQHome Theme
+ * 
+ * @package MCQHome
+ * @since 1.0.0
+ */
+
+// Prevent direct access
+if (!defined("ABSPATH")) {
+    exit;
+}
+
+/**
+ * Register MCQ Custom Post Type
+ */
+function mcqhome_register_mcq_post_type() {
+    $labels = array(
+        "name" => __("MCQs", "mcqhome"),
+        "singular_name" => __("MCQ", "mcqhome"),
+        "menu_name" => __("MCQs", "mcqhome"),
+        "all_items" => __("All MCQs", "mcqhome"),
+        "add_new" => __("Add New", "mcqhome"),
+        "add_new_item" => __("Add New MCQ", "mcqhome"),
+        "edit_item" => __("Edit MCQ", "mcqhome"),
+        "new_item" => __("New MCQ", "mcqhome"),
+        "view_item" => __("View MCQ", "mcqhome"),
+        "view_items" => __("View MCQs", "mcqhome"),
+        "search_items" => __("Search MCQs", "mcqhome"),
+    );
+
+    $args = array(
+        "label" => __("MCQs", "mcqhome"),
+        "labels" => $labels,
+        "description" => "Multiple Choice Questions",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "rest_controller_class" => "WP_REST_Posts_Controller",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "show_in_nav_menus" => true,
+        "delete_with_user" => false,
+        "exclude_from_search" => false,
+        "capability_type" => "post",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "mcq", "with_front" => true),
+        "query_var" => true,
+        "menu_icon" => "dashicons-editor-help",
+        "supports" => array("title", "editor", "thumbnail", "author"),
+        "taxonomies" => array("mcq_category", "mcq_difficulty"),
+    );
+
+    register_post_type("mcq", $args);
+}
+add_action("init", "mcqhome_register_mcq_post_type");
+
+/**
+ * Register MCQ Set Custom Post Type
+ */
+function mcqhome_register_mcq_set_post_type() {
+    $labels = array(
+        "name" => __("MCQ Sets", "mcqhome"),
+        "singular_name" => __("MCQ Set", "mcqhome"),
+        "menu_name" => __("MCQ Sets", "mcqhome"),
+        "all_items" => __("All MCQ Sets", "mcqhome"),
+        "add_new" => __("Add New", "mcqhome"),
+        "add_new_item" => __("Add New MCQ Set", "mcqhome"),
+        "edit_item" => __("Edit MCQ Set", "mcqhome"),
+        "new_item" => __("New MCQ Set", "mcqhome"),
+        "view_item" => __("View MCQ Set", "mcqhome"),
+        "view_items" => __("View MCQ Sets", "mcqhome"),
+        "search_items" => __("Search MCQ Sets", "mcqhome"),
+    );
+
+    $args = array(
+        "label" => __("MCQ Sets", "mcqhome"),
+        "labels" => $labels,
+        "description" => "Collections of MCQs",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "rest_controller_class" => "WP_REST_Posts_Controller",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "show_in_nav_menus" => true,
+        "delete_with_user" => false,
+        "exclude_from_search" => false,
+        "capability_type" => "post",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "mcq-set", "with_front" => true),
+        "query_var" => true,
+        "menu_icon" => "dashicons-portfolio",
+        "supports" => array("title", "editor", "thumbnail", "author"),
+        "taxonomies" => array("mcq_category"),
+    );
+
+    register_post_type("mcq_set", $args);
+}
+add_action("init", "mcqhome_register_mcq_set_post_type");
+
+/**
+ * Register Institution Custom Post Type
+ */
+function mcqhome_register_institution_post_type() {
+    $labels = array(
+        "name" => __("Institutions", "mcqhome"),
+        "singular_name" => __("Institution", "mcqhome"),
+        "menu_name" => __("Institutions", "mcqhome"),
+        "all_items" => __("All Institutions", "mcqhome"),
+        "add_new" => __("Add New", "mcqhome"),
+        "add_new_item" => __("Add New Institution", "mcqhome"),
+        "edit_item" => __("Edit Institution", "mcqhome"),
+        "new_item" => __("New Institution", "mcqhome"),
+        "view_item" => __("View Institution", "mcqhome"),
+        "view_items" => __("View Institutions", "mcqhome"),
+        "search_items" => __("Search Institutions", "mcqhome"),
+    );
+
+    $args = array(
+        "label" => __("Institutions", "mcqhome"),
+        "labels" => $labels,
+        "description" => "Educational Institutions",
+        "public" => true,
+        "publicly_queryable" => true,
+        "show_ui" => true,
+        "show_in_rest" => true,
+        "rest_base" => "",
+        "rest_controller_class" => "WP_REST_Posts_Controller",
+        "has_archive" => true,
+        "show_in_menu" => true,
+        "show_in_nav_menus" => true,
+        "delete_with_user" => false,
+        "exclude_from_search" => false,
+        "capability_type" => "post",
+        "map_meta_cap" => true,
+        "hierarchical" => false,
+        "rewrite" => array("slug" => "institution", "with_front" => true),
+        "query_var" => true,
+        "menu_icon" => "dashicons-building",
+        "supports" => array("title", "editor", "thumbnail", "author"),
+    );
+
+    register_post_type("institution", $args);
+}
+add_action("init", "mcqhome_register_institution_post_type");
+
+/**
+ * Register Custom Taxonomies
+ */
+function mcqhome_register_taxonomies() {
+    // MCQ Category taxonomy
+    register_taxonomy("mcq_category", array("mcq", "mcq_set"), array(
+        "hierarchical" => true,
+        "label" => __("MCQ Categories", "mcqhome"),
+        "show_ui" => true,
+        "show_admin_column" => true,
+        "query_var" => true,
+        "rewrite" => array("slug" => "mcq-category"),
+    ));
+
+    // MCQ Difficulty taxonomy
+    register_taxonomy("mcq_difficulty", array("mcq"), array(
+        "hierarchical" => false,
+        "label" => __("Difficulty Levels", "mcqhome"),
+        "show_ui" => true,
+        "show_admin_column" => true,
+        "query_var" => true,
+        "rewrite" => array("slug" => "difficulty"),
+    ));
+}
+add_action("init", "mcqhome_register_taxonomies");
+
+/**
+ * Flush rewrite rules on theme activation
+ */
+function mcqhome_flush_rewrite_rules() {
+    mcqhome_register_mcq_post_type();
+    mcqhome_register_mcq_set_post_type();
+    mcqhome_register_institution_post_type();
+    mcqhome_register_taxonomies();
+    flush_rewrite_rules();
+}
+register_activation_hook(__FILE__, "mcqhome_flush_rewrite_rules");
+';
+    
+    try {
+        file_put_contents(MCQHOME_THEME_DIR . '/inc/post-types.php', $post_types_content);
+        require_once MCQHOME_THEME_DIR . '/inc/post-types.php';
+        $step5_success = true;
+        error_log('MCQHome: Step 5 - Created and loaded post-types.php successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Step 5 - Failed to create post-types.php - ' . $e->getMessage());
+        $step5_success = false;
+    }
+}
+
+/**
  * Progress Dashboard - Shows current status
  */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success) {
+add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success) {
     if (!current_user_can('manage_options')) {
         return;
     }
@@ -252,16 +469,18 @@ add_action('admin_notices', function() use ($step1_success, $step2_success, $ste
     echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles System</li>';
     echo '<li>' . ($step3_success ? '✅' : '❌') . ' <strong>Step 3:</strong> Dashboard Functions & User Interface</li>';
     echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
-    echo '<li>⏳ <strong>Step 5:</strong> Basic Custom Post Types (Next)</li>';
-    echo '<li>⏳ <strong>Step 6:</strong> Assessment System (Later)</li>';
+    echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
+    echo '<li>⏳ <strong>Step 6:</strong> Assessment System (Next)</li>';
     echo '</ul>';
     
-    $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success]);
+    $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success, $step5_success]);
     
-    if ($completed_steps == 4) {
-        echo '<p><strong>🎉 Steps 1-4 Complete!</strong> Core user system and database are working!</p>';
+    if ($completed_steps == 5) {
+        echo '<p><strong>🎉 Steps 1-5 Complete!</strong> Core system with custom post types is working!</p>';
+    } elseif ($completed_steps == 4) {
+        echo '<p><strong>✨ Steps 1-4 Complete!</strong> Now testing Step 5 (Custom Post Types)...</p>';
     } elseif ($completed_steps == 3) {
-        echo '<p><strong>✨ Steps 1-3 Complete!</strong> Now testing Step 4 (Database Setup)...</p>';
+        echo '<p><strong>Steps 1-3 Complete!</strong> Building on success...</p>';
     } elseif ($completed_steps == 2) {
         echo '<p><strong>Steps 1-2 Complete!</strong> Building on success...</p>';
     } elseif ($completed_steps == 1) {
