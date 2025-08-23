@@ -479,15 +479,81 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-system.php')) {
     $step6_success = false;
 }
 
-// Step 7: Enhanced Features - DISABLED due to critical error
-// Will be restored carefully one by one after testing each file
-$step7_success = false;
-$step7_loaded = [];
+/**
+ * Step 7A: SEO Functions (Safe Enhancement)
+ */
+$step7a_success = false;
+if (file_exists(MCQHOME_THEME_DIR . '/inc/seo-functions.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/seo-functions.php';
+        $step7a_success = true;
+        error_log('MCQHome: Step 7A - SEO Functions loaded successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Step 7A - SEO Functions failed - ' . $e->getMessage());
+        $step7a_success = false;
+    }
+} else {
+    $step7a_success = false;
+}
+
+/**
+ * Step 7B: Template Functions (Helper Functions)
+ */
+$step7b_success = false;
+if (file_exists(MCQHOME_THEME_DIR . '/inc/template-functions.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/template-functions.php';
+        $step7b_success = true;
+        error_log('MCQHome: Step 7B - Template Functions loaded successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Step 7B - Template Functions failed - ' . $e->getMessage());
+        $step7b_success = false;
+    }
+} else {
+    $step7b_success = false;
+}
+
+/**
+ * Step 7C: Browse & Search Functions (Content Discovery)
+ */
+$step7c_success = false;
+if (file_exists(MCQHOME_THEME_DIR . '/inc/browse-search-functions.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/browse-search-functions.php';
+        $step7c_success = true;
+        error_log('MCQHome: Step 7C - Browse & Search Functions loaded successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Step 7C - Browse & Search Functions failed - ' . $e->getMessage());
+        $step7c_success = false;
+    }
+} else {
+    $step7c_success = false;
+}
+
+/**
+ * Step 7D: AJAX Handlers (Dynamic Interactions)
+ */
+$step7d_success = false;
+if (file_exists(MCQHOME_THEME_DIR . '/inc/ajax-handlers.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/ajax-handlers.php';
+        $step7d_success = true;
+        error_log('MCQHome: Step 7D - AJAX Handlers loaded successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Step 7D - AJAX Handlers failed - ' . $e->getMessage());
+        $step7d_success = false;
+    }
+} else {
+    $step7d_success = false;
+}
+
+// All enhanced features loaded
+$step7_total_loaded = ($step7a_success ? 1 : 0) + ($step7b_success ? 1 : 0) + ($step7c_success ? 1 : 0) + ($step7d_success ? 1 : 0);
 
 /**
  * Progress Dashboard - Shows current status
  */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success) {
+add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success, $step7a_success, $step7b_success, $step7c_success, $step7d_success, $step7_total_loaded) {
     if (!current_user_can('manage_options')) {
         return;
     }
@@ -501,28 +567,40 @@ add_action('admin_notices', function() use ($step1_success, $step2_success, $ste
     echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
     echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
     echo '<li>' . ($step6_success ? '✅' : '❌') . ' <strong>Step 6:</strong> Assessment System</li>';
-    echo '<li>⏸️ <strong>Step 7:</strong> Enhanced Features (Paused - will restore carefully)</li>';
+    echo '<li>' . ($step7a_success ? '✅' : '❌') . ' <strong>Step 7A:</strong> SEO Functions</li>';
+    echo '<li>' . ($step7b_success ? '✅' : '❌') . ' <strong>Step 7B:</strong> Template Functions</li>';
+    echo '<li>' . ($step7c_success ? '✅' : '❌') . ' <strong>Step 7C:</strong> Browse & Search Functions</li>';
+    echo '<li>' . ($step7d_success ? '✅' : '❌') . ' <strong>Step 7D:</strong> AJAX Handlers</li>';
     echo '</ul>';
     
     $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success]);
     
     if ($completed_steps == 6) {
         echo '<p><strong>🎉 ALL CORE STEPS COMPLETE!</strong> MCQHome theme is fully functional!</p>';
-        echo '<p><strong>✨ What you can do now:</strong></p>';
+        if ($step7_total_loaded > 0) {
+            $enhancement_status = $step7_total_loaded == 4 ? '🎉 ALL ENHANCED FEATURES ACTIVE!' : 'Enhanced Features Active (' . $step7_total_loaded . '/4):';
+            echo '<p><strong>✨ ' . $enhancement_status . '</strong></p>';
+            echo '<ul style="margin-left: 40px; margin-top: 10px;">';
+            if ($step7a_success) echo '<li>• SEO optimization & meta tags</li>';
+            if ($step7b_success) echo '<li>• Template helper functions</li>';
+            if ($step7c_success) echo '<li>• Advanced browse & search features</li>';
+            if ($step7d_success) echo '<li>• Dynamic AJAX interactions</li>';
+            echo '</ul>';
+        }
+        echo '<p><strong>Core Features:</strong></p>';
         echo '<ul style="margin-left: 40px; margin-top: 10px;">';
         echo '<li>• Create MCQ Sets with questions</li>';
         echo '<li>• Students can register and take assessments</li>';
         echo '<li>• View results and track progress</li>';
         echo '<li>• Manage institutions and user roles</li>';
         echo '</ul>';
-        echo '<p><em>Enhanced features will be restored carefully one by one.</em></p>';
     } elseif ($completed_steps == 5) {
         echo '<p><strong>✨ Steps 1-5 Complete!</strong> Now testing Step 6 (Assessment System)...</p>';
     } elseif ($completed_steps >= 1) {
         echo '<p><strong>Steps 1-' . $completed_steps . ' Complete!</strong> Building on success...</p>';
     }
     
-    echo '<p><em>Progress: ' . $completed_steps . '/6 core systems restored</em></p>';
+    echo '<p><em>Progress: ' . $completed_steps . '/6 core systems + ' . $step7_total_loaded . '/4 enhanced features</em></p>';
     echo '</div>';
 });
 
