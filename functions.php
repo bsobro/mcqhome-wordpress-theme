@@ -1,9 +1,13 @@
 <?php
 /**
- * MCQHome Theme functions - Step 1: Add Registration System
- * Gradually restoring functionality
+ * MCQHome Theme functions and definitions - MINIMAL VERSION
+ * This is a minimal version to ensure theme activation works
+ *
+ * @package MCQHome
+ * @since 1.0.0
  */
 
+// Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -14,38 +18,74 @@ define('MCQHOME_THEME_DIR', get_template_directory());
 define('MCQHOME_THEME_URL', get_template_directory_uri());
 
 /**
- * Basic theme setup
+ * MCQHome Theme setup
  */
 function mcqhome_setup() {
-    // Add theme support for title tag
+    // Make theme available for translation
+    load_theme_textdomain('mcqhome', get_template_directory() . '/languages');
+
+    // Add default posts and comments RSS feed links to head
+    add_theme_support('automatic-feed-links');
+
+    // Let WordPress manage the document title
     add_theme_support('title-tag');
-    
-    // Add theme support for post thumbnails
+
+    // Enable support for Post Thumbnails on posts and pages
     add_theme_support('post-thumbnails');
-    
-    // Register navigation menus
-    register_nav_menus([
-        'primary' => 'Primary Menu',
-        'footer' => 'Footer Menu',
+
+    // Add theme support for selective refresh for widgets
+    add_theme_support('customize-selective-refresh-widgets');
+
+    // Add support for core custom logo
+    add_theme_support('custom-logo', [
+        'height'      => 250,
+        'width'       => 250,
+        'flex-width'  => true,
+        'flex-height' => true,
     ]);
-    
-    // Add theme support for HTML5
+
+    // Add support for HTML5 markup
     add_theme_support('html5', [
         'search-form',
         'comment-form',
         'comment-list',
         'gallery',
         'caption',
+        'style',
+        'script',
+    ]);
+
+    // Add support for custom background
+    add_theme_support('custom-background', [
+        'default-color' => 'ffffff',
+        'default-image' => '',
+    ]);
+
+    // Register navigation menus
+    register_nav_menus([
+        'primary' => esc_html__('Primary Menu', 'mcqhome'),
+        'footer'  => esc_html__('Footer Menu', 'mcqhome'),
     ]);
 }
 add_action('after_setup_theme', 'mcqhome_setup');
 
 /**
- * Enqueue styles and scripts
+ * Set the content width in pixels, based on the theme's design and stylesheet
+ */
+function mcqhome_content_width() {
+    $GLOBALS['content_width'] = apply_filters('mcqhome_content_width', 1200);
+}
+add_action('after_setup_theme', 'mcqhome_content_width', 0);
+
+/**
+ * Enqueue scripts and styles - MINIMAL VERSION
  */
 function mcqhome_scripts() {
     // Enqueue main stylesheet
     wp_enqueue_style('mcqhome-style', get_stylesheet_uri(), [], MCQHOME_VERSION);
+    
+    // Enqueue main JavaScript file
+    wp_enqueue_script('mcqhome-main', MCQHOME_THEME_URL . '/assets/js/main.js', ['jquery'], MCQHOME_VERSION, true);
     
     // Enqueue registration JavaScript on registration pages
     if (is_page('register') || is_page('registration')) {
@@ -58,627 +98,150 @@ function mcqhome_scripts() {
                 'processing' => __('Creating Account...', 'mcqhome'),
                 'success' => __('Account created successfully!', 'mcqhome'),
                 'error' => __('Registration failed. Please try again.', 'mcqhome'),
+                'validation_error' => __('Please fill in all required fields correctly.', 'mcqhome')
             ]
         ]);
     }
+
+    // Localize script for AJAX
+    wp_localize_script('mcqhome-main', 'mcqhome_ajax', [
+        'ajax_url' => admin_url('admin-ajax.php'),
+        'nonce'    => wp_create_nonce('mcqhome_nonce'),
+    ]);
 }
 add_action('wp_enqueue_scripts', 'mcqhome_scripts');
 
 /**
- * Step 1: Add User Registration System ✅
+ * Register widget areas
  */
-if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/registration.php';
-        $step1_success = true;
-    } catch (Exception $e) {
-        error_log('MCQHome: Failed to load registration system - ' . $e->getMessage());
-        $step1_success = false;
-    }
-} else {
-    $step1_success = false;
+function mcqhome_widgets_init() {
+    register_sidebar([
+        'name'          => esc_html__('Sidebar', 'mcqhome'),
+        'id'            => 'sidebar-1',
+        'description'   => esc_html__('Add widgets here.', 'mcqhome'),
+        'before_widget' => '<section id="%1$s" class="widget %2$s mb-8">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h2 class="widget-title text-lg font-semibold mb-4">',
+        'after_title'   => '</h2>',
+    ]);
 }
+add_action('widgets_init', 'mcqhome_widgets_init');
 
 /**
- * Step 2: Add User Roles System ✅
+ * Theme activation hook - MINIMAL VERSION
  */
-if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
+function mcqhome_activation() {
     try {
-        require_once MCQHOME_THEME_DIR . '/inc/user-roles.php';
-        $step2_success = true;
-    } catch (Exception $e) {
-        error_log('MCQHome: Failed to load user roles system - ' . $e->getMessage());
-        $step2_success = false;
-    }
-} else {
-    $step2_success = false;
-}
-
-/**
- * Step 3: Add Dashboard Functions ✅
- */
-if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
-        $step3_success = true;
-    } catch (Exception $e) {
-        error_log('MCQHome: Failed to load dashboard functions - ' . $e->getMessage());
-        $step3_success = false;
-    }
-} else {
-    $step3_success = false;
-}
-
-/**
- * Step 4: Database Setup
- */
-function mcqhome_create_database_tables() {
-    global $wpdb;
-    
-    $charset_collate = $wpdb->get_charset_collate();
-    
-    // Table 1: MCQ Attempts
-    $table_name = $wpdb->prefix . 'mcq_attempts';
-    $sql1 = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        user_id bigint(20) NOT NULL,
-        mcq_set_id bigint(20) NOT NULL,
-        answers longtext DEFAULT NULL,
-        score_earned decimal(8,2) DEFAULT 0.00,
-        score_percentage decimal(5,2) DEFAULT 0.00,
-        time_taken int(11) DEFAULT 0,
-        status varchar(20) DEFAULT 'in_progress',
-        started_at datetime DEFAULT CURRENT_TIMESTAMP,
-        completed_at datetime DEFAULT NULL,
-        PRIMARY KEY (id),
-        KEY user_id (user_id),
-        KEY mcq_set_id (mcq_set_id),
-        KEY status (status)
-    ) $charset_collate;";
-    
-    // Table 2: User Follows
-    $table_name = $wpdb->prefix . 'mcq_user_follows';
-    $sql2 = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        follower_id bigint(20) NOT NULL,
-        followed_id bigint(20) NOT NULL,
-        followed_type varchar(20) NOT NULL DEFAULT 'user',
-        created_at datetime DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        UNIQUE KEY unique_follow (follower_id, followed_id, followed_type),
-        KEY follower_id (follower_id),
-        KEY followed_id (followed_id),
-        KEY followed_type (followed_type)
-    ) $charset_collate;";
-    
-    // Table 3: User Enrollments
-    $table_name = $wpdb->prefix . 'mcq_user_enrollments';
-    $sql3 = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        user_id bigint(20) NOT NULL,
-        mcq_set_id bigint(20) NOT NULL,
-        enrolled_at datetime DEFAULT CURRENT_TIMESTAMP,
-        status varchar(20) DEFAULT 'active',
-        progress_percentage decimal(5,2) DEFAULT 0.00,
-        last_accessed datetime DEFAULT NULL,
-        PRIMARY KEY (id),
-        UNIQUE KEY unique_enrollment (user_id, mcq_set_id),
-        KEY user_id (user_id),
-        KEY mcq_set_id (mcq_set_id),
-        KEY status (status)
-    ) $charset_collate;";
-    
-    // Table 4: User Progress
-    $table_name = $wpdb->prefix . 'mcq_user_progress';
-    $sql4 = "CREATE TABLE $table_name (
-        id bigint(20) NOT NULL AUTO_INCREMENT,
-        user_id bigint(20) NOT NULL,
-        mcq_set_id bigint(20) NOT NULL,
-        total_questions int(11) DEFAULT 0,
-        completed_questions int(11) DEFAULT 0,
-        correct_answers int(11) DEFAULT 0,
-        total_score decimal(8,2) DEFAULT 0.00,
-        best_score decimal(5,2) DEFAULT 0.00,
-        average_score decimal(5,2) DEFAULT 0.00,
-        time_spent int(11) DEFAULT 0,
-        last_updated datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        UNIQUE KEY unique_progress (user_id, mcq_set_id),
-        KEY user_id (user_id),
-        KEY mcq_set_id (mcq_set_id)
-    ) $charset_collate;";
-    
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    
-    try {
-        dbDelta($sql1);
-        dbDelta($sql2);
-        dbDelta($sql3);
-        dbDelta($sql4);
+        // Flush rewrite rules
+        flush_rewrite_rules();
         
-        // Log successful table creation
-        error_log('MCQHome: Database tables created successfully');
-        return true;
+        // Set default options
+        add_option('mcqhome_setup_complete', false);
+        add_option('mcqhome_demo_content', false);
+        
+        // Create basic pages
+        mcqhome_create_basic_pages();
         
     } catch (Exception $e) {
-        error_log('MCQHome: Database table creation failed - ' . $e->getMessage());
-        return false;
-    }
-}
-
-// Initialize database setup
-$step4_success = false;
-try {
-    global $wpdb;
-    
-    // Check if mcq_attempts table has correct structure
-    $table_name = $wpdb->prefix . 'mcq_attempts';
-    $columns = $wpdb->get_results("SHOW COLUMNS FROM $table_name LIKE 'answers'");
-    
-    if (empty($columns)) {
-        // Table exists but missing answers column - recreate it
-        error_log('MCQHome: Step 4 - Recreating mcq_attempts table with correct structure');
-        $wpdb->query("DROP TABLE IF EXISTS $table_name");
-        $step4_success = mcqhome_create_database_tables();
-    } else {
-        // Check if all required tables exist
-        $required_tables = ['mcq_attempts', 'mcq_user_follows', 'mcq_user_enrollments', 'mcq_user_progress'];
-        $tables_exist = 0;
-        
-        foreach ($required_tables as $table) {
-            $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}{$table}'");
-            if ($table_exists) {
-                $tables_exist++;
-            }
-        }
-        
-        if ($tables_exist < 4) {
-            // Create missing tables
-            $step4_success = mcqhome_create_database_tables();
-            error_log('MCQHome: Step 4 - Created database tables. Tables found: ' . $tables_exist . '/4');
-        } else {
-            $step4_success = true; // All tables exist
-            error_log('MCQHome: Step 4 - All database tables exist. Success!');
-        }
-    }
-} catch (Exception $e) {
-    error_log('MCQHome: Step 4 database setup failed - ' . $e->getMessage());
-    $step4_success = false;
-}
-
-/**
- * Step 5: Basic Custom Post Types
- */
-if (file_exists(MCQHOME_THEME_DIR . '/inc/post-types.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/post-types.php';
-        $step5_success = true;
-        error_log('MCQHome: Step 5 - Custom post types loaded successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Failed to load custom post types - ' . $e->getMessage());
-        $step5_success = false;
-    }
-} else {
-    // Create a minimal post-types.php file if it doesn't exist
-    $post_types_content = '<?php
-/**
- * Custom Post Types for MCQHome Theme
- * 
- * @package MCQHome
- * @since 1.0.0
- */
-
-// Prevent direct access
-if (!defined("ABSPATH")) {
-    exit;
-}
-
-/**
- * Register MCQ Custom Post Type
- */
-function mcqhome_register_mcq_post_type() {
-    $labels = array(
-        "name" => __("MCQs", "mcqhome"),
-        "singular_name" => __("MCQ", "mcqhome"),
-        "menu_name" => __("MCQs", "mcqhome"),
-        "all_items" => __("All MCQs", "mcqhome"),
-        "add_new" => __("Add New", "mcqhome"),
-        "add_new_item" => __("Add New MCQ", "mcqhome"),
-        "edit_item" => __("Edit MCQ", "mcqhome"),
-        "new_item" => __("New MCQ", "mcqhome"),
-        "view_item" => __("View MCQ", "mcqhome"),
-        "view_items" => __("View MCQs", "mcqhome"),
-        "search_items" => __("Search MCQs", "mcqhome"),
-    );
-
-    $args = array(
-        "label" => __("MCQs", "mcqhome"),
-        "labels" => $labels,
-        "description" => "Multiple Choice Questions",
-        "public" => true,
-        "publicly_queryable" => true,
-        "show_ui" => true,
-        "show_in_rest" => true,
-        "rest_base" => "",
-        "rest_controller_class" => "WP_REST_Posts_Controller",
-        "has_archive" => true,
-        "show_in_menu" => true,
-        "show_in_nav_menus" => true,
-        "delete_with_user" => false,
-        "exclude_from_search" => false,
-        "capability_type" => "post",
-        "map_meta_cap" => true,
-        "hierarchical" => false,
-        "rewrite" => array("slug" => "mcq", "with_front" => true),
-        "query_var" => true,
-        "menu_icon" => "dashicons-editor-help",
-        "supports" => array("title", "editor", "thumbnail", "author"),
-        "taxonomies" => array("mcq_category", "mcq_difficulty"),
-    );
-
-    register_post_type("mcq", $args);
-}
-add_action("init", "mcqhome_register_mcq_post_type");
-
-/**
- * Register MCQ Set Custom Post Type
- */
-function mcqhome_register_mcq_set_post_type() {
-    $labels = array(
-        "name" => __("MCQ Sets", "mcqhome"),
-        "singular_name" => __("MCQ Set", "mcqhome"),
-        "menu_name" => __("MCQ Sets", "mcqhome"),
-        "all_items" => __("All MCQ Sets", "mcqhome"),
-        "add_new" => __("Add New", "mcqhome"),
-        "add_new_item" => __("Add New MCQ Set", "mcqhome"),
-        "edit_item" => __("Edit MCQ Set", "mcqhome"),
-        "new_item" => __("New MCQ Set", "mcqhome"),
-        "view_item" => __("View MCQ Set", "mcqhome"),
-        "view_items" => __("View MCQ Sets", "mcqhome"),
-        "search_items" => __("Search MCQ Sets", "mcqhome"),
-    );
-
-    $args = array(
-        "label" => __("MCQ Sets", "mcqhome"),
-        "labels" => $labels,
-        "description" => "Collections of MCQs",
-        "public" => true,
-        "publicly_queryable" => true,
-        "show_ui" => true,
-        "show_in_rest" => true,
-        "rest_base" => "",
-        "rest_controller_class" => "WP_REST_Posts_Controller",
-        "has_archive" => true,
-        "show_in_menu" => true,
-        "show_in_nav_menus" => true,
-        "delete_with_user" => false,
-        "exclude_from_search" => false,
-        "capability_type" => "post",
-        "map_meta_cap" => true,
-        "hierarchical" => false,
-        "rewrite" => array("slug" => "mcq-set", "with_front" => true),
-        "query_var" => true,
-        "menu_icon" => "dashicons-portfolio",
-        "supports" => array("title", "editor", "thumbnail", "author"),
-        "taxonomies" => array("mcq_category"),
-    );
-
-    register_post_type("mcq_set", $args);
-}
-add_action("init", "mcqhome_register_mcq_set_post_type");
-
-/**
- * Register Institution Custom Post Type
- */
-function mcqhome_register_institution_post_type() {
-    $labels = array(
-        "name" => __("Institutions", "mcqhome"),
-        "singular_name" => __("Institution", "mcqhome"),
-        "menu_name" => __("Institutions", "mcqhome"),
-        "all_items" => __("All Institutions", "mcqhome"),
-        "add_new" => __("Add New", "mcqhome"),
-        "add_new_item" => __("Add New Institution", "mcqhome"),
-        "edit_item" => __("Edit Institution", "mcqhome"),
-        "new_item" => __("New Institution", "mcqhome"),
-        "view_item" => __("View Institution", "mcqhome"),
-        "view_items" => __("View Institutions", "mcqhome"),
-        "search_items" => __("Search Institutions", "mcqhome"),
-    );
-
-    $args = array(
-        "label" => __("Institutions", "mcqhome"),
-        "labels" => $labels,
-        "description" => "Educational Institutions",
-        "public" => true,
-        "publicly_queryable" => true,
-        "show_ui" => true,
-        "show_in_rest" => true,
-        "rest_base" => "",
-        "rest_controller_class" => "WP_REST_Posts_Controller",
-        "has_archive" => true,
-        "show_in_menu" => true,
-        "show_in_nav_menus" => true,
-        "delete_with_user" => false,
-        "exclude_from_search" => false,
-        "capability_type" => "post",
-        "map_meta_cap" => true,
-        "hierarchical" => false,
-        "rewrite" => array("slug" => "institution", "with_front" => true),
-        "query_var" => true,
-        "menu_icon" => "dashicons-building",
-        "supports" => array("title", "editor", "thumbnail", "author"),
-    );
-
-    register_post_type("institution", $args);
-}
-add_action("init", "mcqhome_register_institution_post_type");
-
-/**
- * Register Custom Taxonomies
- */
-function mcqhome_register_taxonomies() {
-    // MCQ Category taxonomy
-    register_taxonomy("mcq_category", array("mcq", "mcq_set"), array(
-        "hierarchical" => true,
-        "label" => __("MCQ Categories", "mcqhome"),
-        "show_ui" => true,
-        "show_admin_column" => true,
-        "query_var" => true,
-        "rewrite" => array("slug" => "mcq-category"),
-    ));
-
-    // MCQ Difficulty taxonomy
-    register_taxonomy("mcq_difficulty", array("mcq"), array(
-        "hierarchical" => false,
-        "label" => __("Difficulty Levels", "mcqhome"),
-        "show_ui" => true,
-        "show_admin_column" => true,
-        "query_var" => true,
-        "rewrite" => array("slug" => "difficulty"),
-    ));
-}
-add_action("init", "mcqhome_register_taxonomies");
-
-/**
- * Flush rewrite rules on theme activation
- */
-function mcqhome_flush_rewrite_rules() {
-    mcqhome_register_mcq_post_type();
-    mcqhome_register_mcq_set_post_type();
-    mcqhome_register_institution_post_type();
-    mcqhome_register_taxonomies();
-    flush_rewrite_rules();
-}
-register_activation_hook(__FILE__, "mcqhome_flush_rewrite_rules");
-';
-    
-    try {
-        file_put_contents(MCQHOME_THEME_DIR . '/inc/post-types.php', $post_types_content);
-        require_once MCQHOME_THEME_DIR . '/inc/post-types.php';
-        $step5_success = true;
-        error_log('MCQHome: Step 5 - Created and loaded post-types.php successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Step 5 - Failed to create post-types.php - ' . $e->getMessage());
-        $step5_success = false;
+        // Log any activation errors but don't break the site
+        error_log('MCQHome: Theme activation error - ' . $e->getMessage());
     }
 }
 
 /**
- * Step 6: Assessment System
- */
-if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-system.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/assessment-system.php';
-        $step6_success = true;
-        error_log('MCQHome: Step 6 - Assessment system loaded successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Failed to load assessment system - ' . $e->getMessage());
-        $step6_success = false;
-    }
-} else {
-    $step6_success = false;
-}
-
-/**
- * Step 7A: SEO Functions (Safe Enhancement)
- */
-$step7a_success = false;
-if (file_exists(MCQHOME_THEME_DIR . '/inc/seo-functions.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/seo-functions.php';
-        $step7a_success = true;
-        error_log('MCQHome: Step 7A - SEO Functions loaded successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Step 7A - SEO Functions failed - ' . $e->getMessage());
-        $step7a_success = false;
-    }
-} else {
-    $step7a_success = false;
-}
-
-/**
- * Step 7B: Template Functions (Helper Functions)
- */
-$step7b_success = false;
-if (file_exists(MCQHOME_THEME_DIR . '/inc/template-functions.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/template-functions.php';
-        $step7b_success = true;
-        error_log('MCQHome: Step 7B - Template Functions loaded successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Step 7B - Template Functions failed - ' . $e->getMessage());
-        $step7b_success = false;
-    }
-} else {
-    $step7b_success = false;
-}
-
-/**
- * Step 7C: Browse & Search Functions (Content Discovery)
- */
-$step7c_success = false;
-if (file_exists(MCQHOME_THEME_DIR . '/inc/browse-search-functions.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/browse-search-functions.php';
-        $step7c_success = true;
-        error_log('MCQHome: Step 7C - Browse & Search Functions loaded successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Step 7C - Browse & Search Functions failed - ' . $e->getMessage());
-        $step7c_success = false;
-    }
-} else {
-    $step7c_success = false;
-}
-
-/**
- * Step 7D: AJAX Handlers (Dynamic Interactions)
- */
-$step7d_success = false;
-if (file_exists(MCQHOME_THEME_DIR . '/inc/ajax-handlers.php')) {
-    try {
-        require_once MCQHOME_THEME_DIR . '/inc/ajax-handlers.php';
-        $step7d_success = true;
-        error_log('MCQHome: Step 7D - AJAX Handlers loaded successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Step 7D - AJAX Handlers failed - ' . $e->getMessage());
-        $step7d_success = false;
-    }
-} else {
-    $step7d_success = false;
-}
-
-// All enhanced features loaded
-$step7_total_loaded = ($step7a_success ? 1 : 0) + ($step7b_success ? 1 : 0) + ($step7c_success ? 1 : 0) + ($step7d_success ? 1 : 0);
-
-/**
- * Progress Dashboard - Shows current status
- */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success, $step7a_success, $step7b_success, $step7c_success, $step7d_success, $step7_total_loaded) {
-    if (!current_user_can('manage_options')) {
-        return;
-    }
-    
-    echo '<div class="notice notice-info">';
-    echo '<h3>🚀 MCQHome Theme Restoration Progress</h3>';
-    echo '<ul style="margin-left: 20px;">';
-    echo '<li>' . ($step1_success ? '✅' : '❌') . ' <strong>Step 1:</strong> User Registration System</li>';
-    echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles System</li>';
-    echo '<li>' . ($step3_success ? '✅' : '❌') . ' <strong>Step 3:</strong> Dashboard Functions & User Interface</li>';
-    echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
-    echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
-    echo '<li>' . ($step6_success ? '✅' : '❌') . ' <strong>Step 6:</strong> Assessment System</li>';
-    echo '<li>' . ($step7a_success ? '✅' : '❌') . ' <strong>Step 7A:</strong> SEO Functions</li>';
-    echo '<li>' . ($step7b_success ? '✅' : '❌') . ' <strong>Step 7B:</strong> Template Functions</li>';
-    echo '<li>' . ($step7c_success ? '✅' : '❌') . ' <strong>Step 7C:</strong> Browse & Search Functions</li>';
-    echo '<li>' . ($step7d_success ? '✅' : '❌') . ' <strong>Step 7D:</strong> AJAX Handlers</li>';
-    echo '</ul>';
-    
-    $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success]);
-    
-    if ($completed_steps == 6) {
-        echo '<p><strong>🎉 ALL CORE STEPS COMPLETE!</strong> MCQHome theme is fully functional!</p>';
-        if ($step7_total_loaded > 0) {
-            $enhancement_status = $step7_total_loaded == 4 ? '🎉 ALL ENHANCED FEATURES ACTIVE!' : 'Enhanced Features Active (' . $step7_total_loaded . '/4):';
-            echo '<p><strong>✨ ' . $enhancement_status . '</strong></p>';
-            echo '<ul style="margin-left: 40px; margin-top: 10px;">';
-            if ($step7a_success) echo '<li>• SEO optimization & meta tags</li>';
-            if ($step7b_success) echo '<li>• Template helper functions</li>';
-            if ($step7c_success) echo '<li>• Advanced browse & search features</li>';
-            if ($step7d_success) echo '<li>• Dynamic AJAX interactions</li>';
-            echo '</ul>';
-        }
-        echo '<p><strong>Core Features:</strong></p>';
-        echo '<ul style="margin-left: 40px; margin-top: 10px;">';
-        echo '<li>• Create MCQ Sets with questions</li>';
-        echo '<li>• Students can register and take assessments</li>';
-        echo '<li>• View results and track progress</li>';
-        echo '<li>• Manage institutions and user roles</li>';
-        echo '</ul>';
-    } elseif ($completed_steps == 5) {
-        echo '<p><strong>✨ Steps 1-5 Complete!</strong> Now testing Step 6 (Assessment System)...</p>';
-    } elseif ($completed_steps >= 1) {
-        echo '<p><strong>Steps 1-' . $completed_steps . ' Complete!</strong> Building on success...</p>';
-    }
-    
-    echo '<p><em>Progress: ' . $completed_steps . '/6 core systems + ' . $step7_total_loaded . '/4 enhanced features</em></p>';
-    echo '</div>';
-});
-
-/**
- * Create basic pages needed for the theme
+ * Create basic pages required by the theme
  */
 function mcqhome_create_basic_pages() {
-    $pages = [
+    $basic_pages = [
         'register' => [
             'title' => 'Register',
             'content' => '[mcqhome_registration]',
         ],
         'dashboard' => [
             'title' => 'Dashboard',
-            'content' => 'Welcome to your MCQHome dashboard!',
+            'content' => 'Welcome to your dashboard!',
         ]
     ];
-    
-    foreach ($pages as $slug => $page_data) {
-        $existing_page = get_page_by_path($slug);
-        
-        if (!$existing_page) {
-            wp_insert_post([
-                'post_title' => $page_data['title'],
-                'post_content' => $page_data['content'],
-                'post_status' => 'publish',
-                'post_type' => 'page',
-                'post_name' => $slug,
-            ]);
+
+    foreach ($basic_pages as $slug => $page_data) {
+        try {
+            $existing_page = get_page_by_path($slug);
+            
+            if (!$existing_page) {
+                wp_insert_post([
+                    'post_title' => $page_data['title'],
+                    'post_content' => $page_data['content'],
+                    'post_status' => 'publish',
+                    'post_type' => 'page',
+                    'post_name' => $slug,
+                ]);
+            }
+        } catch (Exception $e) {
+            error_log('MCQHome: Failed to create page ' . $slug . ' - ' . $e->getMessage());
         }
     }
 }
 
 /**
- * Theme activation hook
+ * Add theme activation hook
  */
-function mcqhome_activation() {
-    try {
-        // Register post types first
-        if (function_exists('mcqhome_register_mcq_set_post_type')) {
-            mcqhome_register_mcq_set_post_type();
-        }
-        if (function_exists('mcqhome_register_institution_post_type')) {
-            mcqhome_register_institution_post_type();
-        }
-        if (function_exists('mcqhome_register_taxonomies')) {
-            mcqhome_register_taxonomies();
-        }
-        
-        // Flush rewrite rules after registering post types
-        flush_rewrite_rules();
-        
-        mcqhome_create_basic_pages();
-        
-        // Initialize user roles safely
-        if (function_exists('mcqhome_safe_init_user_roles')) {
-            mcqhome_safe_init_user_roles();
-        }
-        
-        error_log('MCQHome: Theme activation completed successfully');
-    } catch (Exception $e) {
-        error_log('MCQHome: Theme activation error - ' . $e->getMessage());
-    }
-}
 add_action('after_switch_theme', 'mcqhome_activation');
 
 /**
- * Helper functions will be loaded from user-roles.php
+ * Create placeholder shortcodes to prevent errors
  */
+function mcqhome_create_placeholder_shortcodes() {
+    // Registration shortcode placeholder
+    if (!shortcode_exists('mcqhome_registration')) {
+        add_shortcode('mcqhome_registration', function() {
+            return '<p>Registration system is being set up. Please check back soon.</p>';
+        });
+    }
+}
+add_action('init', 'mcqhome_create_placeholder_shortcodes', 5);
 
 /**
- * Force flush rewrite rules on admin init (temporary fix)
- * Remove this after the permalinks are working
+ * Get user's primary role
  */
-add_action('admin_init', function() {
-    if (get_option('mcqhome_flush_rewrite_rules') !== 'done') {
-        flush_rewrite_rules();
-        update_option('mcqhome_flush_rewrite_rules', 'done');
-        error_log('MCQHome: Rewrite rules flushed successfully');
+function mcqhome_get_user_primary_role($user_id = null) {
+    if (!$user_id) {
+        $user_id = get_current_user_id();
     }
-});
+    
+    if (!$user_id) {
+        return false;
+    }
+    
+    $user = get_userdata($user_id);
+    if (!$user || empty($user->roles)) {
+        return false;
+    }
+    
+    return $user->roles[0];
+}
+
+/**
+ * Admin notice for minimal theme
+ */
+function mcqhome_minimal_admin_notice() {
+    if (!current_user_can('manage_options')) {
+        return;
+    }
+    
+    echo '<div class="notice notice-info is-dismissible">';
+    echo '<p><strong>MCQHome Theme:</strong> Running in minimal mode. Advanced features are temporarily disabled to ensure stability.</p>';
+    echo '<p>Available features: Basic pages, user registration (when properly configured), and standard WordPress functionality.</p>';
+    echo '</div>';
+}
+add_action('admin_notices', 'mcqhome_minimal_admin_notice');
+
+/**
+ * Include only the registration system if it exists and is working
+ */
+if (file_exists(MCQHOME_THEME_DIR . '/inc/registration.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/registration.php';
+    } catch (Exception $e) {
+        error_log('MCQHome: Failed to load registration system - ' . $e->getMessage());
+    }
+}
