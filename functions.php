@@ -97,16 +97,23 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/user-roles.php')) {
  * Step 3: Dashboard System
  */
 $step3_success = false;
+$step3_error = '';
 if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
     try {
         require_once MCQHOME_THEME_DIR . '/inc/dashboard-functions.php';
         $step3_success = true;
         error_log('MCQHome: Step 3 - Dashboard System loaded successfully');
     } catch (Exception $e) {
-        error_log('MCQHome: Step 3 - Dashboard System failed - ' . $e->getMessage());
+        $step3_error = $e->getMessage();
+        error_log('MCQHome: Step 3 - Dashboard System failed - ' . $step3_error);
+        $step3_success = false;
+    } catch (Error $e) {
+        $step3_error = $e->getMessage();
+        error_log('MCQHome: Step 3 - Dashboard System PHP Error - ' . $step3_error);
         $step3_success = false;
     }
 } else {
+    $step3_error = 'File not found';
     $step3_success = false;
 }
 
@@ -114,16 +121,23 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/dashboard-functions.php')) {
  * Step 4: Database Setup and Core Functions
  */
 $step4_success = false;
+$step4_error = '';
 if (file_exists(MCQHOME_THEME_DIR . '/inc/database-setup.php')) {
     try {
         require_once MCQHOME_THEME_DIR . '/inc/database-setup.php';
         $step4_success = true;
         error_log('MCQHome: Step 4 - Database Setup loaded successfully');
     } catch (Exception $e) {
-        error_log('MCQHome: Step 4 - Database Setup failed - ' . $e->getMessage());
+        $step4_error = $e->getMessage();
+        error_log('MCQHome: Step 4 - Database Setup failed - ' . $step4_error);
+        $step4_success = false;
+    } catch (Error $e) {
+        $step4_error = $e->getMessage();
+        error_log('MCQHome: Step 4 - Database Setup PHP Error - ' . $step4_error);
         $step4_success = false;
     }
 } else {
+    $step4_error = 'File not found';
     $step4_success = false;
 }
 
@@ -203,7 +217,7 @@ if ($step6_success) $completed_steps++;
 /**
  * Admin notice showing progress
  */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success, $additional_loaded) {
+add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success, $additional_loaded, $step3_error, $step4_error) {
     if (!current_user_can('manage_options')) {
         return;
     }
@@ -221,8 +235,12 @@ add_action('admin_notices', function() use ($step1_success, $step2_success, $ste
     echo '<ul style="margin-left: 20px;">';
     echo '<li>' . ($step1_success ? '✅' : '❌') . ' <strong>Step 1:</strong> Registration System</li>';
     echo '<li>' . ($step2_success ? '✅' : '❌') . ' <strong>Step 2:</strong> User Roles & Capabilities</li>';
-    echo '<li>' . ($step3_success ? '✅' : '❌') . ' <strong>Step 3:</strong> Dashboard System</li>';
-    echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
+    echo '<li>' . ($step3_success ? '✅' : '❌') . ' <strong>Step 3:</strong> Dashboard System';
+    if (!$step3_success && $step3_error) echo ' <em style="color: #d63638;">(' . esc_html($step3_error) . ')</em>';
+    echo '</li>';
+    echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup';
+    if (!$step4_success && $step4_error) echo ' <em style="color: #d63638;">(' . esc_html($step4_error) . ')</em>';
+    echo '</li>';
     echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
     echo '<li>' . ($step6_success ? '✅' : '❌') . ' <strong>Step 6:</strong> Assessment System</li>';
     echo '<li>' . ($additional_loaded > 0 ? '✅' : '❌') . ' <strong>Additional:</strong> Essential Files (' . $additional_loaded . '/3)</li>';
