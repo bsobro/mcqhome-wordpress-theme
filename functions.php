@@ -455,9 +455,25 @@ register_activation_hook(__FILE__, "mcqhome_flush_rewrite_rules");
 }
 
 /**
+ * Step 6: Assessment System
+ */
+if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-system.php')) {
+    try {
+        require_once MCQHOME_THEME_DIR . '/inc/assessment-system.php';
+        $step6_success = true;
+        error_log('MCQHome: Step 6 - Assessment system loaded successfully');
+    } catch (Exception $e) {
+        error_log('MCQHome: Failed to load assessment system - ' . $e->getMessage());
+        $step6_success = false;
+    }
+} else {
+    $step6_success = false;
+}
+
+/**
  * Progress Dashboard - Shows current status
  */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success) {
+add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success) {
     if (!current_user_can('manage_options')) {
         return;
     }
@@ -470,15 +486,24 @@ add_action('admin_notices', function() use ($step1_success, $step2_success, $ste
     echo '<li>' . ($step3_success ? '✅' : '❌') . ' <strong>Step 3:</strong> Dashboard Functions & User Interface</li>';
     echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
     echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
-    echo '<li>⏳ <strong>Step 6:</strong> Assessment System (Next)</li>';
+    echo '<li>' . ($step6_success ? '✅' : '❌') . ' <strong>Step 6:</strong> Assessment System</li>';
     echo '</ul>';
     
-    $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success, $step5_success]);
+    $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success]);
     
-    if ($completed_steps == 5) {
-        echo '<p><strong>🎉 Steps 1-5 Complete!</strong> Core system with custom post types is working!</p>';
+    if ($completed_steps == 6) {
+        echo '<p><strong>🎉 ALL STEPS COMPLETE!</strong> MCQHome theme is fully functional!</p>';
+        echo '<p><strong>✨ What you can do now:</strong></p>';
+        echo '<ul style="margin-left: 40px; margin-top: 10px;">';
+        echo '<li>• Create MCQ Sets with questions</li>';
+        echo '<li>• Students can register and take assessments</li>';
+        echo '<li>• View results and track progress</li>';
+        echo '<li>• Manage institutions and user roles</li>';
+        echo '</ul>';
+    } elseif ($completed_steps == 5) {
+        echo '<p><strong>✨ Steps 1-5 Complete!</strong> Now testing Step 6 (Assessment System)...</p>';
     } elseif ($completed_steps == 4) {
-        echo '<p><strong>✨ Steps 1-4 Complete!</strong> Now testing Step 5 (Custom Post Types)...</p>';
+        echo '<p><strong>Steps 1-4 Complete!</strong> Building on success...</p>';
     } elseif ($completed_steps == 3) {
         echo '<p><strong>Steps 1-3 Complete!</strong> Building on success...</p>';
     } elseif ($completed_steps == 2) {
