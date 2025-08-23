@@ -480,9 +480,39 @@ if (file_exists(MCQHOME_THEME_DIR . '/inc/assessment-system.php')) {
 }
 
 /**
+ * Step 7: Enhanced Features (AJAX, SEO, Performance)
+ */
+$step7_features = [
+    'ajax-handlers.php' => 'AJAX Handlers',
+    'seo-functions.php' => 'SEO Functions', 
+    'template-functions.php' => 'Template Functions',
+    'browse-search-functions.php' => 'Browse & Search'
+];
+
+$step7_success = true;
+$step7_loaded = [];
+
+foreach ($step7_features as $file => $name) {
+    if (file_exists(MCQHOME_THEME_DIR . '/inc/' . $file)) {
+        try {
+            require_once MCQHOME_THEME_DIR . '/inc/' . $file;
+            $step7_loaded[] = $name;
+            error_log('MCQHome: Step 7 - Loaded ' . $name . ' successfully');
+        } catch (Exception $e) {
+            error_log('MCQHome: Step 7 - Failed to load ' . $name . ' - ' . $e->getMessage());
+            $step7_success = false;
+        }
+    }
+}
+
+if (!empty($step7_loaded)) {
+    error_log('MCQHome: Step 7 - Enhanced features loaded: ' . implode(', ', $step7_loaded));
+}
+
+/**
  * Progress Dashboard - Shows current status
  */
-add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success) {
+add_action('admin_notices', function() use ($step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success, $step7_success, $step7_loaded) {
     if (!current_user_can('manage_options')) {
         return;
     }
@@ -496,32 +526,33 @@ add_action('admin_notices', function() use ($step1_success, $step2_success, $ste
     echo '<li>' . ($step4_success ? '✅' : '❌') . ' <strong>Step 4:</strong> Database Setup</li>';
     echo '<li>' . ($step5_success ? '✅' : '❌') . ' <strong>Step 5:</strong> Basic Custom Post Types</li>';
     echo '<li>' . ($step6_success ? '✅' : '❌') . ' <strong>Step 6:</strong> Assessment System</li>';
+    echo '<li>' . ($step7_success ? '✅' : '❌') . ' <strong>Step 7:</strong> Enhanced Features (' . count($step7_loaded) . '/4 loaded)</li>';
     echo '</ul>';
     
     $completed_steps = array_sum([$step1_success, $step2_success, $step3_success, $step4_success, $step5_success, $step6_success]);
+    $enhanced_step = $step7_success ? 1 : 0;
     
-    if ($completed_steps == 6) {
-        echo '<p><strong>🎉 ALL STEPS COMPLETE!</strong> MCQHome theme is fully functional!</p>';
-        echo '<p><strong>✨ What you can do now:</strong></p>';
+    if ($completed_steps == 6 && $enhanced_step == 1) {
+        echo '<p><strong>🎉 ALL STEPS + ENHANCEMENTS COMPLETE!</strong> MCQHome theme is fully featured!</p>';
+        echo '<p><strong>✨ Enhanced features now available:</strong></p>';
         echo '<ul style="margin-left: 40px; margin-top: 10px;">';
-        echo '<li>• Create MCQ Sets with questions</li>';
-        echo '<li>• Students can register and take assessments</li>';
-        echo '<li>• View results and track progress</li>';
-        echo '<li>• Manage institutions and user roles</li>';
+        if (in_array('AJAX Handlers', $step7_loaded)) echo '<li>• Dynamic follow/unfollow system</li>';
+        if (in_array('SEO Functions', $step7_loaded)) echo '<li>• SEO optimization & meta tags</li>';
+        if (in_array('Template Functions', $step7_loaded)) echo '<li>• Enhanced template helpers</li>';
+        if (in_array('Browse & Search', $step7_loaded)) echo '<li>• Advanced search & filtering</li>';
         echo '</ul>';
+    } elseif ($completed_steps == 6) {
+        echo '<p><strong>🎉 Core Complete!</strong> Now loading enhanced features...</p>';
+        if (!empty($step7_loaded)) {
+            echo '<p><strong>Enhanced features loaded:</strong> ' . implode(', ', $step7_loaded) . '</p>';
+        }
     } elseif ($completed_steps == 5) {
         echo '<p><strong>✨ Steps 1-5 Complete!</strong> Now testing Step 6 (Assessment System)...</p>';
-    } elseif ($completed_steps == 4) {
-        echo '<p><strong>Steps 1-4 Complete!</strong> Building on success...</p>';
-    } elseif ($completed_steps == 3) {
-        echo '<p><strong>Steps 1-3 Complete!</strong> Building on success...</p>';
-    } elseif ($completed_steps == 2) {
-        echo '<p><strong>Steps 1-2 Complete!</strong> Building on success...</p>';
-    } elseif ($completed_steps == 1) {
-        echo '<p><strong>Step 1 Complete!</strong> Building on success...</p>';
+    } elseif ($completed_steps >= 1) {
+        echo '<p><strong>Steps 1-' . $completed_steps . ' Complete!</strong> Building on success...</p>';
     }
     
-    echo '<p><em>Progress: ' . $completed_steps . '/6 core systems restored</em></p>';
+    echo '<p><em>Progress: ' . $completed_steps . '/6 core systems + ' . count($step7_loaded) . '/4 enhanced features</em></p>';
     echo '</div>';
 });
 
