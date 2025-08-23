@@ -212,14 +212,25 @@ function mcqhome_create_database_tables() {
 // Initialize database setup
 $step4_success = false;
 try {
-    // Only create tables if they don't exist
+    // Check if all required tables exist
     global $wpdb;
-    $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}mcq_attempts'");
+    $required_tables = ['mcq_attempts', 'mcq_user_follows', 'mcq_user_enrollments', 'mcq_user_progress'];
+    $tables_exist = 0;
     
-    if (!$table_exists) {
+    foreach ($required_tables as $table) {
+        $table_exists = $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->prefix}{$table}'");
+        if ($table_exists) {
+            $tables_exist++;
+        }
+    }
+    
+    if ($tables_exist < 4) {
+        // Create missing tables
         $step4_success = mcqhome_create_database_tables();
+        error_log('MCQHome: Step 4 - Created database tables. Tables found: ' . $tables_exist . '/4');
     } else {
-        $step4_success = true; // Tables already exist
+        $step4_success = true; // All tables exist
+        error_log('MCQHome: Step 4 - All database tables exist. Success!');
     }
 } catch (Exception $e) {
     error_log('MCQHome: Step 4 database setup failed - ' . $e->getMessage());
