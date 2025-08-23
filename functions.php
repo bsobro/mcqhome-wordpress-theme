@@ -526,13 +526,28 @@ function mcqhome_create_basic_pages() {
  */
 function mcqhome_activation() {
     try {
+        // Register post types first
+        if (function_exists('mcqhome_register_mcq_set_post_type')) {
+            mcqhome_register_mcq_set_post_type();
+        }
+        if (function_exists('mcqhome_register_institution_post_type')) {
+            mcqhome_register_institution_post_type();
+        }
+        if (function_exists('mcqhome_register_taxonomies')) {
+            mcqhome_register_taxonomies();
+        }
+        
+        // Flush rewrite rules after registering post types
         flush_rewrite_rules();
+        
         mcqhome_create_basic_pages();
         
         // Initialize user roles safely
         if (function_exists('mcqhome_safe_init_user_roles')) {
             mcqhome_safe_init_user_roles();
         }
+        
+        error_log('MCQHome: Theme activation completed successfully');
     } catch (Exception $e) {
         error_log('MCQHome: Theme activation error - ' . $e->getMessage());
     }
@@ -542,3 +557,15 @@ add_action('after_switch_theme', 'mcqhome_activation');
 /**
  * Helper functions will be loaded from user-roles.php
  */
+
+/**
+ * Force flush rewrite rules on admin init (temporary fix)
+ * Remove this after the permalinks are working
+ */
+add_action('admin_init', function() {
+    if (get_option('mcqhome_flush_rewrite_rules') !== 'done') {
+        flush_rewrite_rules();
+        update_option('mcqhome_flush_rewrite_rules', 'done');
+        error_log('MCQHome: Rewrite rules flushed successfully');
+    }
+});
